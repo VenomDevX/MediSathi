@@ -7,7 +7,7 @@ import { getReport, updateReportFields } from '../../data/reports'
 import { checkRange, type RangeResult, type ReportField } from '../../domain/labs'
 import { useLang, useT } from '../../i18n'
 import { labCatalogue, labTest } from '../../labCatalogue'
-import { readFile } from '../../platform/files'
+import { readFile, safeTypeFor } from '../../platform/files'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import { Banner, Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, inputClass, type Tone } from '../components'
 import { useAsync } from '../useAsync'
@@ -17,15 +17,17 @@ const testName = (f: ReportField, lang: 'hi' | 'en') => {
   return test ? (lang === 'hi' ? test.name_hi : test.canonical_name) : f.name
 }
 
-function useOriginalUrl(id: string) {
+function useOriginalUrl(id: string, fileName: string) {
   const [url, setUrl] = useState<string>()
   useEffect(() => {
     let u: string | undefined
-    readFile(id).then((f) => f && setUrl((u = URL.createObjectURL(f))))
+    const type = safeTypeFor(fileName)
+    // Rebuild the blob with a fixed allowlisted type so the browser can never treat it as HTML or SVG.
+    readFile(id).then((f) => f && type && setUrl((u = URL.createObjectURL(new Blob([f], { type })))))
     return () => {
       if (u) URL.revokeObjectURL(u)
     }
-  }, [id])
+  }, [id, fileName])
   return url
 }
 
@@ -44,7 +46,7 @@ function ReviewForm({ report, patients }: { report: NonNullable<Awaited<ReturnTy
   const { lang } = useLang()
   const nav = useNavigate()
   const { db } = useApp()
-  const original = useOriginalUrl(report.id)
+  const original = useOriginalUrl(report.id, report.file_name)
   const [fields, setFields] = useState(report.fields)
   const [patientId, setPatientId] = useState(report.patient_id ?? '')
   const [adding, setAdding] = useState('')

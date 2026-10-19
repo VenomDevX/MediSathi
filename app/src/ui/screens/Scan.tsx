@@ -6,7 +6,7 @@ import { listReports, saveReport } from '../../data/reports'
 import { parseReport } from '../../domain/labs'
 import { useFormatDate, useT } from '../../i18n'
 import { labCatalogue } from '../../labCatalogue'
-import { saveFile, sha256 } from '../../platform/files'
+import { ACCEPT, isSafeType, saveFile, sha256 } from '../../platform/files'
 import type { StringKey } from '../../strings'
 import { Banner, Button, Chip, EmptyState, PageHeader } from '../components'
 import { useAsync } from '../useAsync'
@@ -29,7 +29,7 @@ export function ScanHome() {
     e.target.value = ''
     if (!file) return
     setError(null)
-    if (!/^image\/|^application\/pdf$/.test(file.type)) return setError('unsupportedFile')
+    if (!isSafeType(file.type)) return setError('unsupportedFile')
     setBusy({ key: 'preparingOcr', vars: { pct: 0 } })
     try {
       // Loaded on demand: OCR and PDF code is large and only needed here.
@@ -85,8 +85,8 @@ export function ScanHome() {
               </Button>
             </div>
           )}
-          <input ref={camera} type="file" accept="image/*" capture="environment" onChange={onFile} className="hidden" aria-hidden tabIndex={-1} />
-          <input ref={picker} type="file" accept="image/*,application/pdf" onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
+          <input ref={camera} type="file" accept="image/png,image/jpeg,image/webp" capture="environment" onChange={onFile} className="hidden" aria-hidden tabIndex={-1} />
+          <input ref={picker} type="file" accept={ACCEPT} onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
           {error && <Banner tone="danger">{t(error)}</Banner>}
         </section>
 
