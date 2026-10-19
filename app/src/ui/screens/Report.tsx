@@ -99,7 +99,7 @@ function ReviewForm({ report, patients }: { report: NonNullable<Awaited<ReturnTy
         <ol ref={list} className="flex flex-col gap-3">
           {fields.map((f, i) => (
             <li key={i}>
-              <Card className={`flex flex-col gap-3 p-4 ${f.uncertain ? 'border-caution' : ''}`}>
+              <Card className={`flex flex-col gap-3 p-4 ${f.uncertain ? 'outline-2 outline-caution' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold">{testName(f, lang)}</p>

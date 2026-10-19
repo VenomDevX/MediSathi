@@ -10,6 +10,8 @@ import { PatientDetail, VisitForm } from './ui/screens/PatientDetail'
 import { LockGate } from './ui/LockGate'
 import { ScanHome } from './ui/screens/Scan'
 import { ReportResults, ReportReview } from './ui/screens/Report'
+import { GuidanceDetail, GuidanceList } from './ui/screens/Guidance'
+import { Emergency } from './ui/screens/Emergency'
 import type { StringKey } from './strings'
 
 function Placeholder({ title }: { title: StringKey }) {
@@ -32,8 +34,8 @@ export default function App() {
   return (
     <LangProvider>
       <AppProvider loading={<Splash text="loading" />} error={<Splash text="loadError" />}>
-        <LockGate>
         <HashRouter>
+        <LockGate>
           <Routes>
             <Route element={<AppShell />}>
               <Route index element={<Today />} />
@@ -45,14 +47,15 @@ export default function App() {
               <Route path="scan" element={<ScanHome />} />
               <Route path="scan/:id" element={<ReportResults />} />
               <Route path="scan/:id/review" element={<ReportReview />} />
-              <Route path="guidance/*" element={<Placeholder title="navGuidance" />} />
+              <Route path="guidance" element={<GuidanceList />} />
+              <Route path="guidance/:id" element={<GuidanceDetail />} />
               <Route path="donors/*" element={<Placeholder title="navDonors" />} />
               <Route path="sync" element={<Placeholder title="navSync" />} />
-              <Route path="emergency" element={<Placeholder title="emergency" />} />
+              <Route path="emergency" element={<Emergency />} />
             </Route>
           </Routes>
-        </HashRouter>
         </LockGate>
+        </HashRouter>
       </AppProvider>
     </LangProvider>
   )

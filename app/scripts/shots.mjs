@@ -19,7 +19,7 @@ for (const [name, opts] of configs) {
   for (const r of routes) {
     await page.goto(`http://localhost:4173/#${r}`)
     await page.waitForTimeout(800)
-    await page.screenshot({ path: `${out}/${name}${r.replaceAll('/', '_') || '_home'}.png`, fullPage: true })
+    await page.screenshot({ path: `${out}/${name}${r.replace(/[^a-z0-9-]+/gi, '_') || '_home'}.png`, fullPage: true })
   }
   await ctx.close()
 }

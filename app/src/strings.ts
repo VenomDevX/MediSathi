@@ -145,6 +145,32 @@ export const strings = {
   stop: { hi: 'रोकें', en: 'Stop' },
   demoContent: { hi: 'डेमो सामग्री, डॉक्टर से जांची नहीं गई', en: 'Demo content, not clinically reviewed' },
 
+  // Guidance
+  searchGuidance: { hi: 'लक्षण या समस्या खोजें… जैसे बुखार, जलना', en: 'Search a symptom or problem… e.g. fever, burn' },
+  noGuidance: { hi: 'इस खोज से कुछ नहीं मिला। दूसरे शब्द आज़माएं।', en: 'Nothing found for this search. Try other words.' },
+  whatToDo: { hi: 'क्या करें', en: 'What to do' },
+  limitations: { hi: 'ध्यान दें', en: 'Keep in mind' },
+  aboutThisAdvice: { hi: 'इस सलाह के बारे में', en: 'About this advice' },
+  source: { hi: 'स्रोत', en: 'Source' },
+  version: { hi: 'संस्करण', en: 'Version' },
+  reviewStatus: { hi: 'जांच', en: 'Review' },
+  notReviewed: { hi: 'डॉक्टर से जांची नहीं गई (डेमो)', en: 'Not clinically reviewed (demo)' },
+  reviewedOn: { hi: '{date} को जांची गई', en: 'Reviewed on {date}' },
+  audience: { hi: 'किसके लिए', en: 'For' },
+  guidanceNotFound: { hi: 'यह सलाह नहीं मिली।', en: 'This advice was not found.' },
+  emergencyDetected: { hi: 'यह आपातकाल हो सकता है', en: 'This may be an emergency' },
+  openEmergency: { hi: 'आपातकाल नंबर देखें', en: 'See emergency numbers' },
+
+  // Emergency
+  emergencyTitle: { hi: 'आपातकाल', en: 'Emergency' },
+  emergencyIntro: { hi: 'जान का खतरा हो तो तुरंत कॉल करें। ये नंबर पूरे भारत में मुफ़्त हैं।', en: 'If a life is at risk, call now. These numbers are free across India.' },
+  call: { hi: '{n} पर कॉल करें', en: 'Call {n}' },
+  ambulance: { hi: 'एम्बुलेंस', en: 'Ambulance' },
+  maternalTransport: { hi: 'गर्भवती महिलाओं और बच्चों के लिए वाहन', en: 'Transport for pregnant women and children' },
+  nationalEmergency: { hi: 'राष्ट्रीय आपातकाल (पुलिस, आग, एम्बुलेंस)', en: 'National emergency (police, fire, ambulance)' },
+  whileWaiting: { hi: 'मदद आने तक', en: 'Until help arrives' },
+  dangerSigns: { hi: 'खतरे के संकेत और पहला कदम', en: 'Danger signs and first steps' },
+
   // Sync status
   statusPending: { hi: 'सिंक बाकी', en: 'Not synced' },
   statusSynced: { hi: 'सिंक हुआ', en: 'Synced' },

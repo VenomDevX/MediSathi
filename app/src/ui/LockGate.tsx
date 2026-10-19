@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { LockKey } from '@phosphor-icons/react'
+import { Link, useLocation } from 'react-router-dom'
+import { LockKey, Warning } from '@phosphor-icons/react'
+import { Emergency } from './screens/Emergency'
 import { useApp } from '../app-context'
 import { hasPin, setPin, unlock } from '../auth/pin'
 import { useT } from '../i18n'
@@ -32,8 +34,23 @@ export function LockGate({ children }: { children: ReactNode }) {
     }
   }, [mode])
 
+  const { pathname } = useLocation()
+  const t = useT()
+
   if (mode === 'open') return children
   if (mode === 'checking') return null
+  // Emergency numbers never sit behind the PIN: a bystander may be holding the phone. No patient data here.
+  if (pathname === '/emergency') {
+    return (
+      <main className="mx-auto flex max-w-[760px] flex-col gap-2 px-4 py-6">
+        <Link to="/" className="flex min-h-11 w-fit items-center gap-2 text-muted hover:text-ink">
+          <LockKey size={18} aria-hidden />
+          {t('unlock')}
+        </Link>
+        <Emergency />
+      </main>
+    )
+  }
   return <LockScreen create={mode === 'create'} onOpen={() => setMode('open')} />
 }
 
@@ -91,6 +108,10 @@ function LockScreen({ create, onOpen }: { create: boolean; onOpen: () => void })
         {error && <Banner tone="danger">{t(error.key, { n: error.n ?? 0 })}</Banner>}
         <Button type="submit" disabled={busy}>{t(create ? 'savePin' : 'unlock')}</Button>
       </form>
+      <Link to="/emergency" className="flex min-h-12 items-center justify-center gap-2 font-semibold text-danger">
+        <Warning size={20} weight="bold" aria-hidden />
+        {t('emergency')}
+      </Link>
     </main>
   )
 }
