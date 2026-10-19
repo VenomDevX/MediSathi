@@ -37,6 +37,14 @@ describe('donor directory', () => {
     expect(n).toBe(1)
   })
 
+  it('refuses to reveal a donor who withdrew consent, and records the refusal', async () => {
+    const db = await setup()
+    await db.batch([{ sql: "UPDATE donors SET consent_status = 'withdrawn'" }])
+    await expect(revealContact(db, coordinator, 'd1')).rejects.toThrow(/consent/)
+    const [e] = await db.query<{ result: string }>('SELECT result FROM audit_events')
+    expect(e.result).toBe('denied')
+  })
+
   it('refuses other roles and records the refusal', async () => {
     const db = await setup()
     await expect(revealContact(db, asha, 'd1')).rejects.toThrow(/coordinator/)

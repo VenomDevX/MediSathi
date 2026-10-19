@@ -28,7 +28,6 @@ export type SeedContent = {
     approx_latitude: number | null
     approx_longitude: number | null
     locality_label: string
-    contact: string
     consent_status: string
     last_verified_at: string
     registration_status: string
@@ -86,9 +85,10 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
     s.push({
       sql: `INSERT INTO donors (id, blood_group, approx_latitude, approx_longitude, locality_label, contact_encrypted,
               consent_status, last_verified_at, last_synced_at, registration_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)`,
+      // Contacts are never bundled: they come only from the server, and only to coordinator devices.
       bind: [
-        d.id, d.blood_group, d.approx_latitude, d.approx_longitude, d.locality_label, d.contact,
+        d.id, d.blood_group, d.approx_latitude, d.approx_longitude, d.locality_label,
         d.consent_status, d.last_verified_at, d.last_verified_at, d.registration_status,
       ],
     })

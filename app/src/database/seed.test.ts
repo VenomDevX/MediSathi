@@ -30,7 +30,6 @@ const content: SeedContent = {
       approx_latitude: 26.85,
       approx_longitude: 80.95,
       locality_label: 'Rampur',
-      contact: '98765 43210',
       consent_status: 'granted',
       last_verified_at: '2026-09-01T00:00:00Z',
       registration_status: 'active',

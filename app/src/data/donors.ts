@@ -19,7 +19,12 @@ export async function directoryUpdatedAt(db: Database): Promise<string | null> {
  * audit log and queued for sync, so reveals made offline are still reported.
  */
 export async function revealContact(db: Database, user: { id: string; role: string }, donorId: string): Promise<string> {
-  const allowed = user.role === 'coordinator'
+  const [d] = await db.query<{ contact_encrypted: string | null }>(
+    "SELECT contact_encrypted FROM donors WHERE id = ? AND deleted_at IS NULL AND consent_status = 'granted' AND registration_status = 'active'",
+    [donorId],
+  )
+  const isCoordinator = user.role === 'coordinator'
+  const allowed = isCoordinator && !!d
   const event = {
     id: crypto.randomUUID(),
     actor_id: user.id,
@@ -36,8 +41,8 @@ export async function revealContact(db: Database, user: { id: string; role: stri
     },
     syncOp('audit_event', event.id, 'create', event),
   ])
-  if (!allowed) throw new Error('Only a coordinator can see donor contact details')
-  const [d] = await db.query<{ contact_encrypted: string | null }>('SELECT contact_encrypted FROM donors WHERE id = ? AND deleted_at IS NULL', [donorId])
-  if (!d?.contact_encrypted) throw new Error('No contact on this device for this donor')
+  if (!isCoordinator) throw new Error('Only a coordinator can see donor contact details')
+  if (!d) throw new Error('Donor has not given consent or is not active')
+  if (!d.contact_encrypted) throw new Error('No contact on this device for this donor')
   return d.contact_encrypted
 }
