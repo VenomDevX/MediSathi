@@ -7,6 +7,7 @@ import { todayLocal } from '../../domain/dates'
 import type { VisitChain, VisitRow } from '../../domain/visits'
 import { useFormatDate, useT } from '../../i18n'
 import { Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
+import { askReminderPermission } from '../../platform/notify'
 import { useAsync } from '../useAsync'
 
 type Obs = { bp?: string; weight?: string; temp?: string }
@@ -134,6 +135,7 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
     try {
       if (prev) await amendVisit(db, user, prev.id, { visit_time, notes: form.notes, observations, follow_up_at: form.follow_up_at, reason: form.reason })
       else await addVisit(db, user, patientId, { visit_time, notes: form.notes, observations, follow_up_at: form.follow_up_at })
+      if (form.follow_up_at) await askReminderPermission()
       onDone()
     } finally {
       setBusy(false)

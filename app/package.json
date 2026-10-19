@@ -18,6 +18,7 @@
     "@capacitor/android": "^8.5.3",
     "@capacitor/core": "^8.5.3",
     "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/network": "^8.0.1",
     "@fontsource/mukta": "^5.3.0",
     "@phosphor-icons/react": "^2.1.10",
     "@sqlite.org/sqlite-wasm": "^3.54.1-build1",

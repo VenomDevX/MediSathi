@@ -89,6 +89,8 @@ export const strings = {
   followUpOn: { hi: 'फॉलो-अप {date}', en: 'Follow-up {date}' },
   overdue: { hi: 'देर हो गई', en: 'Overdue' },
   dueToday: { hi: 'आज', en: 'Today' },
+  reminderTitle: { hi: 'आज के फॉलो-अप', en: 'Follow-ups today' },
+  reminderBody: { hi: 'बाकी फॉलो-अप: {n}। देखने के लिए ऐप खोलें।', en: 'Follow-ups due: {n}. Open the app to see them.' },
 
   // MediScan
   scanDisclaimer: {

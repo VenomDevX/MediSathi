@@ -1,4 +1,5 @@
 // On-device text extraction (PRD MS-02, TRD §5). Everything is served from this app, nothing from a CDN.
+import { Capacitor } from '@capacitor/core'
 import { createWorker, type Worker as TessWorker } from 'tesseract.js'
 import * as pdfjs from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
@@ -19,6 +20,7 @@ function getWorker() {
     workerPath: `${base}/worker.min.js`,
     corePath: base,
     langPath: base,
+    gzip: !Capacitor.isNativePlatform(), // Android's packager unzips .gz assets and drops the extension
     cacheMethod: 'none', // files are already precached by the service worker
     logger: (m) => {
       if (m.status === 'recognizing text') onProgress?.({ stage: 'reading', ...current, fraction: m.progress })

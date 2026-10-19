@@ -68,7 +68,7 @@ export function LockGate({ children }: { children: ReactNode }) {
   // Emergency numbers never sit behind sign-in or the PIN: a bystander may be holding the phone. No patient data here.
   if (pathname === '/emergency') {
     return (
-      <main className="mx-auto flex max-w-[760px] flex-col gap-2 px-4 py-6">
+      <main className="mx-auto flex max-w-[760px] flex-col gap-2 px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6">
         <Link to="/" className="flex min-h-11 w-fit items-center gap-2 text-muted hover:text-ink">
           <LockKey size={18} aria-hidden />
           {t('back')}

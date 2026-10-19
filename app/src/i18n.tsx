@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { strings, type StringKey } from './strings'
 
 export type Lang = 'hi' | 'en'
@@ -46,9 +46,12 @@ export function useFormatDate() {
 /** t('key') or t('key', { n: 3 }) → replaces {n}. */
 export function useT() {
   const { lang } = useLang()
-  return (key: StringKey, vars?: Record<string, string | number>) => {
-    let s: string = strings[key][lang]
-    for (const [k, v] of Object.entries(vars ?? {})) s = s.replace(`{${k}}`, String(v))
-    return s
-  }
+  return useCallback(
+    (key: StringKey, vars?: Record<string, string | number>) => {
+      let s: string = strings[key][lang]
+      for (const [k, v] of Object.entries(vars ?? {})) s = s.replace(`{${k}}`, String(v))
+      return s
+    },
+    [lang],
+  )
 }

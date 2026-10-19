@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { db, dbStatus } from './database/db'
 import { seedIfNeeded } from './database/seed'
 import { content } from './content'
+import { Capacitor } from '@capacitor/core'
+import { watchOnline } from './platform/network'
 import type { Database } from './database/types'
 
 export type User = { id: string; display_name: string; role: string; assigned_scope: string[] }
@@ -25,7 +27,8 @@ async function boot() {
   await seedIfNeeded(db, content)
   const [meta] = await db.query<{ value: string }>("SELECT value FROM app_meta WHERE key = 'current_user_id'")
   return {
-    storage: (!persistent ? 'memory' : granted ? 'persistent' : 'best-effort') as StorageState,
+    // The Android app's storage is only cleared by uninstall or 'clear data', never evicted like a browser's.
+    storage: (!persistent ? 'memory' : granted || Capacitor.isNativePlatform() ? 'persistent' : 'best-effort') as StorageState,
     user: meta ? await loadUser(db, meta.value) : null,
   }
 }
@@ -39,14 +42,7 @@ export function AppProvider({ children, loading, error }: { children: ReactNode;
       (s) => setState({ status: 'ready', ...s }),
       () => setState({ status: 'error' }),
     )
-    const on = () => setOnline(true)
-    const off = () => setOnline(false)
-    addEventListener('online', on)
-    addEventListener('offline', off)
-    return () => {
-      removeEventListener('online', on)
-      removeEventListener('offline', off)
-    }
+    return watchOnline(setOnline)
   }, [])
 
   if (state.status === 'loading') return loading

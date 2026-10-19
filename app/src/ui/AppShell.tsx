@@ -1,6 +1,10 @@
+import { useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { CalendarCheck, CloudArrowUp, Drop, FileText, FirstAidKit, Translate, Users, WifiSlash, Warning } from '@phosphor-icons/react'
 import { useApp } from '../app-context'
+import { followUpsDue } from '../data/records'
+import { reminderSchedule } from '../domain/reminders'
+import { scheduleReminders } from '../platform/notify'
 import { useSync } from '../sync/useSync'
 import { useLang, useT } from '../i18n'
 import type { StringKey } from '../strings'
@@ -17,8 +21,20 @@ const nav: { to: string; label: StringKey; icon: typeof Users }[] = [
 export function AppShell() {
   const t = useT()
   const { lang, setLang } = useLang()
-  const { online, storage } = useApp()
+  const { db, user, online, storage } = useApp()
   const { pending } = useSync()
+
+  // Reschedule reminders on open and whenever the app goes to the background, so they match the latest visits.
+  useEffect(() => {
+    const reschedule = () =>
+      followUpsDue(db, user, '9999-12-31')
+        .then((f) => scheduleReminders(reminderSchedule(f.map((x) => x.follow_up_at), new Date()), (n) => ({ title: t('reminderTitle'), body: t('reminderBody', { n }) })))
+        .catch(() => {}) // a reminder failure must never break the app
+    void reschedule()
+    const onHide = () => document.visibilityState === 'hidden' && void reschedule()
+    document.addEventListener('visibilitychange', onHide)
+    return () => document.removeEventListener('visibilitychange', onHide)
+  }, [db, user, t])
   const badge = pending > 0 && (
     <span className="absolute -top-0.5 -right-0.5 flex min-w-5 items-center justify-center rounded-full bg-caution px-1 text-xs font-bold text-surface tabular-nums">
       {pending > 99 ? '99+' : pending}
@@ -57,7 +73,7 @@ export function AppShell() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-line bg-canvas/95 px-4 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-10 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center pt-[env(safe-area-inset-top)] justify-between border-b border-line bg-canvas/95 px-4 backdrop-blur lg:px-8">
           <span translate="no" className="text-lg font-bold text-neem lg:invisible">{t('appName')}</span>
           <div className="flex items-center gap-1">
             <NavLink to="/emergency" className="flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-semibold text-danger">
@@ -97,7 +113,7 @@ export function AppShell() {
       </div>
 
       {/* Phone: bottom tabs */}
-      <nav className="fixed inset-x-0 bottom-0 z-10 grid h-16 grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-10 grid h-[calc(4rem+env(safe-area-inset-bottom))] grid-cols-5 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden">
         {nav.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
