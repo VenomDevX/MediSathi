@@ -11,6 +11,8 @@ for (const [name, opts] of configs) {
   const ctx = await browser.newContext(opts)
   const page = await ctx.newPage()
   await page.goto('http://localhost:4173/')
+  if (process.env.LOCK) await page.screenshot({ path: `${out}/${name}_signin.png` })
+  await page.getByRole('button', { name: 'डेमो खाता इस्तेमाल करें' }).click()
   await page.getByLabel('पिन', { exact: true }).fill('4826')
   await page.getByLabel('पिन दोबारा डालें').fill('4826')
   if (process.env.LOCK) await page.screenshot({ path: `${out}/${name}_lock.png` })

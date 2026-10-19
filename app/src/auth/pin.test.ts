@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { openTestDb } from '../database/testDb'
-import { MAX_ATTEMPTS, hasPin, setPin, unlock } from './pin'
+import { MAX_ATTEMPTS, hasPin, setPin, storeSecret, unlock } from './pin'
 
 async function setup() {
   const db = await openTestDb()
@@ -18,7 +18,7 @@ describe('PIN unlock', () => {
   it('unlocks with the right PIN and never stores the PIN itself', async () => {
     const db = await setup()
     await setPin(db, 'u1', '4826')
-    expect((await unlock(db, 'u1', '4826')).status).toBe('ok')
+    expect(await unlock(db, 'u1', '4826')).toEqual({ status: 'ok' })
     const [row] = await db.query<{ pin_verifier: string }>('SELECT pin_verifier FROM users')
     expect(row.pin_verifier).not.toContain('4826')
   })
@@ -52,5 +52,23 @@ describe('PIN unlock', () => {
     await db.batch([{ sql: "UPDATE users SET last_server_contact_at = '2026-10-01T00:00:00Z'" }])
     expect((await unlock(db, 'u1', '4826', new Date('2026-10-07T23:00:00Z'))).status).toBe('ok')
     expect((await unlock(db, 'u1', '4826', new Date('2026-10-08T01:00:00Z'))).status).toBe('expired')
+  })
+
+  it('keeps the refresh token encrypted under the PIN and returns it only on unlock', async () => {
+    const db = await setup()
+    await setPin(db, 'u1', '4826', 'refresh-token-abc')
+    const [row] = await db.query<{ wrapped_secret: string }>('SELECT wrapped_secret FROM users')
+    expect(row.wrapped_secret).toBeTruthy()
+    expect(row.wrapped_secret).not.toContain('refresh-token-abc')
+    expect(await unlock(db, 'u1', '4826')).toEqual({ status: 'ok', secret: 'refresh-token-abc' })
+  })
+
+  it('can replace the stored secret after a token refresh without changing the PIN', async () => {
+    const db = await setup()
+    await setPin(db, 'u1', '4826', 'old')
+    const key = (await unlock(db, 'u1', '4826')) as { status: 'ok' }
+    expect(key.status).toBe('ok')
+    await storeSecret(db, 'u1', '4826', 'new')
+    expect(await unlock(db, 'u1', '4826')).toEqual({ status: 'ok', secret: 'new' })
   })
 })

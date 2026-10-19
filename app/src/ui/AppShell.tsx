@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { CalendarCheck, CloudArrowUp, Drop, FileText, FirstAidKit, Translate, Users, WifiSlash, Warning } from '@phosphor-icons/react'
 import { useApp } from '../app-context'
+import { useSync } from '../sync/useSync'
 import { useLang, useT } from '../i18n'
 import type { StringKey } from '../strings'
 import { Banner } from './components'
@@ -17,6 +18,12 @@ export function AppShell() {
   const t = useT()
   const { lang, setLang } = useLang()
   const { online, storage } = useApp()
+  const { pending } = useSync()
+  const badge = pending > 0 && (
+    <span className="absolute -top-0.5 -right-0.5 flex min-w-5 items-center justify-center rounded-full bg-caution px-1 text-xs font-bold text-surface tabular-nums">
+      {pending > 99 ? '99+' : pending}
+    </span>
+  )
 
   return (
     <div className="min-h-[100dvh] lg:flex">
@@ -40,8 +47,12 @@ export function AppShell() {
           </NavLink>
         ))}
         <NavLink to="/sync" className="mt-auto flex min-h-12 items-center gap-3 rounded-[var(--radius-control)] px-3 font-medium text-muted hover:text-ink">
-          <CloudArrowUp size={22} aria-hidden />
+          <span className="relative">
+            <CloudArrowUp size={22} aria-hidden />
+            {badge}
+          </span>
           {t('navSync')}
+          {pending > 0 && <span className="sr-only">{t('pendingCount', { n: pending })}</span>}
         </NavLink>
       </aside>
 
@@ -61,8 +72,9 @@ export function AppShell() {
               <Translate size={20} aria-hidden />
               {t('language')}
             </button>
-            <NavLink to="/sync" aria-label={t('navSync')} className="flex min-h-11 min-w-11 items-center justify-center text-muted lg:hidden">
+            <NavLink to="/sync" aria-label={pending ? `${t('navSync')}: ${t('pendingCount', { n: pending })}` : t('navSync')} className="relative flex min-h-11 min-w-11 items-center justify-center text-muted lg:hidden">
               <CloudArrowUp size={22} aria-hidden />
+              {badge}
             </NavLink>
           </div>
         </header>

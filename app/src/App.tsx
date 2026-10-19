@@ -1,9 +1,7 @@
 import { HashRouter, Route, Routes } from 'react-router-dom'
-import { Hourglass } from '@phosphor-icons/react'
 import { AppProvider } from './app-context'
 import { LangProvider, useT } from './i18n'
 import { AppShell } from './ui/AppShell'
-import { EmptyState, PageHeader } from './ui/components'
 import { Today } from './ui/screens/Today'
 import { PatientList, PatientNew } from './ui/screens/Patients'
 import { PatientDetail, VisitForm } from './ui/screens/PatientDetail'
@@ -13,17 +11,8 @@ import { ReportResults, ReportReview } from './ui/screens/Report'
 import { GuidanceDetail, GuidanceList } from './ui/screens/Guidance'
 import { Emergency } from './ui/screens/Emergency'
 import { Donors } from './ui/screens/Donors'
+import { Sync } from './ui/screens/Sync'
 import type { StringKey } from './strings'
-
-function Placeholder({ title }: { title: StringKey }) {
-  const t = useT()
-  return (
-    <>
-      <PageHeader title={t(title)} />
-      <EmptyState icon={<Hourglass size={32} />} title={t('comingSoon')} />
-    </>
-  )
-}
 
 function Splash({ text }: { text: StringKey }) {
   const t = useT()
@@ -51,7 +40,7 @@ export default function App() {
               <Route path="guidance" element={<GuidanceList />} />
               <Route path="guidance/:id" element={<GuidanceDetail />} />
               <Route path="donors" element={<Donors />} />
-              <Route path="sync" element={<Placeholder title="navSync" />} />
+              <Route path="sync" element={<Sync />} />
               <Route path="emergency" element={<Emergency />} />
             </Route>
           </Routes>

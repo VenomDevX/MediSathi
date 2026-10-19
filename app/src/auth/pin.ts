@@ -5,7 +5,7 @@ export const MAX_OFFLINE_DAYS = 7
 const ITERATIONS = 310_000 // OWASP PBKDF2-SHA256 guidance
 
 export type UnlockResult =
-  | { status: 'ok' }
+  | { status: 'ok'; secret?: string }
   | { status: 'wrong'; remaining: number }
   | { status: 'locked' }
   | { status: 'expired' }
@@ -14,10 +14,23 @@ export type UnlockResult =
 const b64 = (b: ArrayBuffer | Uint8Array) => btoa(String.fromCharCode(...new Uint8Array(b)))
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
 
-async function derive(pin: string, salt: Uint8Array): Promise<string> {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits'])
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: salt as BufferSource, iterations: ITERATIONS }, key, 256)
-  return b64(bits)
+/** One PBKDF2 run gives two independent halves: a verifier to check the PIN, and an AES key to wrap the refresh token. */
+async function derive(pin: string, salt: Uint8Array): Promise<{ verifier: string; key: CryptoKey }> {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits'])
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: salt as BufferSource, iterations: ITERATIONS }, base, 512))
+  const key = await crypto.subtle.importKey('raw', bits.slice(32), 'AES-GCM', false, ['encrypt', 'decrypt'])
+  return { verifier: b64(bits.slice(0, 32)), key }
+}
+
+async function wrap(key: CryptoKey, secret: string): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(secret)))
+  return b64(new Uint8Array([...iv, ...ct]))
+}
+
+async function unwrap(key: CryptoKey, wrapped: string): Promise<string> {
+  const bytes = unb64(wrapped)
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)))
 }
 
 export async function hasPin(db: Database, userId: string): Promise<boolean> {
@@ -25,20 +38,28 @@ export async function hasPin(db: Database, userId: string): Promise<boolean> {
   return !!u?.pin_verifier
 }
 
-export async function setPin(db: Database, userId: string, pin: string): Promise<void> {
+export async function setPin(db: Database, userId: string, pin: string, secret?: string): Promise<void> {
   if (!/^\d{4,6}$/.test(pin)) throw new Error('PIN must be 4 to 6 digits')
   const salt = crypto.getRandomValues(new Uint8Array(16))
+  const { verifier, key } = await derive(pin, salt)
   await db.batch([
     {
-      sql: 'UPDATE users SET pin_verifier = ?, pin_salt = ?, failed_pin_attempts = 0 WHERE id = ?',
-      bind: [await derive(pin, salt), b64(salt), userId],
+      sql: 'UPDATE users SET pin_verifier = ?, pin_salt = ?, wrapped_secret = ?, failed_pin_attempts = 0 WHERE id = ?',
+      bind: [verifier, b64(salt), secret ? await wrap(key, secret) : null, userId],
     },
   ])
 }
 
+/** Re-wraps a new refresh token (after rotation) under the same PIN. */
+export async function storeSecret(db: Database, userId: string, pin: string, secret: string): Promise<void> {
+  const [u] = await db.query<{ pin_salt: string }>('SELECT pin_salt FROM users WHERE id = ?', [userId])
+  const { key } = await derive(pin, unb64(u.pin_salt))
+  await db.batch([{ sql: 'UPDATE users SET wrapped_secret = ? WHERE id = ?', bind: [await wrap(key, secret), userId] }])
+}
+
 export async function unlock(db: Database, userId: string, pin: string, now = new Date()): Promise<UnlockResult> {
-  const [u] = await db.query<{ pin_verifier: string | null; pin_salt: string | null; failed_pin_attempts: number; last_server_contact_at: string | null }>(
-    'SELECT pin_verifier, pin_salt, failed_pin_attempts, last_server_contact_at FROM users WHERE id = ?',
+  const [u] = await db.query<{ pin_verifier: string | null; pin_salt: string | null; wrapped_secret: string | null; failed_pin_attempts: number; last_server_contact_at: string | null }>(
+    'SELECT pin_verifier, pin_salt, wrapped_secret, failed_pin_attempts, last_server_contact_at FROM users WHERE id = ?',
     [userId],
   )
   if (!u?.pin_verifier || !u.pin_salt) return { status: 'no-pin' }
@@ -47,9 +68,10 @@ export async function unlock(db: Database, userId: string, pin: string, now = ne
   if (u.last_server_contact_at && now.getTime() - Date.parse(u.last_server_contact_at) > MAX_OFFLINE_DAYS * 864e5) {
     return { status: 'expired' }
   }
-  if ((await derive(pin, unb64(u.pin_salt))) === u.pin_verifier) {
+  const { verifier, key } = await derive(pin, unb64(u.pin_salt))
+  if (verifier === u.pin_verifier) {
     await db.batch([{ sql: 'UPDATE users SET failed_pin_attempts = 0 WHERE id = ?', bind: [userId] }])
-    return { status: 'ok' }
+    return u.wrapped_secret ? { status: 'ok', secret: await unwrap(key, u.wrapped_secret) } : { status: 'ok' }
   }
   const failed = u.failed_pin_attempts + 1
   await db.batch([{ sql: 'UPDATE users SET failed_pin_attempts = ? WHERE id = ?', bind: [failed, userId] }])

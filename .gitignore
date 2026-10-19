@@ -6,3 +6,5 @@ __pycache__/
 .env
 test-results/
 playwright-report/
+medisaathi.db
+e2e.db

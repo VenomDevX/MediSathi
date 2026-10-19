@@ -29,7 +29,6 @@ export const strings = {
   language: { hi: 'English', en: 'हिंदी' },
   loading: { hi: 'खुल रहा है…', en: 'Opening…' },
   loadError: { hi: 'ऐप शुरू नहीं हो सका। पेज दोबारा खोलें।', en: 'The app could not start. Reload the page.' },
-  comingSoon: { hi: 'यह हिस्सा जल्द आएगा।', en: 'This section is coming next.' },
 
   // Lock
   pinCreateTitle: { hi: 'अपना पिन बनाएं', en: 'Create your PIN' },
@@ -197,6 +196,45 @@ export const strings = {
   contactCoordinatorsOnly: { hi: 'संपर्क सिर्फ़ समन्वयक देख सकते हैं।', en: 'Contact details are shown to coordinators only.' },
   contactUnavailable: { hi: 'इस डिवाइस पर संपर्क नहीं है।', en: 'No contact on this device.' },
   resultsCount: { hi: '{n} संभावित रक्तदाता', en: '{n} potential donors' },
+
+  // Sign in
+  signInTitle: { hi: 'साइन इन करें', en: 'Sign in' },
+  signInHint: { hi: 'पहली बार इंटरनेट चाहिए। उसके बाद पिन से बिना इंटरनेट के खुलेगा।', en: 'The first time needs internet. After that your PIN opens the app offline.' },
+  username: { hi: 'यूज़रनेम', en: 'Username' },
+  password: { hi: 'पासवर्ड', en: 'Password' },
+  signIn: { hi: 'साइन इन करें', en: 'Sign in' },
+  signingIn: { hi: 'साइन इन हो रहा है…', en: 'Signing in…' },
+  signInWrong: { hi: 'यूज़रनेम या पासवर्ड गलत है।', en: 'Wrong username or password.' },
+  signInOffline: { hi: 'सर्वर से संपर्क नहीं हो सका। इंटरनेट जांचें और फिर कोशिश करें।', en: 'Could not reach the server. Check the internet and try again.' },
+  signInFailed: { hi: 'साइन इन नहीं हो सका। थोड़ी देर बाद कोशिश करें।', en: 'Sign-in failed. Try again in a moment.' },
+  demoHint: { hi: 'बिना सर्वर के ऐप देखना है? डेमो खाता इस्तेमाल करें। इसमें सिंक नहीं होगा।', en: 'Just trying the app without a server? Use the demo account. It does not sync.' },
+  useDemo: { hi: 'डेमो खाता इस्तेमाल करें', en: 'Use the demo account' },
+
+  // Sync screen
+  syncTitle: { hi: 'सिंक', en: 'Sync' },
+  syncNow: { hi: 'अभी सिंक करें', en: 'Sync now' },
+  syncing: { hi: 'सिंक हो रहा है…', en: 'Syncing…' },
+  allSynced: { hi: 'सब कुछ सिंक हो गया है', en: 'Everything is synced' },
+  lastSynced: { hi: 'आखिरी सिंक {date}', en: 'Last synced {date}' },
+  neverSynced: { hi: 'अभी तक सिंक नहीं हुआ', en: 'Not synced yet' },
+  syncResult: { hi: '{pushed} भेजे, {pulled} मिले', en: '{pushed} sent, {pulled} received' },
+  syncOfflineNow: { hi: 'अभी इंटरनेट नहीं है। रिकॉर्ड इसी डिवाइस पर सुरक्षित हैं और कनेक्शन आने पर अपने आप सिंक होंगे।', en: 'No internet right now. Records are safe on this device and will sync automatically when a connection returns.' },
+  syncAuthError: { hi: 'आपका सत्र खत्म हो गया। सिंक के लिए फिर से साइन इन करें।', en: 'Your session has ended. Sign in again to sync.' },
+  syncFailedError: { hi: 'सिंक पूरा नहीं हुआ। थोड़ी देर बाद अपने आप फिर कोशिश होगी।', en: 'Sync did not finish. It will retry automatically.' },
+  demoNoSync: { hi: 'डेमो खाता सर्वर से सिंक नहीं करता। सिंक के लिए साइन आउट करके असली खाते से साइन इन करें।', en: 'The demo account does not sync. Sign out and sign in with a real account to sync.' },
+  problems: { hi: 'ध्यान देने वाले रिकॉर्ड', en: 'Records that need attention' },
+  problemConflict: { hi: 'दूसरे डिवाइस से बदलाव टकराया। सुपरवाइज़र जांच करेगा।', en: 'Clashed with a change from another device. A supervisor will review it.' },
+  problemFailed: { hi: 'सर्वर ने स्वीकार नहीं किया ({code})। रिकॉर्ड इस डिवाइस पर सुरक्षित है।', en: 'The server did not accept it ({code}). The record is still safe on this device.' },
+  entity_patient: { hi: 'मरीज़', en: 'Patient' },
+  entity_patient_visit: { hi: 'मुलाकात', en: 'Visit' },
+  entity_medical_report: { hi: 'रिपोर्ट', en: 'Report' },
+  entity_audit_event: { hi: 'ऑडिट', en: 'Audit record' },
+  signedInAs: { hi: '{name} के रूप में ({role})', en: 'Signed in as {name} ({role})' },
+  role_asha_worker: { hi: 'आशा कार्यकर्ता', en: 'ASHA worker' },
+  role_coordinator: { hi: 'समन्वयक', en: 'Coordinator' },
+  role_supervisor: { hi: 'सुपरवाइज़र', en: 'Supervisor' },
+  role_admin: { hi: 'एडमिन', en: 'Admin' },
+  signOut: { hi: 'साइन आउट', en: 'Sign out' },
 
   // Sync status
   statusPending: { hi: 'सिंक बाकी', en: 'Not synced' },
