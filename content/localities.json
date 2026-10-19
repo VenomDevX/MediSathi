@@ -1,0 +1,11 @@
+[
+  { "id": "rampur", "name": "Rampur", "lat": 27.40, "lng": 80.80 },
+  { "id": "sitapur-kalan", "name": "Sitapur Kalan", "lat": 27.52, "lng": 80.75 },
+  { "id": "sitapur", "name": "Sitapur", "lat": 27.57, "lng": 80.68 },
+  { "id": "mahmudabad", "name": "Mahmudabad", "lat": 27.30, "lng": 81.12 },
+  { "id": "biswan", "name": "Biswan", "lat": 27.50, "lng": 81.00 },
+  { "id": "laharpur", "name": "Laharpur", "lat": 27.71, "lng": 80.90 },
+  { "id": "misrikh", "name": "Misrikh", "lat": 27.43, "lng": 80.53 },
+  { "id": "hardoi", "name": "Hardoi", "lat": 27.40, "lng": 80.13 },
+  { "id": "lucknow", "name": "Lucknow", "lat": 26.85, "lng": 80.95 }
+]

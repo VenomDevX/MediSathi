@@ -1,1 +1,178 @@
-[]
+[
+ {
+  "id": "d-001",
+  "blood_group": "O+",
+  "approx_latitude": 27.57,
+  "approx_longitude": 80.68,
+  "locality_label": "Sitapur",
+  "contact": "Demo contact 01 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-10-02T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-002",
+  "blood_group": "O+",
+  "approx_latitude": 27.3,
+  "approx_longitude": 81.12,
+  "locality_label": "Mahmudabad",
+  "contact": "Demo contact 02 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-08-14T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-003",
+  "blood_group": "O+",
+  "approx_latitude": 26.85,
+  "approx_longitude": 80.95,
+  "locality_label": "Lucknow",
+  "contact": "Demo contact 03 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-21T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-004",
+  "blood_group": "O-",
+  "approx_latitude": 27.5,
+  "approx_longitude": 81.0,
+  "locality_label": "Biswan",
+  "contact": "Demo contact 04 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-05T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-005",
+  "blood_group": "O-",
+  "approx_latitude": 26.85,
+  "approx_longitude": 80.95,
+  "locality_label": "Lucknow",
+  "contact": "Demo contact 05 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-03-11T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-006",
+  "blood_group": "A+",
+  "approx_latitude": 27.71,
+  "approx_longitude": 80.9,
+  "locality_label": "Laharpur",
+  "contact": "Demo contact 06 (not a real number)",
+  "consent_status": "withdrawn",
+  "last_verified_at": "2026-10-10T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-007",
+  "blood_group": "A+",
+  "approx_latitude": 27.43,
+  "approx_longitude": 80.53,
+  "locality_label": "Misrikh",
+  "contact": "Demo contact 07 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-07-30T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-008",
+  "blood_group": "A-",
+  "approx_latitude": 27.57,
+  "approx_longitude": 80.68,
+  "locality_label": "Sitapur",
+  "contact": "Demo contact 08 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-17T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-009",
+  "blood_group": "B+",
+  "approx_latitude": 27.4,
+  "approx_longitude": 80.8,
+  "locality_label": "Rampur",
+  "contact": "Demo contact 09 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-10-12T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-010",
+  "blood_group": "B+",
+  "approx_latitude": 27.52,
+  "approx_longitude": 80.75,
+  "locality_label": "Sitapur Kalan",
+  "contact": "Demo contact 10 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-08-02T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-011",
+  "blood_group": "B+",
+  "approx_latitude": 27.4,
+  "approx_longitude": 80.13,
+  "locality_label": "Hardoi",
+  "contact": "Demo contact 11 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-06-25T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-012",
+  "blood_group": "B-",
+  "approx_latitude": 26.85,
+  "approx_longitude": 80.95,
+  "locality_label": "Lucknow",
+  "contact": "Demo contact 12 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-29T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-013",
+  "blood_group": "AB+",
+  "approx_latitude": 27.3,
+  "approx_longitude": 81.12,
+  "locality_label": "Mahmudabad",
+  "contact": "Demo contact 13 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-08T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-014",
+  "blood_group": "AB-",
+  "approx_latitude": 27.57,
+  "approx_longitude": 80.68,
+  "locality_label": "Sitapur",
+  "contact": "Demo contact 14 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-05-19T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-015",
+  "blood_group": "O+",
+  "approx_latitude": 27.4,
+  "approx_longitude": 80.8,
+  "locality_label": "Rampur",
+  "contact": "Demo contact 15 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-02-01T00:00:00Z",
+  "registration_status": "active"
+ },
+ {
+  "id": "d-016",
+  "blood_group": "A+",
+  "approx_latitude": 27.5,
+  "approx_longitude": 81.0,
+  "locality_label": "Biswan",
+  "contact": "Demo contact 16 (not a real number)",
+  "consent_status": "granted",
+  "last_verified_at": "2026-09-14T00:00:00Z",
+  "registration_status": "active"
+ }
+]

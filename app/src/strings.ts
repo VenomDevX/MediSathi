@@ -171,6 +171,33 @@ export const strings = {
   whileWaiting: { hi: 'मदद आने तक', en: 'Until help arrives' },
   dangerSigns: { hi: 'खतरे के संकेत और पहला कदम', en: 'Danger signs and first steps' },
 
+  // BloodLink
+  donorsTitle: { hi: 'रक्तदाता खोजें', en: 'Find blood donors' },
+  donorsWarning: {
+    hi: 'ये सिर्फ़ संभावित रक्तदाता हैं। ब्लड बैंक या अस्पताल ही खून का मिलान और रक्तदाता की उपलब्धता पक्की करेगा।',
+    en: 'These are possible donors only. The blood bank or hospital must confirm the blood match and whether the donor can give blood.',
+  },
+  directoryUpdated: { hi: 'सूची {date} को अपडेट हुई', en: 'Directory updated {date}' },
+  directoryNever: { hi: 'सूची अभी सिंक नहीं हुई', en: 'Directory not synced yet' },
+  bloodGroupNeeded: { hi: 'किस ब्लड ग्रुप की ज़रूरत है', en: 'Blood group needed' },
+  whereIsPatient: { hi: 'मरीज़ कहां है', en: 'Where is the patient' },
+  useMyLocation: { hi: 'मेरी जगह इस्तेमाल करें', en: 'Use my location' },
+  locating: { hi: 'जगह पता की जा रही है…', en: 'Finding your location…' },
+  locationFailed: { hi: 'जगह नहीं मिली। नीचे से जगह चुनें।', en: 'Location not available. Choose a place below.' },
+  orChoosePlace: { hi: 'या जगह चुनें', en: 'Or choose a place' },
+  placeNotChosen: { hi: 'जगह नहीं चुनी', en: 'No place chosen' },
+  myLocation: { hi: 'मेरी अभी की जगह', en: 'My current location' },
+  pickGroup: { hi: 'ऊपर से ब्लड ग्रुप चुनें।', en: 'Choose a blood group above.' },
+  noDonors: { hi: 'सूची में इस ग्रुप का कोई रक्तदाता नहीं मिला। सीधे ब्लड बैंक से संपर्क करें।', en: 'No donors with this group in the directory. Contact the blood bank directly.' },
+  potentialDonor: { hi: 'संभावित रक्तदाता', en: 'Potential donor' },
+  aboutKm: { hi: 'लगभग {n} किमी', en: 'About {n} km' },
+  distanceUnknown: { hi: 'दूरी पता नहीं', en: 'Distance unknown' },
+  verifiedOn: { hi: '{date} को जांचा', en: 'Verified {date}' },
+  showContact: { hi: 'संपर्क देखें', en: 'Show contact' },
+  contactCoordinatorsOnly: { hi: 'संपर्क सिर्फ़ समन्वयक देख सकते हैं।', en: 'Contact details are shown to coordinators only.' },
+  contactUnavailable: { hi: 'इस डिवाइस पर संपर्क नहीं है।', en: 'No contact on this device.' },
+  resultsCount: { hi: '{n} संभावित रक्तदाता', en: '{n} potential donors' },
+
   // Sync status
   statusPending: { hi: 'सिंक बाकी', en: 'Not synced' },
   statusSynced: { hi: 'सिंक हुआ', en: 'Synced' },

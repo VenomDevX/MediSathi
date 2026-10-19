@@ -12,6 +12,7 @@ import { ScanHome } from './ui/screens/Scan'
 import { ReportResults, ReportReview } from './ui/screens/Report'
 import { GuidanceDetail, GuidanceList } from './ui/screens/Guidance'
 import { Emergency } from './ui/screens/Emergency'
+import { Donors } from './ui/screens/Donors'
 import type { StringKey } from './strings'
 
 function Placeholder({ title }: { title: StringKey }) {
@@ -49,7 +50,7 @@ export default function App() {
               <Route path="scan/:id/review" element={<ReportReview />} />
               <Route path="guidance" element={<GuidanceList />} />
               <Route path="guidance/:id" element={<GuidanceDetail />} />
-              <Route path="donors/*" element={<Placeholder title="navDonors" />} />
+              <Route path="donors" element={<Donors />} />
               <Route path="sync" element={<Placeholder title="navSync" />} />
               <Route path="emergency" element={<Emergency />} />
             </Route>
