@@ -1,0 +1,117 @@
+import { useRef, useState, type ChangeEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Camera, CaretRight, FileArrowUp, FileText, Info } from '@phosphor-icons/react'
+import { useApp } from '../../app-context'
+import { listReports, saveReport } from '../../data/reports'
+import { parseReport } from '../../domain/labs'
+import { useFormatDate, useT } from '../../i18n'
+import { labCatalogue } from '../../labCatalogue'
+import { saveFile, sha256 } from '../../platform/files'
+import type { StringKey } from '../../strings'
+import { Banner, Button, Chip, EmptyState, PageHeader } from '../components'
+import { useAsync } from '../useAsync'
+
+type Busy = { key: StringKey; vars: Record<string, number> }
+
+export function ScanHome() {
+  const t = useT()
+  const fmt = useFormatDate()
+  const nav = useNavigate()
+  const { db, user } = useApp()
+  const { data: reports } = useAsync(() => listReports(db), [db])
+  const [busy, setBusy] = useState<Busy | null>(null)
+  const [error, setError] = useState<StringKey | null>(null)
+  const camera = useRef<HTMLInputElement>(null)
+  const picker = useRef<HTMLInputElement>(null)
+
+  async function onFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setError(null)
+    if (!/^image\/|^application\/pdf$/.test(file.type)) return setError('unsupportedFile')
+    setBusy({ key: 'preparingOcr', vars: { pct: 0 } })
+    try {
+      // Loaded on demand: OCR and PDF code is large and only needed here.
+      const { extractText } = await import('../../platform/ocr')
+      const lines = await extractText(file, (p) =>
+        setBusy(
+          p.stage === 'reading'
+            ? { key: 'readingPage', vars: { page: p.page, pages: p.pages, pct: Math.round(p.fraction * 100) } }
+            : { key: 'preparingOcr', vars: { pct: Math.round(p.fraction * 100) } },
+        ),
+      )
+      const report = await saveReport(db, user, {
+        file_name: file.name,
+        file_hash: await sha256(file),
+        ocr_text: lines.map((l) => l.text).join('\n'),
+        fields: parseReport(lines, labCatalogue),
+        language: 'eng+hin',
+      })
+      await saveFile(report.id, file)
+      nav(`/scan/${report.id}/review`)
+    } catch (err) {
+      console.error('Report import failed', err instanceof Error ? err.message : err)
+      setError('ocrFailed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <>
+      <PageHeader title={t('navScan')} />
+      <div className="flex flex-col gap-6">
+        <Banner tone="info" icon={<Info size={20} />}>{t('scanDisclaimer')}</Banner>
+
+        <section className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-dashed border-line bg-surface p-5">
+          <p className="text-muted">{t('importHint')}</p>
+          {busy ? (
+            <div role="status" aria-live="polite" className="flex flex-col gap-2">
+              <p className="font-medium">{t(busy.key, busy.vars)}</p>
+              <div className="h-1.5 overflow-hidden rounded-full bg-canvas">
+                <div className="h-full origin-left bg-neem transition-transform" style={{ transform: `scaleX(${(busy.vars.pct ?? 0) / 100})` }} />
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button onClick={() => camera.current?.click()}>
+                <Camera size={22} aria-hidden />
+                {t('takePhoto')}
+              </Button>
+              <Button variant="secondary" onClick={() => picker.current?.click()}>
+                <FileArrowUp size={22} aria-hidden />
+                {t('chooseFile')}
+              </Button>
+            </div>
+          )}
+          <input ref={camera} type="file" accept="image/*" capture="environment" onChange={onFile} className="hidden" aria-hidden tabIndex={-1} />
+          <input ref={picker} type="file" accept="image/*,application/pdf" onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
+          {error && <Banner tone="danger">{t(error)}</Banner>}
+        </section>
+
+        <section aria-labelledby="saved">
+          <h2 id="saved" className="mb-3 text-xl font-semibold">{t('savedReports')}</h2>
+          {reports && reports.length === 0 ? (
+            <EmptyState icon={<FileText size={32} />} title={t('noReports')} />
+          ) : (
+            <ul className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
+              {reports?.map((r) => (
+                <li key={r.id}>
+                  <Link to={r.ocr_status === 'verified' ? `/scan/${r.id}` : `/scan/${r.id}/review`} className="flex min-h-16 items-center gap-3 px-4 py-2 hover:bg-canvas">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold">{r.file_name}</p>
+                      <p className="text-sm text-muted">{fmt(r.created_at)}, {t('testsFound', { n: r.fields.length })}</p>
+                    </div>
+                    <Chip tone={r.ocr_status === 'verified' ? 'ok' : 'caution'}>{t(r.ocr_status === 'verified' ? 'verified' : 'needsReview')}</Chip>
+                    <CaretRight size={18} className="text-muted" aria-hidden />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </>
+  )
+}

@@ -25,8 +25,11 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Control the page on first install so the app works offline without a reload.
+        // No skipWaiting: updates still wait, so unsynced work is never interrupted.
+        clientsClaim: true,
         // OCR language data and the SQLite wasm are large; precache them so the app works offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,wasm,gz}'],
+        globPatterns: ['**/*.{js,mjs,css,html,svg,png,woff2,wasm,gz}'],
         maximumFileSizeToCacheInBytes: 30 * 1024 * 1024,
       },
     }),

@@ -1,1 +1,634 @@
-[]
+[
+  {
+    "id": "haemoglobin",
+    "canonical_name": "Haemoglobin",
+    "name_hi": "हीमोग्लोबिन",
+    "aliases": [
+      "haemoglobin",
+      "hemoglobin",
+      "hb",
+      "hgb",
+      "हीमोग्लोबिन"
+    ],
+    "unit": "g/dL",
+    "units": {
+      "g/dl": 1,
+      "gm/dl": 1,
+      "gm%": 1,
+      "g/l": 0.1
+    },
+    "ranges": [
+      {
+        "sex": "F",
+        "low": 12.0,
+        "high": 15.5
+      },
+      {
+        "sex": "M",
+        "low": 13.5,
+        "high": 17.5
+      }
+    ],
+    "plausible": [
+      3,
+      25
+    ],
+    "explain": {
+      "low": {
+        "en": "Haemoglobin is lower than usual. This can be a sign of anaemia (weak blood), often from low iron. Show this report to a doctor or ANM. Do not start medicines on your own.",
+        "hi": "हीमोग्लोबिन सामान्य से कम है। यह खून की कमी (एनीमिया) का संकेत हो सकता है, अक्सर आयरन की कमी से। यह रिपोर्ट डॉक्टर या एएनएम को दिखाएं। खुद से दवा शुरू न करें।"
+      },
+      "normal": {
+        "en": "Haemoglobin is within the usual range.",
+        "hi": "हीमोग्लोबिन सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Haemoglobin is higher than usual. This can happen with dehydration, smoking or some illnesses. Ask a doctor what it means for you.",
+        "hi": "हीमोग्लोबिन सामान्य से ज़्यादा है। यह पानी की कमी, धूम्रपान या कुछ बीमारियों में हो सकता है। डॉक्टर से पूछें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "fbs",
+    "canonical_name": "Fasting blood sugar",
+    "name_hi": "खाली पेट शुगर",
+    "aliases": [
+      "fasting blood sugar",
+      "blood sugar fasting",
+      "fasting glucose",
+      "glucose fasting",
+      "fbs",
+      "fpg",
+      "glucose (fasting)",
+      "plasma glucose fasting"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "mmol/l": 18
+    },
+    "ranges": [
+      {
+        "low": 70,
+        "high": 99
+      }
+    ],
+    "plausible": [
+      20,
+      700
+    ],
+    "explain": {
+      "low": {
+        "en": "Fasting sugar is lower than usual. Very low sugar can cause shaking, sweating or fainting. Eat something sweet if you feel unwell and see a doctor.",
+        "hi": "खाली पेट शुगर सामान्य से कम है। बहुत कम शुगर से कंपकंपी, पसीना या बेहोशी हो सकती है। तबीयत खराब लगे तो कुछ मीठा खाएं और डॉक्टर से मिलें।"
+      },
+      "normal": {
+        "en": "Fasting sugar is within the usual range.",
+        "hi": "खाली पेट शुगर सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Fasting sugar is higher than usual. This can be a sign of diabetes or pre-diabetes. A doctor should confirm it with another test.",
+        "hi": "खाली पेट शुगर सामान्य से ज़्यादा है। यह डायबिटीज़ या उसकी शुरुआत का संकेत हो सकता है। डॉक्टर दूसरी जांच से पक्का करेंगे।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "rbs",
+    "canonical_name": "Random blood sugar",
+    "name_hi": "रैंडम शुगर",
+    "aliases": [
+      "random blood sugar",
+      "blood sugar random",
+      "random glucose",
+      "glucose random",
+      "rbs"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "mmol/l": 18
+    },
+    "ranges": [
+      {
+        "low": 70,
+        "high": 140
+      }
+    ],
+    "plausible": [
+      20,
+      900
+    ],
+    "explain": {
+      "low": {
+        "en": "Sugar is lower than usual. Eat something sweet if you feel shaky or dizzy and see a doctor.",
+        "hi": "शुगर सामान्य से कम है। कंपकंपी या चक्कर लगे तो कुछ मीठा खाएं और डॉक्टर से मिलें।"
+      },
+      "normal": {
+        "en": "Random sugar is within the usual range.",
+        "hi": "रैंडम शुगर सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Random sugar is higher than usual. A doctor may ask for a fasting sugar or HbA1c test.",
+        "hi": "रैंडम शुगर सामान्य से ज़्यादा है। डॉक्टर खाली पेट शुगर या HbA1c जांच करवा सकते हैं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "hba1c",
+    "canonical_name": "HbA1c",
+    "name_hi": "एचबीए1सी (3 महीने की औसत शुगर)",
+    "aliases": [
+      "hba1c",
+      "glycated haemoglobin",
+      "glycated hemoglobin",
+      "glycosylated haemoglobin",
+      "a1c"
+    ],
+    "unit": "%",
+    "units": {
+      "%": 1
+    },
+    "ranges": [
+      {
+        "low": 4.0,
+        "high": 5.6
+      }
+    ],
+    "plausible": [
+      3,
+      20
+    ],
+    "explain": {
+      "low": {
+        "en": "HbA1c is lower than usual. This is uncommon; ask a doctor about it.",
+        "hi": "HbA1c सामान्य से कम है। ऐसा कम होता है, डॉक्टर से पूछें।"
+      },
+      "normal": {
+        "en": "HbA1c (average sugar over 3 months) is within the usual range.",
+        "hi": "HbA1c (3 महीने की औसत शुगर) सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "HbA1c is higher than usual. Sugar has been high over the last 3 months. A doctor should review this.",
+        "hi": "HbA1c सामान्य से ज़्यादा है। पिछले 3 महीने में शुगर ज़्यादा रही है। डॉक्टर को दिखाएं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "cholesterol",
+    "canonical_name": "Total cholesterol",
+    "name_hi": "कुल कोलेस्ट्रॉल",
+    "aliases": [
+      "total cholesterol",
+      "cholesterol total",
+      "serum cholesterol",
+      "cholesterol",
+      "s. cholesterol"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "mmol/l": 38.67
+    },
+    "ranges": [
+      {
+        "low": 0,
+        "high": 199
+      }
+    ],
+    "plausible": [
+      50,
+      600
+    ],
+    "explain": {
+      "low": {
+        "en": "Cholesterol is low.",
+        "hi": "कोलेस्ट्रॉल कम है।"
+      },
+      "normal": {
+        "en": "Total cholesterol is within the desirable range.",
+        "hi": "कुल कोलेस्ट्रॉल ठीक सीमा में है।"
+      },
+      "high": {
+        "en": "Total cholesterol is higher than desirable. This can raise the risk of heart disease. A doctor can advise on diet, exercise and treatment.",
+        "hi": "कुल कोलेस्ट्रॉल ज़्यादा है। इससे दिल की बीमारी का खतरा बढ़ सकता है। खान-पान, व्यायाम और इलाज के लिए डॉक्टर से सलाह लें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "tsh",
+    "canonical_name": "TSH",
+    "name_hi": "टीएसएच (थायरॉइड)",
+    "aliases": [
+      "tsh",
+      "thyroid stimulating hormone",
+      "s. tsh",
+      "tsh (ultrasensitive)"
+    ],
+    "unit": "mIU/L",
+    "units": {
+      "miu/l": 1,
+      "µiu/ml": 1,
+      "uiu/ml": 1,
+      "miu/ml": 1000
+    },
+    "ranges": [
+      {
+        "low": 0.4,
+        "high": 4.0
+      }
+    ],
+    "plausible": [
+      0.005,
+      150
+    ],
+    "explain": {
+      "low": {
+        "en": "TSH is lower than usual. This can mean the thyroid is overactive. A doctor should review it.",
+        "hi": "TSH सामान्य से कम है। इसका मतलब थायरॉइड ज़्यादा काम कर रहा हो सकता है। डॉक्टर को दिखाएं।"
+      },
+      "normal": {
+        "en": "TSH (thyroid test) is within the usual range.",
+        "hi": "TSH (थायरॉइड जांच) सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "TSH is higher than usual. This can mean the thyroid is underactive. A doctor should review it.",
+        "hi": "TSH सामान्य से ज़्यादा है। इसका मतलब थायरॉइड कम काम कर रहा हो सकता है। डॉक्टर को दिखाएं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "creatinine",
+    "canonical_name": "Serum creatinine",
+    "name_hi": "क्रिएटिनिन (किडनी)",
+    "aliases": [
+      "serum creatinine",
+      "creatinine",
+      "s. creatinine",
+      "creatinine serum"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "µmol/l": 0.0113,
+      "umol/l": 0.0113
+    },
+    "ranges": [
+      {
+        "sex": "F",
+        "low": 0.6,
+        "high": 1.1
+      },
+      {
+        "sex": "M",
+        "low": 0.7,
+        "high": 1.3
+      }
+    ],
+    "plausible": [
+      0.1,
+      20
+    ],
+    "explain": {
+      "low": {
+        "en": "Creatinine is lower than usual. This is usually not a concern but mention it to a doctor.",
+        "hi": "क्रिएटिनिन सामान्य से कम है। आमतौर पर चिंता की बात नहीं, फिर भी डॉक्टर को बताएं।"
+      },
+      "normal": {
+        "en": "Creatinine (kidney test) is within the usual range.",
+        "hi": "क्रिएटिनिन (किडनी जांच) सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Creatinine is higher than usual. This can mean the kidneys are not working as well as they should. See a doctor soon.",
+        "hi": "क्रिएटिनिन सामान्य से ज़्यादा है। इसका मतलब किडनी ठीक से काम न कर रही हो। जल्दी डॉक्टर से मिलें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "urea",
+    "canonical_name": "Blood urea",
+    "name_hi": "यूरिया",
+    "aliases": [
+      "blood urea",
+      "urea",
+      "serum urea",
+      "s. urea"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "mmol/l": 6.006
+    },
+    "ranges": [
+      {
+        "low": 15,
+        "high": 40
+      }
+    ],
+    "plausible": [
+      2,
+      300
+    ],
+    "explain": {
+      "low": {
+        "en": "Urea is lower than usual. Mention it to a doctor.",
+        "hi": "यूरिया सामान्य से कम है। डॉक्टर को बताएं।"
+      },
+      "normal": {
+        "en": "Blood urea is within the usual range.",
+        "hi": "यूरिया सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Urea is higher than usual. This can happen with dehydration or kidney problems. See a doctor.",
+        "hi": "यूरिया सामान्य से ज़्यादा है। पानी की कमी या किडनी की समस्या में ऐसा हो सकता है। डॉक्टर से मिलें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "platelets",
+    "canonical_name": "Platelet count",
+    "name_hi": "प्लेटलेट्स",
+    "aliases": [
+      "platelet count",
+      "platelets",
+      "plt",
+      "platelet"
+    ],
+    "unit": "/µL",
+    "units": {
+      "/µl": 1,
+      "/ul": 1,
+      "/cumm": 1,
+      "/mm3": 1,
+      "10^3/µl": 1000,
+      "10^3/ul": 1000,
+      "x10^3/ul": 1000,
+      "lakh/cumm": 100000,
+      "lakhs/cumm": 100000
+    },
+    "ranges": [
+      {
+        "low": 150000,
+        "high": 450000
+      }
+    ],
+    "plausible": [
+      5000,
+      2000000
+    ],
+    "explain": {
+      "low": {
+        "en": "Platelets are lower than usual. Low platelets can cause easy bleeding and are common in dengue. See a doctor soon, especially if there is fever or bleeding.",
+        "hi": "प्लेटलेट्स सामान्य से कम हैं। इससे आसानी से खून बह सकता है, डेंगू में ऐसा अक्सर होता है। बुखार या खून बहे तो जल्दी डॉक्टर से मिलें।"
+      },
+      "normal": {
+        "en": "Platelet count is within the usual range.",
+        "hi": "प्लेटलेट्स सामान्य सीमा में हैं।"
+      },
+      "high": {
+        "en": "Platelets are higher than usual. A doctor should review this.",
+        "hi": "प्लेटलेट्स सामान्य से ज़्यादा हैं। डॉक्टर को दिखाएं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "wbc",
+    "canonical_name": "Total white blood cell count",
+    "name_hi": "सफ़ेद रक्त कोशिकाएं (WBC)",
+    "aliases": [
+      "total leucocyte count",
+      "total leukocyte count",
+      "tlc",
+      "wbc",
+      "wbc count",
+      "total wbc count",
+      "white blood cells"
+    ],
+    "unit": "/µL",
+    "units": {
+      "/µl": 1,
+      "/ul": 1,
+      "/cumm": 1,
+      "/mm3": 1,
+      "10^3/µl": 1000,
+      "10^3/ul": 1000,
+      "x10^3/ul": 1000
+    },
+    "ranges": [
+      {
+        "low": 4000,
+        "high": 11000
+      }
+    ],
+    "plausible": [
+      500,
+      200000
+    ],
+    "explain": {
+      "low": {
+        "en": "White blood cells are lower than usual. This can lower the body's ability to fight infection. A doctor should review it.",
+        "hi": "सफ़ेद रक्त कोशिकाएं सामान्य से कम हैं। इससे संक्रमण से लड़ने की ताकत कम हो सकती है। डॉक्टर को दिखाएं।"
+      },
+      "normal": {
+        "en": "White blood cell count is within the usual range.",
+        "hi": "सफ़ेद रक्त कोशिकाएं सामान्य सीमा में हैं।"
+      },
+      "high": {
+        "en": "White blood cells are higher than usual. This often happens with an infection. A doctor should review it.",
+        "hi": "सफ़ेद रक्त कोशिकाएं सामान्य से ज़्यादा हैं। संक्रमण में अक्सर ऐसा होता है। डॉक्टर को दिखाएं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "vitd",
+    "canonical_name": "Vitamin D",
+    "name_hi": "विटामिन डी",
+    "aliases": [
+      "vitamin d",
+      "25-oh vitamin d",
+      "25 hydroxy vitamin d",
+      "vit d",
+      "vitamin d3",
+      "25(oh) vitamin d"
+    ],
+    "unit": "ng/mL",
+    "units": {
+      "ng/ml": 1,
+      "nmol/l": 0.4
+    },
+    "ranges": [
+      {
+        "low": 30,
+        "high": 100
+      }
+    ],
+    "plausible": [
+      2,
+      200
+    ],
+    "explain": {
+      "low": {
+        "en": "Vitamin D is lower than usual. This is common. Sunlight and a doctor's advice on supplements can help.",
+        "hi": "विटामिन डी सामान्य से कम है। ऐसा अक्सर होता है। धूप और डॉक्टर की सलाह से दवा मदद कर सकती है।"
+      },
+      "normal": {
+        "en": "Vitamin D is within the usual range.",
+        "hi": "विटामिन डी सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Vitamin D is higher than usual, often from too many supplements. Ask a doctor before taking more.",
+        "hi": "विटामिन डी सामान्य से ज़्यादा है, अक्सर ज़्यादा दवा लेने से। और लेने से पहले डॉक्टर से पूछें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "b12",
+    "canonical_name": "Vitamin B12",
+    "name_hi": "विटामिन बी12",
+    "aliases": [
+      "vitamin b12",
+      "vit b12",
+      "b12",
+      "cyanocobalamin"
+    ],
+    "unit": "pg/mL",
+    "units": {
+      "pg/ml": 1,
+      "pmol/l": 1.355
+    },
+    "ranges": [
+      {
+        "low": 200,
+        "high": 900
+      }
+    ],
+    "plausible": [
+      50,
+      3000
+    ],
+    "explain": {
+      "low": {
+        "en": "Vitamin B12 is lower than usual. This can cause tiredness and tingling. A doctor can advise on treatment.",
+        "hi": "विटामिन बी12 सामान्य से कम है। इससे थकान और झुनझुनी हो सकती है। इलाज के लिए डॉक्टर से सलाह लें।"
+      },
+      "normal": {
+        "en": "Vitamin B12 is within the usual range.",
+        "hi": "विटामिन बी12 सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Vitamin B12 is higher than usual. Mention it to a doctor.",
+        "hi": "विटामिन बी12 सामान्य से ज़्यादा है। डॉक्टर को बताएं।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "bilirubin",
+    "canonical_name": "Total bilirubin",
+    "name_hi": "बिलीरुबिन (पीलिया)",
+    "aliases": [
+      "total bilirubin",
+      "bilirubin total",
+      "serum bilirubin",
+      "s. bilirubin (total)",
+      "bilirubin"
+    ],
+    "unit": "mg/dL",
+    "units": {
+      "mg/dl": 1,
+      "µmol/l": 0.0585,
+      "umol/l": 0.0585
+    },
+    "ranges": [
+      {
+        "low": 0.1,
+        "high": 1.2
+      }
+    ],
+    "plausible": [
+      0.05,
+      40
+    ],
+    "explain": {
+      "low": {
+        "en": "Bilirubin is low. This is usually not a concern.",
+        "hi": "बिलीरुबिन कम है। आमतौर पर चिंता की बात नहीं।"
+      },
+      "normal": {
+        "en": "Bilirubin is within the usual range.",
+        "hi": "बिलीरुबिन सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "Bilirubin is higher than usual. This can cause jaundice (yellow eyes or skin) and can point to a liver problem. See a doctor.",
+        "hi": "बिलीरुबिन सामान्य से ज़्यादा है। इससे पीलिया (आंखें या त्वचा पीली) हो सकता है और यह लिवर की समस्या का संकेत हो सकता है। डॉक्टर से मिलें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  },
+  {
+    "id": "alt",
+    "canonical_name": "SGPT (ALT)",
+    "name_hi": "एसजीपीटी (लिवर)",
+    "aliases": [
+      "sgpt",
+      "alt",
+      "sgpt (alt)",
+      "alanine aminotransferase",
+      "alt (sgpt)"
+    ],
+    "unit": "U/L",
+    "units": {
+      "u/l": 1,
+      "iu/l": 1
+    },
+    "ranges": [
+      {
+        "low": 7,
+        "high": 56
+      }
+    ],
+    "plausible": [
+      1,
+      5000
+    ],
+    "explain": {
+      "low": {
+        "en": "SGPT is low. This is usually not a concern.",
+        "hi": "एसजीपीटी कम है। आमतौर पर चिंता की बात नहीं।"
+      },
+      "normal": {
+        "en": "SGPT (liver test) is within the usual range.",
+        "hi": "एसजीपीटी (लिवर जांच) सामान्य सीमा में है।"
+      },
+      "high": {
+        "en": "SGPT is higher than usual. This can mean the liver is stressed, for example from infection, alcohol or medicines. See a doctor.",
+        "hi": "एसजीपीटी सामान्य से ज़्यादा है। संक्रमण, शराब या दवाओं से लिवर पर असर हो सकता है। डॉक्टर से मिलें।"
+      }
+    },
+    "source": "Demo reference range, not clinically reviewed",
+    "reviewed": false
+  }
+]
