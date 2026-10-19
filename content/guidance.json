@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fever-hi", "language": "hi", "topic": "fever", "category": "first-aid",
+    "title": "बुखार में क्या करें",
+    "summary": "हल्के बुखार में घर पर देखभाल और कब डॉक्टर के पास जाएं।",
+    "content": "आराम करें और खूब पानी, ORS या नारियल पानी पिएं।\nहल्के कपड़े पहनें, माथे पर गीला कपड़ा रखें।\nहर 4 से 6 घंटे में तापमान देखें।",
+    "keywords": ["बुखार", "ताप", "गर्मी", "bukhar", "fever"],
+    "source_name": "Demo content, not clinically reviewed", "version": "1", "reviewed": false,
+    "limitations": "यह डॉक्टर की सलाह की जगह नहीं है।", "audience": "सभी"
+  },
+  {
+    "id": "fever-en", "language": "en", "topic": "fever", "category": "first-aid",
+    "title": "What to do for a fever",
+    "summary": "Home care for a mild fever, and when to see a doctor.",
+    "content": "Rest and drink plenty of water, ORS or coconut water.\nWear light clothing and place a damp cloth on the forehead.\nCheck the temperature every 4 to 6 hours.",
+    "keywords": ["fever", "temperature", "bukhar", "hot"],
+    "source_name": "Demo content, not clinically reviewed", "version": "1", "reviewed": false,
+    "limitations": "This does not replace a doctor's advice.", "audience": "Everyone"
+  }
+]
