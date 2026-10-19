@@ -10,6 +10,12 @@ const configs = [
 for (const [name, opts] of configs) {
   const ctx = await browser.newContext(opts)
   const page = await ctx.newPage()
+  await page.goto('http://localhost:4173/')
+  await page.getByLabel('पिन', { exact: true }).fill('4826')
+  await page.getByLabel('पिन दोबारा डालें').fill('4826')
+  if (process.env.LOCK) await page.screenshot({ path: `${out}/${name}_lock.png` })
+  await page.getByRole('button', { name: 'पिन सेव करें' }).click()
+  await page.waitForTimeout(500)
   for (const r of routes) {
     await page.goto(`http://localhost:4173/#${r}`)
     await page.waitForTimeout(800)

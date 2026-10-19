@@ -5,6 +5,9 @@ import { LangProvider, useT } from './i18n'
 import { AppShell } from './ui/AppShell'
 import { EmptyState, PageHeader } from './ui/components'
 import { Today } from './ui/screens/Today'
+import { PatientList, PatientNew } from './ui/screens/Patients'
+import { PatientDetail, VisitForm } from './ui/screens/PatientDetail'
+import { LockGate } from './ui/LockGate'
 import type { StringKey } from './strings'
 
 function Placeholder({ title }: { title: StringKey }) {
@@ -27,11 +30,16 @@ export default function App() {
   return (
     <LangProvider>
       <AppProvider loading={<Splash text="loading" />} error={<Splash text="loadError" />}>
+        <LockGate>
         <HashRouter>
           <Routes>
             <Route element={<AppShell />}>
               <Route index element={<Today />} />
-              <Route path="patients/*" element={<Placeholder title="navPatients" />} />
+              <Route path="patients" element={<PatientList />} />
+              <Route path="patients/new" element={<PatientNew />} />
+              <Route path="patients/:id" element={<PatientDetail />} />
+              <Route path="patients/:id/visit" element={<VisitForm />} />
+              <Route path="patients/:id/visit/:visitId/correct" element={<VisitForm />} />
               <Route path="scan/*" element={<Placeholder title="navScan" />} />
               <Route path="guidance/*" element={<Placeholder title="navGuidance" />} />
               <Route path="donors/*" element={<Placeholder title="navDonors" />} />
@@ -40,6 +48,7 @@ export default function App() {
             </Route>
           </Routes>
         </HashRouter>
+        </LockGate>
       </AppProvider>
     </LangProvider>
   )

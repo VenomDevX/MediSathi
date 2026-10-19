@@ -1,18 +1,18 @@
 import { expect, test } from '@playwright/test'
+import { openApp } from './helpers'
 
-test('app opens, switches language, and keeps working offline after first load', async ({ page, context }) => {
-  await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'नमस्ते, Sunita' })).toBeVisible()
-
-  await page.getByRole('button', { name: 'English' }).click()
+test('app keeps working offline after first load and asks for the PIN again', async ({ page, context }) => {
+  await openApp(page)
   await expect(page.getByRole('heading', { name: 'Namaste, Sunita' })).toBeVisible()
 
-  // Wait for the service worker to take control, then cut the network and reload.
   await page.evaluate(() => navigator.serviceWorker.ready)
-  await page.reload()
   await context.setOffline(true)
   await page.reload()
+  await page.getByLabel('PIN', { exact: true }).fill('0000')
+  await page.getByRole('button', { name: 'Unlock' }).click()
+  await expect(page.getByText('Wrong PIN. 4 tries left.')).toBeVisible()
+  await page.getByLabel('PIN', { exact: true }).fill('4826')
+  await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByRole('heading', { name: 'Namaste, Sunita' })).toBeVisible()
   await expect(page.getByText('You are offline.')).toBeVisible()
 })
-

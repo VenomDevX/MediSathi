@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { CaretLeft } from '@phosphor-icons/react'
 
 const cx = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(' ')
 
@@ -51,11 +52,32 @@ export function Chip({ tone, icon, children }: { tone: Tone; icon?: ReactNode; c
   )
 }
 
-export function PageHeader({ title, action }: { title: string; action?: ReactNode }) {
+const syncTone: Record<string, [Tone, 'statusPending' | 'statusSynced' | 'statusConflict' | 'statusFailed']> = {
+  pending: ['caution', 'statusPending'],
+  synced: ['ok', 'statusSynced'],
+  conflict: ['danger', 'statusConflict'],
+  failed: ['danger', 'statusFailed'],
+}
+
+/** Sync state of a record (PRD AA-04). Text label always present; color is secondary. */
+export function SyncChip({ status, label }: { status: string; label: (k: (typeof syncTone)[string][1]) => string }) {
+  const [tone, key] = syncTone[status] ?? syncTone.pending
+  return <Chip tone={tone}>{label(key)}</Chip>
+}
+
+export function PageHeader({ title, action, back }: { title: string; action?: ReactNode; back?: { to: string; label: string } }) {
   return (
-    <header className="mb-5 flex items-center justify-between gap-3">
-      <h1 className="text-2xl leading-tight font-bold">{title}</h1>
-      {action}
+    <header className="mb-5 flex flex-col gap-1">
+      {back && (
+        <Link to={back.to} className="-ml-2 flex min-h-11 w-fit items-center gap-1 px-2 text-muted hover:text-ink">
+          <CaretLeft size={18} aria-hidden />
+          {back.label}
+        </Link>
+      )}
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl leading-tight font-bold">{title}</h1>
+        {action}
+      </div>
     </header>
   )
 }
@@ -76,7 +98,7 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
       <span className="font-medium">{label}</span>
       {children}
       {hint && !error && <span className="text-sm text-muted">{hint}</span>}
-      {error && <span className="text-sm text-danger">{error}</span>}
+      <span aria-live="polite" className="text-sm text-danger empty:hidden">{error}</span>
     </label>
   )
 }

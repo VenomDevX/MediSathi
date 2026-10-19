@@ -46,7 +46,6 @@ export function AppProvider({ children, loading, error }: { children: ReactNode;
       removeEventListener('online', on)
       removeEventListener('offline', off)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (state.status === 'loading') return loading

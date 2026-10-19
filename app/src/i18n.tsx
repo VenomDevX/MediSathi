@@ -31,6 +31,18 @@ export function LangProvider({ children }: { children: ReactNode }) {
 
 export const useLang = () => useContext(LangContext)
 
+/** Formats an ISO date or datetime for the current language, e.g. "19 अक्टू॰ 2026". */
+export function useFormatDate() {
+  const { lang } = useLang()
+  return (iso: string, withTime = false) =>
+    new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleString(lang === 'hi' ? 'hi-IN' : 'en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      ...(withTime ? { hour: 'numeric', minute: '2-digit' } : {}),
+    })
+}
+
 /** t('key') or t('key', { n: 3 }) → replaces {n}. */
 export function useT() {
   const { lang } = useLang()

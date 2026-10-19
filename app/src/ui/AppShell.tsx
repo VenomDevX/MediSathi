@@ -20,9 +20,12 @@ export function AppShell() {
 
   return (
     <div className="min-h-[100dvh] lg:flex">
+      <a href="#main" className="sr-only z-20 rounded-[var(--radius-control)] bg-neem px-4 py-3 font-semibold text-on-neem focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
+        {t('skipToContent')}
+      </a>
       {/* Laptop: left rail */}
       <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col gap-1 border-r border-line bg-surface px-3 py-5 lg:flex">
-        <p className="mb-4 px-3 text-xl font-bold text-neem">{t('appName')}</p>
+        <p translate="no" className="mb-4 px-3 text-xl font-bold text-neem">{t('appName')}</p>
         {nav.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -44,7 +47,7 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-line bg-canvas/95 px-4 backdrop-blur lg:px-8">
-          <span className="text-lg font-bold text-neem lg:invisible">{t('appName')}</span>
+          <span translate="no" className="text-lg font-bold text-neem lg:invisible">{t('appName')}</span>
           <div className="flex items-center gap-1">
             <NavLink to="/emergency" className="flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-semibold text-danger">
               <Warning size={20} weight="bold" aria-hidden />
@@ -64,7 +67,7 @@ export function AppShell() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[760px] flex-1 px-4 pt-5 pb-28 lg:px-8 lg:pb-12">
+        <main id="main" tabIndex={-1} className="mx-auto outline-none w-full max-w-[760px] flex-1 px-4 pt-5 pb-28 lg:px-8 lg:pb-12">
           <div className="mb-4 flex flex-col gap-2 empty:hidden">
             {!online && (
               <Banner tone="info" icon={<WifiSlash size={20} />}>
