@@ -31,13 +31,13 @@ export function Today() {
   const today = todayLocal()
 
   const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
-  const { data: familyDue } = useAsync(() => upcomingFollowUps(db, today), [db, today])
+  const { data: familyDue } = useAsync(() => upcomingFollowUps(db, user.id, today), [db, user.id, today])
   const { data: patientDue } = useAsync(() => (isWorker ? followUpsDue(db, user, today) : Promise.resolve([])), [db, user, isWorker, today])
 
   // Keep reminders in sync
   useEffect(() => {
-    if (familyDue) void refreshReminders(db, (n) => ({ title: t('reminderTitle'), body: t('reminderBody', { n }) }))
-  }, [familyDue, db, t])
+    if (familyDue) void refreshReminders(db, user.id, (n) => ({ title: t('reminderTitle'), body: t('reminderBody', { n }) }))
+  }, [familyDue, db, user.id, t])
 
   const firstName = user?.display_name?.split(' ')[0]
   const greeting = user?.display_name

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { db, dbStatus } from './database/db'
 import { seedIfNeeded } from './database/seed'
+import { resetBuiltInDemoPins } from './auth/pin'
 import { content } from './content'
 import { Capacitor } from '@capacitor/core'
 import { watchOnline } from './platform/network'
@@ -25,6 +26,7 @@ export async function loadUser(database: Database, id: string): Promise<User | n
 async function boot() {
   const [{ persistent }, granted] = await Promise.all([dbStatus(), navigator.storage?.persist?.().catch(() => false) ?? Promise.resolve(false)])
   await seedIfNeeded(db, content)
+  await resetBuiltInDemoPins(db)
   const [meta] = await db.query<{ value: string }>("SELECT value FROM app_meta WHERE key = 'current_user_id'")
   return {
     // The Android app's storage is only cleared by uninstall or 'clear data', never evicted like a browser's.

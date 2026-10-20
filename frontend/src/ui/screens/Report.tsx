@@ -37,7 +37,7 @@ export function ReportReview() {
   const { id = '' } = useParams()
   const { db, user } = useApp()
   const { data, loading } = useAsync(
-    async () => ({ report: await getReport(db, user, id), patients: await listPatients(db, user, ''), people: await listProfiles(db) }),
+    async () => ({ report: await getReport(db, user, id), patients: await listPatients(db, user, ''), people: await listProfiles(db, user.id) }),
     [db, user, id],
   )
   if (loading) return null

@@ -48,4 +48,19 @@ describe('migrate', () => {
     await db.batch([{ sql: "INSERT INTO profiles (id, name) VALUES ('f-1', 'Asha')" }, { sql: "UPDATE medical_reports SET profile_id = 'f-1' WHERE id = 'r-1'" }])
     expect(await db.query('SELECT file_name, profile_id FROM medical_reports')).toEqual([{ file_name: 'cbc.png', profile_id: 'f-1' }])
   })
+
+  it("gives a device's existing family, chats and personal reports to the account signed in when it updates", async () => {
+    const old = schema.replace(/^ {2}owner_id TEXT,\r?\n/gm, '')
+    expect(old).not.toContain('owner_id')
+    const db = await openTestDb(old)
+    await db.batch([
+      { sql: "INSERT INTO app_meta (key, value) VALUES ('current_user_id', 'u-ramesh')" },
+      { sql: "INSERT INTO profiles (id, name) VALUES ('f-1', 'Asha')" },
+      { sql: "INSERT INTO chats (id, title) VALUES ('c-1', 'Fever')" },
+      { sql: "INSERT INTO medical_reports (id, file_name) VALUES ('r-1', 'cbc.png')" },
+    ])
+    await migrate(db)
+    await migrate(db)
+    for (const table of ['profiles', 'chats', 'medical_reports']) expect(await db.query(`SELECT owner_id FROM ${table}`)).toEqual([{ owner_id: 'u-ramesh' }])
+  })
 })

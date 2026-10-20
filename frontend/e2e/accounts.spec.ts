@@ -3,6 +3,10 @@ import { openApp } from './helpers'
 
 test('switching demo accounts locks the app: each account needs its own PIN', async ({ page }) => {
   await openApp(page) // a fresh demo account must create its own PIN: no built-in PIN
+  await page.goto('/#/family/new')
+  await page.getByLabel('Name').fill('Asha')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('heading', { name: 'Asha' })).toBeVisible()
   await page.goto('/#/settings')
   await page.getByRole('button', { name: /Ramesh Kumar/ }).click()
 
@@ -11,6 +15,8 @@ test('switching demo accounts locks the app: each account needs its own PIN', as
   await page.getByLabel('Enter the PIN again').fill('5678')
   await page.getByRole('button', { name: 'Save PIN' }).click()
   await expect(page.getByRole('heading', { name: 'Ramesh Kumar' })).toBeVisible() // unlocked, back on Settings
+  await page.goto('/#/family') // each account's family stays its own
+  await expect(page.getByText('Asha')).toHaveCount(0)
 
   await page.goto('/#/settings')
   await page.getByRole('button', { name: /Sunita Devi/ }).click()
@@ -21,6 +27,8 @@ test('switching demo accounts locks the app: each account needs its own PIN', as
   await page.getByLabel('PIN', { exact: true }).fill('1234')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByRole('heading', { name: 'Sunita Devi' })).toBeVisible()
+  await page.goto('/#/family')
+  await expect(page.getByRole('link', { name: /Asha/ })).toBeVisible()
 })
 
 test('the service worker does not precache the 100+ MB on-device model runtime', async ({ request }) => {

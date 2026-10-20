@@ -58,6 +58,7 @@ CREATE INDEX IF NOT EXISTS idx_visits_follow_up ON patient_visits (follow_up_at)
 
 CREATE TABLE IF NOT EXISTS medical_reports (
   id TEXT PRIMARY KEY,
+  owner_id TEXT,
   patient_id TEXT REFERENCES patients (id),
   profile_id TEXT REFERENCES profiles (id),
   file_reference TEXT,
@@ -168,6 +169,7 @@ CREATE TABLE IF NOT EXISTS audit_events (
 -- Personal use: the device owner and their family.
 CREATE TABLE IF NOT EXISTS profiles (
   id TEXT PRIMARY KEY,
+  owner_id TEXT,
   name TEXT NOT NULL,
   relation TEXT NOT NULL DEFAULT 'self',
   birth_year INTEGER,
@@ -200,6 +202,7 @@ CREATE INDEX IF NOT EXISTS idx_entries_follow_up ON health_entries (follow_up_at
 -- Chat conversations with the assistant.
 CREATE TABLE IF NOT EXISTS chats (
   id TEXT PRIMARY KEY,
+  owner_id TEXT,
   title TEXT NOT NULL,
   report_id TEXT REFERENCES medical_reports (id),
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),

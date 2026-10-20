@@ -331,7 +331,6 @@ function PinCard() {
             type="password"
             inputMode="numeric"
             maxLength={6}
-            placeholder="1234"
             value={newPin}
             onChange={(e) => {
               setNewPin(e.target.value.replace(/\D/g, ''))
@@ -345,7 +344,6 @@ function PinCard() {
             type="password"
             inputMode="numeric"
             maxLength={6}
-            placeholder="1234"
             value={confirmPin}
             onChange={(e) => {
               setConfirmPin(e.target.value.replace(/\D/g, ''))

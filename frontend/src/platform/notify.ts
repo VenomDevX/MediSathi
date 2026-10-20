@@ -22,8 +22,8 @@ export async function askReminderPermission() {
   if (Capacitor.isNativePlatform()) await LocalNotifications.requestPermissions().catch(() => {})
 }
 
-/** Reschedules device reminders from the follow-ups due this week. Call after any change to follow-ups, and when the app opens. */
-export async function refreshReminders(db: Database, text: (count: number) => { title: string; body: string }) {
-  const due = await upcomingFollowUps(db, todayLocal())
+/** Reschedules device reminders from `owner`'s follow-ups due this week. Call after any change to follow-ups, and when the app opens. */
+export async function refreshReminders(db: Database, owner: string, text: (count: number) => { title: string; body: string }) {
+  const due = await upcomingFollowUps(db, owner, todayLocal())
   await scheduleReminders(reminderSchedule(due.map((d) => d.follow_up_at!), new Date()), text)
 }

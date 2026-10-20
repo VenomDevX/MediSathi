@@ -40,24 +40,24 @@ export async function saveReport(
   const fields_json = JSON.stringify(r.fields)
   await db.batch([
     {
-      sql: `INSERT INTO medical_reports (id, patient_id, file_reference, file_hash, file_name, ocr_text, extracted_fields_json, language, ocr_status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'extracted', ?, ?)`,
-      bind: [id, r.patient_id ?? null, id, r.file_hash, r.file_name, r.ocr_text, fields_json, r.language, created_at, created_at],
+      sql: `INSERT INTO medical_reports (id, owner_id, patient_id, file_reference, file_hash, file_name, ocr_text, extracted_fields_json, language, ocr_status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'extracted', ?, ?)`,
+      bind: [id, w.id, r.patient_id ?? null, id, r.file_hash, r.file_name, r.ocr_text, fields_json, r.language, created_at, created_at],
     },
     syncOp('medical_report', id, 'create', { id, patient_id: r.patient_id ?? null, file_hash: r.file_hash, fields: r.fields, created_by: w.id, created_at }),
   ])
   return (await getReport(db, w, id))!
 }
 
-/** Reports `w` may see: a patient's only within the viewer's scope (a citizen has none); unlinked and family reports always. */
+/** Reports `w` may see: a patient's within the viewer's scope (shared with the team; a citizen has none); any other only its owner's. */
 function visible(w: Worker) {
   const s = inScope(w)
   return {
     sql: `SELECT r.id, r.patient_id, r.profile_id, p.name AS profile_name, p.sex AS profile_sex, r.file_name, r.file_hash, r.ocr_text,
             r.extracted_fields_json, r.language, r.ocr_status, r.record_version, r.created_at, r.sync_status
           FROM medical_reports r LEFT JOIN profiles p ON p.id = r.profile_id
-          WHERE r.deleted_at IS NULL AND (r.patient_id IS NULL OR r.patient_id IN (SELECT id FROM patients WHERE ${s.sql}))`,
-    bind: s.bind,
+          WHERE r.deleted_at IS NULL AND CASE WHEN r.patient_id IS NULL THEN r.owner_id = ? ELSE r.patient_id IN (SELECT id FROM patients WHERE ${s.sql}) END`,
+    bind: [w.id, ...s.bind],
   }
 }
 

@@ -33,7 +33,7 @@ const kinds: Record<EntryKind, { label: StringKey; icon: typeof Note }> = {
 export function FamilyList() {
   const t = useT()
   const { db, user } = useApp()
-  const { data } = useAsync(async () => ({ people: await listProfiles(db), reports: (await listReports(db, user)).length }), [db, user])
+  const { data } = useAsync(async () => ({ people: await listProfiles(db, user.id), reports: (await listReports(db, user)).length }), [db, user])
 
   return (
     <>
@@ -86,8 +86,8 @@ const blank: Omit<Profile, 'id'> = { name: '', relation: 'self', birth_year: nul
 
 export function FamilyEdit() {
   const { id } = useParams()
-  const { db } = useApp()
-  const { data, loading } = useAsync(async () => (id ? await getProfile(db, id) : undefined), [db, id])
+  const { db, user } = useApp()
+  const { data, loading } = useAsync(async () => (id ? await getProfile(db, user.id, id) : undefined), [db, user.id, id])
   if (loading) return null
   return <PersonForm key={id ?? 'new'} id={id ?? null} initial={data ?? blank} />
 }
@@ -95,7 +95,7 @@ export function FamilyEdit() {
 function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile, 'id'> }) {
   const t = useT()
   const navigate = useNavigate()
-  const { db } = useApp()
+  const { db, user } = useApp()
   const [p, setP] = useState(initial)
   const [error, setError] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -107,7 +107,7 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
     e.preventDefault()
     if (!p.name.trim()) return setError(true)
     setBusy(true)
-    const saved = await saveProfile(db, { ...p, id: id ?? undefined })
+    const saved = await saveProfile(db, user.id, { ...p, id: id ?? undefined })
     navigate(`/family/${saved}`, { replace: true })
   }
 
@@ -182,7 +182,7 @@ export function FamilyDetail() {
   const { db, user } = useApp()
   const { id = '' } = useParams()
   const { data, loading, reload } = useAsync(
-    async () => ({ person: await getProfile(db, id), entries: await listEntries(db, id), reports: await listReports(db, user, { profileId: id }) }),
+    async () => ({ person: await getProfile(db, user.id, id), entries: await listEntries(db, user.id, id), reports: await listReports(db, user, { profileId: id }) }),
     [db, user, id],
   )
   const [kind, setKind] = useState<EntryKind>('medicine')
@@ -198,18 +198,18 @@ export function FamilyDetail() {
   async function add(e: FormEvent) {
     e.preventDefault()
     if (!text.trim()) return
-    await addEntry(db, id, { kind, text, follow_up_at: followUp || null })
+    await addEntry(db, user.id, id, { kind, text, follow_up_at: followUp || null })
     if (followUp) await askReminderPermission()
     setText('')
     setFollowUp('')
     reload()
-    void refreshReminders(db, reminderText)
+    void refreshReminders(db, user.id, reminderText)
   }
 
   async function remove(entryId: string) {
-    await voidEntry(db, entryId)
+    await voidEntry(db, user.id, entryId)
     reload()
-    void refreshReminders(db, reminderText)
+    void refreshReminders(db, user.id, reminderText)
   }
 
   const details: [StringKey, string][] = [

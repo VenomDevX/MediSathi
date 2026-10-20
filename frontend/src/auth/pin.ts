@@ -50,6 +50,23 @@ export async function setPin(db: Database, userId: string, pin: string, secret?:
   ])
 }
 
+/**
+ * Earlier builds silently gave the offline demo accounts the PIN 1234. Once per device, any demo account still on it
+ * must choose its own. Accounts signed in to a server (server_user_id set) keep whatever PIN they chose.
+ */
+export async function resetBuiltInDemoPins(db: Database): Promise<void> {
+  if ((await db.query("SELECT 1 FROM app_meta WHERE key = 'demo_pin_reset'")).length) return
+  const users = await db.query<{ id: string; pin_verifier: string; pin_salt: string }>(
+    'SELECT id, pin_verifier, pin_salt FROM users WHERE server_user_id IS NULL AND pin_verifier IS NOT NULL AND pin_salt IS NOT NULL',
+  )
+  const stale: string[] = []
+  for (const u of users) if ((await derive('1234', unb64(u.pin_salt))).verifier === u.pin_verifier) stale.push(u.id)
+  await db.batch([
+    ...stale.map((id) => ({ sql: 'UPDATE users SET pin_verifier = NULL, pin_salt = NULL, wrapped_secret = NULL, failed_pin_attempts = 0 WHERE id = ?', bind: [id] })),
+    { sql: "INSERT INTO app_meta (key, value) VALUES ('demo_pin_reset', '1')" },
+  ])
+}
+
 /** Re-wraps a new refresh token (after rotation) under the same PIN. */
 export async function storeSecret(db: Database, userId: string, pin: string, secret: string): Promise<void> {
   const [u] = await db.query<{ pin_salt: string }>('SELECT pin_salt FROM users WHERE id = ?', [userId])

@@ -100,9 +100,6 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
       bind: [p.id, p.display_name, p.age_years ?? null, p.sex ?? null, p.village ?? null, p.local_identifier ?? null, p.scope_id, p.created_by],
     })
   }
-  s.push({
-    sql: "INSERT OR IGNORE INTO profiles (id, name, relation, conditions, allergies) VALUES ('self', 'Me', 'self', '', '')",
-  })
   s.push({ sql: "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('content_version', ?)", bind: [c.version] })
   await db.batch(s)
 }

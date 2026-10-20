@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { openTestDb } from '../database/testDb'
-import { MAX_ATTEMPTS, hasPin, setPin, storeSecret, unlock } from './pin'
+import { MAX_ATTEMPTS, hasPin, resetBuiltInDemoPins, setPin, storeSecret, unlock } from './pin'
 
 async function setup() {
   const db = await openTestDb()
@@ -70,5 +70,28 @@ describe('PIN unlock', () => {
     expect(key.status).toBe('ok')
     await storeSecret(db, 'u1', '4826', 'new')
     expect(await unlock(db, 'u1', '4826')).toEqual({ status: 'ok', secret: 'new' })
+  })
+})
+
+describe('built-in demo PIN', () => {
+  it('makes offline demo accounts still on the old built-in 1234 choose their own PIN, once', async () => {
+    const db = await setup()
+    await db.batch([
+      { sql: "INSERT INTO users (id, display_name, role) VALUES ('u2', 'Ramesh', 'citizen')" },
+      { sql: "INSERT INTO users (id, server_user_id, display_name, role) VALUES ('u3', 'u3', 'Signed in', 'asha_worker')" },
+    ])
+    await setPin(db, 'u1', '1234')
+    await setPin(db, 'u2', '5678')
+    await setPin(db, 'u3', '1234', 'refresh-token')
+
+    await resetBuiltInDemoPins(db)
+    expect(await hasPin(db, 'u1')).toBe(false) // demo account on the built-in PIN: must create one
+    expect(await hasPin(db, 'u2')).toBe(true) // chose their own
+    expect(await unlock(db, 'u3', '1234')).toEqual({ status: 'ok', secret: 'refresh-token' }) // a real account's choice is theirs
+
+    await setPin(db, 'u1', '1234') // chosen deliberately after the reset: kept
+    await resetBuiltInDemoPins(db)
+    expect(await hasPin(db, 'u1')).toBe(true)
+    expect((await db.query<{ failed_pin_attempts: number }>("SELECT failed_pin_attempts FROM users WHERE id = 'u2'"))[0].failed_pin_attempts).toBe(0)
   })
 })

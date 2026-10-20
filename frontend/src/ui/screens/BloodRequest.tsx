@@ -74,7 +74,7 @@ function GroupAndPlace({
 export function BloodRequest() {
   const t = useT()
   const fmt = useFormatDate()
-  const { db } = useApp()
+  const { db, user } = useApp()
   const [group, setGroup] = useState('')
   const [placeId, setPlaceId] = useState('')
   const [note, setNote] = useState('')
@@ -83,7 +83,7 @@ export function BloodRequest() {
   const [error, setError] = useState<StringKey | null>(null)
   const [requests, setRequests] = useState<MyRequest[]>([])
 
-  useEffect(() => setRequests(myRequests()), [])
+  useEffect(() => setRequests(myRequests(user.id)), [])
 
   const { data: directory } = useAsync(() => db.query<Donor>('SELECT * FROM donors'), [db])
   const place = placeById(placeId)
@@ -97,10 +97,10 @@ export function BloodRequest() {
     setSending(true)
     setError(null)
     try {
-      await askForBlood({ blood_group: group, locality_label: place.name, latitude: place.lat, longitude: place.lng, note: note.trim() })
+      await askForBlood(user.id, { blood_group: group, locality_label: place.name, latitude: place.lat, longitude: place.lng, note: note.trim() })
       setNote('')
       setTried(false)
-      setRequests(myRequests())
+      setRequests(myRequests(user.id))
     } catch (err) {
       setError(errorKey(err))
     } finally {
@@ -158,7 +158,7 @@ export function BloodRequest() {
           <section aria-labelledby="your-requests" className="flex flex-col gap-3">
             <h2 id="your-requests" className="text-xl font-semibold">{t('yourRequests')}</h2>
             {requests.map((r) => (
-              <RequestCard key={r.id} request={r} onForget={() => (forgetRequest(r.id), setRequests(myRequests()))} />
+              <RequestCard key={r.id} request={r} onForget={() => (forgetRequest(user.id, r.id), setRequests(myRequests(user.id)))} />
             ))}
           </section>
         )}
@@ -186,6 +186,7 @@ function RequestCard({ request: r, onForget }: { request: MyRequest; onForget: (
     requestStatus(r)
       .then((s) => (setStatus(s), setError(null)), (e) => setError(errorKey(e)))
       .finally(() => setBusy(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on open; Refresh reloads
   useEffect(() => void fetchStatus(), [])
   const load = () => (setBusy(true), fetchStatus())
 
@@ -269,19 +270,21 @@ function RequestCard({ request: r, onForget }: { request: MyRequest; onForget: (
 
 export function BloodGive() {
   const t = useT()
+  const { user } = useApp()
   const [me, setMe] = useState<MyDonor | null | undefined>(undefined)
-  useEffect(() => setMe(myDonor()), [])
+  useEffect(() => setMe(myDonor(user.id)), [])
 
   return (
     <>
       <PageHeader title={t('becomeDonor')} back={{ to: '/blood', label: t('donorsTitle') }} />
-      {me === undefined ? null : me ? <DonorHome me={me} onGone={() => setMe(null)} /> : <Join onJoined={() => setMe(myDonor())} />}
+      {me === undefined ? null : me ? <DonorHome me={me} onGone={() => setMe(null)} /> : <Join onJoined={() => setMe(myDonor(user.id))} />}
     </>
   )
 }
 
 function Join({ onJoined }: { onJoined: () => void }) {
   const t = useT()
+  const { user } = useApp()
   const [group, setGroup] = useState('')
   const [placeId, setPlaceId] = useState('')
   const [phone, setPhone] = useState('')
@@ -299,7 +302,7 @@ function Join({ onJoined }: { onJoined: () => void }) {
     setBusy(true)
     setError(null)
     try {
-      await registerDonor({ blood_group: group, locality_label: place.name, latitude: place.lat, longitude: place.lng, contact: phone.trim(), consent: true })
+      await registerDonor(user.id, { blood_group: group, locality_label: place.name, latitude: place.lat, longitude: place.lng, contact: phone.trim(), consent: true })
       onJoined()
     } catch (err) {
       setError(errorKey(err))
@@ -332,6 +335,7 @@ function Join({ onJoined }: { onJoined: () => void }) {
 
 function DonorHome({ me, onGone }: { me: MyDonor; onGone: () => void }) {
   const t = useT()
+  const { user } = useApp()
   const fmt = useFormatDate()
   const [requests, setRequests] = useState<IncomingRequest[] | null>(null)
   const [error, setError] = useState<StringKey | null>(null)
@@ -341,15 +345,16 @@ function DonorHome({ me, onGone }: { me: MyDonor; onGone: () => void }) {
   const fail = (e: unknown) => (errorKey(e) === 'donorRemoved' ? onGone() : setError(errorKey(e)))
   const fetchRequests = (action: () => Promise<unknown> = async () => {}) =>
     action()
-      .then(incomingRequests)
+      .then(() => incomingRequests(user.id))
       .then((rs) => (setRequests(rs), setError(null)), fail)
       .finally(() => setBusy(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on open; Refresh reloads
   useEffect(() => void fetchRequests(), [])
   const run = (action?: () => Promise<unknown>) => (setBusy(true), fetchRequests(action))
 
   async function stop() {
     setBusy(true)
-    await withdrawDonor().then(onGone, (e) => (fail(e), setBusy(false)))
+    await withdrawDonor(user.id).then(onGone, (e) => (fail(e), setBusy(false)))
   }
 
   return (
@@ -381,8 +386,8 @@ function DonorHome({ me, onGone }: { me: MyDonor; onGone: () => void }) {
               </Chip>
             ) : (
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => void run(() => answerRequest(r.id, true))} disabled={busy}>{t('acceptRequest')}</Button>
-                <Button variant="secondary" onClick={() => void run(() => answerRequest(r.id, false))} disabled={busy}>{t('declineRequest')}</Button>
+                <Button onClick={() => void run(() => answerRequest(user.id, r.id, true))} disabled={busy}>{t('acceptRequest')}</Button>
+                <Button variant="secondary" onClick={() => void run(() => answerRequest(user.id, r.id, false))} disabled={busy}>{t('declineRequest')}</Button>
               </div>
             )}
           </Card>

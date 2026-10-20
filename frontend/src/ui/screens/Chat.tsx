@@ -34,13 +34,13 @@ export function Chat() {
   const [speakingId, setSpeakingId] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const { data: chats, reload: reloadChats } = useAsync(() => listChats(db), [db])
+  const { data: chats, reload: reloadChats } = useAsync(() => listChats(db, user.id), [db, user.id])
 
   // A chat about a checked report: opened from the report (?report=) or a saved chat that was.
   const urlReport = params.get('report')
   const { data: report } = useAsync(
     async () => {
-      const reportId = urlReport ?? (chatId ? (await getChat(db, chatId))?.report_id : null)
+      const reportId = urlReport ?? (chatId ? (await getChat(db, user.id, chatId))?.report_id : null)
       const r = reportId ? await getReport(db, user, reportId) : undefined
       return r?.ocr_status === 'verified' ? r : undefined
     },
@@ -56,8 +56,8 @@ export function Chat() {
       setMessages([])
       return
     }
-    void listMessages(db, urlId).then(setMessages)
-  }, [urlId, db])
+    void listMessages(db, user.id, urlId).then(setMessages)
+  }, [urlId, db, user.id])
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' })
@@ -71,16 +71,16 @@ export function Chat() {
     try {
       let id = chatId
       if (!id) {
-        id = await createChat(db, q, report?.id)
+        id = await createChat(db, user.id, q, report?.id)
         setChatId(id)
         setParams({ id }, { replace: true })
       }
-      await addMessage(db, id, { role: 'user', content: q })
-      setMessages(await listMessages(db, id))
+      await addMessage(db, user.id, id, { role: 'user', content: q })
+      setMessages(await listMessages(db, user.id, id))
       const extra = report ? [reportSource(report, lang)] : undefined
       const reply = await respond({ db, rules: emergencyRules, question: q, lang, extra, model: pickModel(), onPartial: setStreaming })
-      await addMessage(db, id, { role: 'assistant', ...reply, content: reply.kind === 'unknown' ? t('chatUnknown') : reply.content })
-      setMessages(await listMessages(db, id))
+      await addMessage(db, user.id, id, { role: 'assistant', ...reply, content: reply.kind === 'unknown' ? t('chatUnknown') : reply.content })
+      setMessages(await listMessages(db, user.id, id))
       reloadChats()
     } finally {
       setStreaming('')
@@ -108,7 +108,7 @@ export function Chat() {
   }
 
   async function remove(id: string) {
-    await deleteChat(db, id)
+    await deleteChat(db, user.id, id)
     if (chatId === id) {
       setChatId(null)
       setParams({}, { replace: true })

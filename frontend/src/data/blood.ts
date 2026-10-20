@@ -1,5 +1,6 @@
 // Blood requests go through the server (backend/app/blood.py); everything else in the app is on-device.
-// No accounts: each request and each donor registration has a random token kept only on this device.
+// No server accounts: each request and each donor registration has a random token kept only on this device,
+// under the local account that made it (`owner`, the signed-in user id).
 // A donor's number reaches a requester only after that donor accepts that request.
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -29,6 +30,17 @@ function read<T>(key: string, fallback: T): T {
   }
 }
 
+/** `owner`'s copy of `base`. Earlier builds kept one copy per device: the first account to open it takes it over. */
+function mine(base: string, owner: string): string {
+  const key = `${base}.${owner}`
+  try {
+    const legacy = localStorage.getItem(base)
+    if (legacy !== null && localStorage.getItem(key) === null) localStorage.setItem(key, legacy)
+    if (legacy !== null) localStorage.removeItem(base)
+  } catch {}
+  return key
+}
+
 function write(key: string, value: unknown) {
   try {
     if (value === null) localStorage.removeItem(key)
@@ -52,44 +64,44 @@ async function api<T>(path: string, { method = 'GET', token, body }: { method?: 
   return (res.status === 204 ? undefined : await res.json()) as T
 }
 
-export const myRequests = (): MyRequest[] => read(REQUESTS_KEY, [])
-export const forgetRequest = (id: string) => write(REQUESTS_KEY, myRequests().filter((r) => r.id !== id))
+export const myRequests = (owner: string): MyRequest[] => read(mine(REQUESTS_KEY, owner), [])
+export const forgetRequest = (owner: string, id: string) => write(mine(REQUESTS_KEY, owner), myRequests(owner).filter((r) => r.id !== id))
 
-export async function askForBlood(ask: Place & { note: string }): Promise<MyRequest> {
+export async function askForBlood(owner: string, ask: Place & { note: string }): Promise<MyRequest> {
   const { id, token, expires_at } = await api<{ id: string; token: string; expires_at: string }>('/requests', { body: ask })
   const saved = { ...ask, id, token, expires_at, created_at: new Date().toISOString() }
-  write(REQUESTS_KEY, [saved, ...myRequests()])
+  write(mine(REQUESTS_KEY, owner), [saved, ...myRequests(owner)])
   return saved
 }
 
 export const requestStatus = (r: Pick<MyRequest, 'id' | 'token'>) => api<RequestStatus>(`/requests/${r.id}`, { token: r.token })
 export const closeRequest = (r: Pick<MyRequest, 'id' | 'token'>) => api<void>(`/requests/${r.id}/close`, { method: 'POST', token: r.token })
 
-const donor = (): MyDonor | null => read(DONOR_KEY, null)
-export const myDonor = donor
-export const myDonorToken = () => donor()?.token ?? null
+export const myDonor = (owner: string): MyDonor | null => read(mine(DONOR_KEY, owner), null)
+export const myDonorToken = (owner: string) => myDonor(owner)?.token ?? null
 
-async function asDonor<T>(call: (token: string) => Promise<T>): Promise<T> {
-  const me = donor()
+async function asDonor<T>(owner: string, call: (token: string) => Promise<T>): Promise<T> {
+  const me = myDonor(owner)
   if (!me) throw new BloodApiError('unauthorized')
   try {
     return await call(me.token)
   } catch (e) {
-    // Withdrawn or removed on the server: this device is no longer a donor.
-    if (e instanceof BloodApiError && e.kind === 'unauthorized') write(DONOR_KEY, null)
+    // Withdrawn or removed on the server: this account is no longer a donor.
+    if (e instanceof BloodApiError && e.kind === 'unauthorized') write(mine(DONOR_KEY, owner), null)
     throw e
   }
 }
 
-export async function registerDonor(reg: Place & { contact: string; consent: true }) {
+export async function registerDonor(owner: string, reg: Place & { contact: string; consent: true }) {
   const { token } = await api<{ token: string }>('/donors', { body: reg })
-  write(DONOR_KEY, { token, blood_group: reg.blood_group, locality_label: reg.locality_label } satisfies MyDonor)
+  write(mine(DONOR_KEY, owner), { token, blood_group: reg.blood_group, locality_label: reg.locality_label } satisfies MyDonor)
 }
 
-export async function withdrawDonor() {
-  await asDonor((token) => api<void>('/donors/me/withdraw', { method: 'POST', token }))
-  write(DONOR_KEY, null)
+export async function withdrawDonor(owner: string) {
+  await asDonor(owner, (token) => api<void>('/donors/me/withdraw', { method: 'POST', token }))
+  write(mine(DONOR_KEY, owner), null)
 }
 
-export const incomingRequests = () => asDonor((token) => api<{ requests: IncomingRequest[] }>('/requests/for-me', { token })).then((r) => r.requests)
-export const answerRequest = (id: string, accept: boolean) => asDonor((token) => api<void>(`/requests/${id}/respond`, { token, body: { accept } }))
+export const incomingRequests = (owner: string) => asDonor(owner, (token) => api<{ requests: IncomingRequest[] }>('/requests/for-me', { token })).then((r) => r.requests)
+export const answerRequest = (owner: string, id: string, accept: boolean) =>
+  asDonor(owner, (token) => api<void>(`/requests/${id}/respond`, { token, body: { accept } }))

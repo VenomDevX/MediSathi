@@ -12,6 +12,16 @@ export async function migrate(db: Database) {
   const reportCols = await db.query<{ name: string }>("SELECT name FROM pragma_table_info('medical_reports')")
   if (!reportCols.some((c) => c.name === 'profile_id')) await db.exec('ALTER TABLE medical_reports ADD COLUMN profile_id TEXT REFERENCES profiles (id)')
 
+  // Personal records belong to one account. What a device already had goes to the account signed in when it updates.
+  for (const table of ['profiles', 'chats', 'medical_reports']) {
+    const cols = await db.query<{ name: string }>(`SELECT name FROM pragma_table_info('${table}')`)
+    if (cols.some((c) => c.name === 'owner_id')) continue
+    await db.batch([
+      { sql: `ALTER TABLE ${table} ADD COLUMN owner_id TEXT` },
+      { sql: `UPDATE ${table} SET owner_id = (SELECT value FROM app_meta WHERE key = 'current_user_id')` },
+    ])
+  }
+
   await db.exec('DROP TABLE IF EXISTS users_migrated') // left behind by a failed attempt in an earlier build
   const [users] = await db.query<{ sql: string }>("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
   if (!users || users.sql.includes("'citizen'")) return
