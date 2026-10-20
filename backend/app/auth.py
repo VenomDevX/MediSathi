@@ -1,6 +1,7 @@
 import hashlib
 import os
 import secrets
+import threading
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -23,24 +24,44 @@ _DUMMY_HASH = hasher.hash("not-a-real-password")
 
 
 class LoginFailures:
-    """Locks a username after repeated wrong passwords, so a password cannot be guessed online."""
+    """Throttles password guessing. Every attempt is counted before the password is checked (one lock, so parallel
+    requests cannot slip past). One address gets 10 tries per username; all addresses together get 50, so a single
+    attacker cannot lock the real user out of their own phone's address."""
 
     # ponytail: in memory, per process; move to the database when running more than one server process.
-    LIMIT, WINDOW = 10, 15 * 60
+    # Behind a reverse proxy every client shares one address: pass the real one through (uvicorn --proxy-headers).
+    PER_ADDRESS, PER_NAME, WINDOW, MAX_KEYS = 10, 50, 15 * 60, 100_000
 
     def __init__(self):
-        self.seen: dict[str, list[float]] = {}
+        self.seen: dict[object, list[float]] = {}
+        self.lock = threading.Lock()
 
-    def locked(self, name: str) -> bool:
-        cutoff = time.monotonic() - self.WINDOW
-        self.seen[name] = [t for t in self.seen.get(name, []) if t > cutoff]
-        return len(self.seen[name]) >= self.LIMIT
+    def _recent(self, key, now: float) -> int:
+        recent = [t for t in self.seen.get(key, ()) if t > now - self.WINDOW]
+        if recent:
+            self.seen[key] = recent
+        else:
+            self.seen.pop(key, None)  # never store empty entries
+        return len(recent)
 
-    def failed(self, name: str):
-        self.seen.setdefault(name, []).append(time.monotonic())
+    def attempt(self, name: str, address: str) -> bool:
+        """Records one login attempt; False when this username is locked for this address."""
+        now = time.monotonic()
+        with self.lock:
+            if len(self.seen) >= self.MAX_KEYS:
+                for key in list(self.seen):
+                    self._recent(key, now)
+                for key in list(self.seen)[: max(0, len(self.seen) - self.MAX_KEYS + 2)]:
+                    del self.seen[key]  # still full of recent entries: drop the oldest
+            if self._recent((name, address), now) >= self.PER_ADDRESS or self._recent(name, now) >= self.PER_NAME:
+                return False
+            for key in (name, (name, address)):
+                self.seen.setdefault(key, []).append(now)
+            return True
 
-    def cleared(self, name: str):
-        self.seen.pop(name, None)
+    def succeeded(self, name: str, address: str):
+        with self.lock:
+            self.seen.pop((name, address), None)
 
 
 def secret() -> str:
@@ -101,8 +122,8 @@ router = APIRouter(prefix="/api/v1/auth")
 
 @router.post("/login")
 def login(body: Credentials, request: Request, db: Session = Depends(session)):
-    name, failures = body.username.strip().lower(), request.app.state.login_failures
-    if failures.locked(name):
+    name, address, failures = body.username.strip().lower(), request.client.host if request.client else "", request.app.state.login_failures
+    if not failures.attempt(name, address):
         raise HTTPException(429, "too_many_attempts")
     user = db.scalar(select(User).where(User.username == name))
     try:
@@ -110,9 +131,8 @@ def login(body: Credentials, request: Request, db: Session = Depends(session)):
     except VerifyMismatchError:
         user = None
     if not user or not user.active:
-        failures.failed(name)
         raise HTTPException(401, "invalid_credentials")
-    failures.cleared(name)
+    failures.succeeded(name, address)
     return _issue(db, user)
 
 

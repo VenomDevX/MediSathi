@@ -57,3 +57,31 @@ def test_the_server_will_not_start_with_a_default_demo_password(monkeypatch):
     with pytest.raises(RuntimeError, match="DEMO_PASSWORD"):
         with TestClient(create_app()):
             pass
+
+
+def test_failures_from_one_address_do_not_lock_the_user_out_elsewhere():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    for _ in range(10):
+        assert f.attempt("sunita", "6.6.6.6")
+    assert not f.attempt("sunita", "6.6.6.6")
+    assert f.attempt("sunita", "10.0.0.7")
+
+
+def test_many_addresses_still_hit_a_per_username_limit():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    results = [f.attempt("sunita", f"10.0.{i // 250}.{i % 250}") for i in range(LoginFailures.PER_NAME + 1)]
+    assert all(results[:-1]) and not results[-1]
+
+
+def test_the_attempt_store_stays_bounded():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    f.MAX_KEYS = 100
+    for i in range(1000):
+        f.attempt(f"user{i}", "6.6.6.6")
+    assert len(f.seen) <= 100

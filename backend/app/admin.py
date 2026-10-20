@@ -18,8 +18,8 @@ class AdminAuth(AuthenticationBackend):
 
     async def login(self, request: Request) -> bool:
         form = await request.form()
-        name = str(form.get("username", "")).strip().lower()
-        if self.failures.locked(name):
+        name, address = str(form.get("username", "")).strip().lower(), request.client.host if request.client else ""
+        if not self.failures.attempt(name, address):
             return False
         with self.sessions() as db:
             user = db.scalar(select(User).where(User.username == name, User.role == "admin"))
@@ -28,10 +28,8 @@ class AdminAuth(AuthenticationBackend):
             except VerifyMismatchError:
                 ok = False
         if ok:
-            self.failures.cleared(name)
+            self.failures.succeeded(name, address)
             request.session.update({"admin": user.id})
-        else:
-            self.failures.failed(name)
         return ok
 
     async def logout(self, request: Request) -> bool:
