@@ -1,7 +1,12 @@
-// Gemma running inside the browser with Google's LiteRT-LM engine (WebGPU). No server, no internet once downloaded.
+// Gemma with Google's LiteRT-LM engine: inside the browser (WebGPU), or natively on Android (native.ts).
+// No server, no internet once the model is downloaded.
+import { Capacitor } from '@capacitor/core'
 import type { ConversationConfig, Message } from '@litert-lm/core'
 import type { ChatModel } from './models'
-import { installedModels, openModel, type ModelId } from './modelFiles'
+import { installedModels, MODELS, openModel, type ModelId } from './modelFiles'
+import { Gemma, nativeModel } from './native'
+
+const native = Capacitor.isNativePlatform()
 
 /** The part of the LiteRT-LM engine the assistant uses; tests pass a double. */
 export type EngineLike = {
@@ -72,8 +77,9 @@ export function chooseModel(choice: ModelChoice, installed: ModelId[]): ModelId 
   return installed.find((m) => m === 'gemma-4-e2b') ?? installed[0]
 }
 
-/** LiteRT-LM in the browser needs WebGPU. */
+/** LiteRT-LM in the browser needs WebGPU; on Android the native engine falls back to the CPU. */
 export async function canRunModels(): Promise<boolean> {
+  if (native) return true
   try {
     const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu
     return !!(await gpu?.requestAdapter())
@@ -101,6 +107,7 @@ function engineFor(id: ModelId) {
 
 /** Frees the GPU memory a model holds (before its file is deleted, or when switching models). */
 export async function unloadModel(id: ModelId) {
+  if (native) return Gemma.unload()
   const e = engines.get(id)
   engines.delete(id)
   await e?.then((x) => x.delete()).catch(() => {})
@@ -112,6 +119,7 @@ export async function pickModel(): Promise<ChatModel | undefined> {
   if (choice === 'off') return undefined
   const id = chooseModel(choice, await installedModels())
   if (!id || !(await canRunModels())) return undefined
+  if (native) return nativeModel(Gemma, MODELS[id].file) // the plugin keeps one model loaded and swaps on demand
   for (const other of engines.keys()) if (other !== id) void unloadModel(other) // one model in GPU memory at a time
   return litertModel(id, () => engineFor(id))
 }

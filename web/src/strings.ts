@@ -84,8 +84,8 @@ export const strings = {
   chatModelNote: { hi: 'Gemma ने इसी डिवाइस पर, सिर्फ़ नीचे दिए स्रोतों से समझाया।', en: 'Explained by Gemma on this device, using only the sources below.' },
   aiTitle: { hi: 'ऑफ़लाइन AI मॉडल', en: 'Offline AI model' },
   aiIntro: {
-    hi: 'Gemma मॉडल एक बार डाउनलोड करें — फिर जवाब आसान शब्दों में, इसी ब्राउज़र में, बिना इंटरनेट के समझाए जाते हैं। मॉडल न हो तो ऐप अपनी जानकारी से सीधे जवाब देता है।',
-    en: 'Download a Gemma model once and answers are explained in simple words, inside this browser, with no internet. Without a model, the app answers straight from its library.',
+    hi: 'Gemma मॉडल एक बार डाउनलोड करें — फिर जवाब आसान शब्दों में, इसी डिवाइस पर, बिना इंटरनेट के समझाए जाते हैं। मॉडल न हो तो ऐप अपनी जानकारी से सीधे जवाब देता है।',
+    en: 'Download a Gemma model once and answers are explained in simple words, on this device, with no internet. Without a model, the app answers straight from its library.',
   },
   aiNoWebGpu: {
     hi: 'यह ब्राउज़र मॉडल नहीं चला सकता (WebGPU चाहिए — नया Chrome या Edge इस्तेमाल करें)। जवाब ऐप की जानकारी से आएंगे।',

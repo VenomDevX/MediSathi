@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, Translate, Trash, Warning } from '@phosphor-icons/react'
 import { canRunModels, getModelChoice, setModelChoice, unloadModel, type ModelChoice } from '@/assistant/litert'
 import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelId } from '@/assistant/modelFiles'
@@ -67,7 +68,7 @@ function ModelCard() {
     refresh()
   }, [])
 
-  async function save(id: ModelId, from: 'download' | File) {
+  async function save(id: ModelId, from: 'download' | 'pick' | File) {
     const stop = new AbortController()
     setError(null)
     setSaving({ id, fraction: 0, stop })
@@ -159,6 +160,12 @@ function ModelCard() {
                         className="sr-only"
                         aria-label={`${t('aiChooseFile')}: ${m.name}`}
                         disabled={!!saving}
+                        onClick={(e) => {
+                          // Android copies the file natively; a multi-GB file cannot go through the WebView.
+                          if (!Capacitor.isNativePlatform()) return
+                          e.preventDefault()
+                          void save(id, 'pick')
+                        }}
                         onChange={(e) => {
                           const f = e.target.files?.[0]
                           e.target.value = ''
