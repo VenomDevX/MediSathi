@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@import '@fontsource/mukta/400.css';
+@import '@fontsource/mukta/500.css';
+@import '@fontsource/mukta/600.css';
+@import '@fontsource/mukta/700.css';
+
+/* Tokens: docs/design.md */
+@theme {
+  --font-sans: 'Mukta', system-ui, sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-neem: var(--neem);
+  --color-on-neem: var(--on-neem);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger: var(--danger);
+  --color-caution-bg: var(--caution-bg);
+  --color-caution: var(--caution);
+  --color-ok-bg: var(--ok-bg);
+  --color-ok: var(--ok);
+  --color-info-bg: var(--info-bg);
+  --color-info: var(--info);
+  --color-marigold: var(--marigold);
+  --color-neem-soft: var(--neem-soft);
+  --radius-card: 12px;
+  --radius-control: 10px;
+}
+
+:root {
+  --canvas: #f4f6f3;
+  --surface: #ffffff;
+  --ink: #1d2522;
+  --muted: #56625d;
+  --line: #dfe5e1;
+  --neem: #1e6b52;
+  --on-neem: #ffffff;
+  --danger-bg: #fdebec;
+  --danger: #9f2f2d;
+  --caution-bg: #fbf3db;
+  --caution: #7a5200;
+  --ok-bg: #e8f3ec;
+  --ok: #2e6340;
+  --info-bg: #e6f0fa;
+  --info: #1f5f8f;
+  --marigold: #e6950a;
+  --neem-soft: #e8f3ec;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #111614;
+    --surface: #192019;
+    --ink: #e6ebe8;
+    --muted: #9ba8a2;
+    --line: #2a332f;
+    --neem: #6cc3a0;
+    --on-neem: #0d1f18;
+    --danger-bg: #3a1d1d;
+    --danger: #f2b8b5;
+    --caution-bg: #3a2f12;
+    --caution: #f0d48a;
+    --ok-bg: #18301f;
+    --ok: #a8d8b5;
+    --info-bg: #142a3d;
+    --info: #a7cdf0;
+    --marigold: #f0a820;
+    --neem-soft: #18301f;
+    color-scheme: dark;
+  }
+}
+
+html {
+  font-size: 17px;
+  touch-action: manipulation;
+  /* Keep focused fields clear of the sticky header and the phone tab bar. */
+  scroll-padding-top: 4.5rem;
+  scroll-padding-bottom: 5.5rem;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+:focus-visible {
+  outline: 3px solid var(--neem);
+  outline-offset: 2px;
+}
+
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
