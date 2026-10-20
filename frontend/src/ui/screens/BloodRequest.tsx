@@ -81,9 +81,7 @@ export function BloodRequest() {
   const [sending, setSending] = useState(false)
   const [tried, setTried] = useState(false)
   const [error, setError] = useState<StringKey | null>(null)
-  const [requests, setRequests] = useState<MyRequest[]>([])
-
-  useEffect(() => setRequests(myRequests(user.id)), [])
+  const [requests, setRequests] = useState(() => myRequests(user.id))
 
   const { data: directory } = useAsync(() => db.query<Donor>('SELECT * FROM donors'), [db])
   const place = placeById(placeId)
@@ -271,13 +269,12 @@ function RequestCard({ request: r, onForget }: { request: MyRequest; onForget: (
 export function BloodGive() {
   const t = useT()
   const { user } = useApp()
-  const [me, setMe] = useState<MyDonor | null | undefined>(undefined)
-  useEffect(() => setMe(myDonor(user.id)), [])
+  const [me, setMe] = useState(() => myDonor(user.id))
 
   return (
     <>
       <PageHeader title={t('becomeDonor')} back={{ to: '/blood', label: t('donorsTitle') }} />
-      {me === undefined ? null : me ? <DonorHome me={me} onGone={() => setMe(null)} /> : <Join onJoined={() => setMe(myDonor(user.id))} />}
+      {me ? <DonorHome me={me} onGone={() => setMe(null)} /> : <Join onJoined={() => setMe(myDonor(user.id))} />}
     </>
   )
 }

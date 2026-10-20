@@ -310,6 +310,7 @@ export const strings = {
   "removeEntry": { hi: "हटाएं", en: "Remove" },
   "entriesTitle": { hi: "इतिहास", en: "History" },
   "noEntries": { hi: "अभी कुछ नहीं जोड़ा गया।", en: "Nothing added yet." },
+  "personNotFound": { hi: "यह व्यक्ति नहीं मिला।", en: "This person was not found." },
   "dueOn": { hi: "अगली बार: {date}", en: "Next due: {date}" },
   "today": { hi: "आज", en: "Today" },
   "donorsNote": { hi: "केवल एक जैसा ब्लड ग्रुप दिखाया जाता है। कौन रक्त दे सकता है, यह ब्लड बैंक तय करता है। सूची डेमो है।", en: "Only the exact same blood group is shown. The blood bank confirms who can donate. The list is demo data." },

@@ -105,7 +105,7 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
 
   async function submit(e: FormEvent) {
     e.preventDefault()
-    if (!p.name.trim()) return setError(true)
+    if (!p.name.trim()) return setError(true), (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>('[name=name]')?.focus()
     setBusy(true)
     const saved = await saveProfile(db, user.id, { ...p, id: id ?? undefined })
     navigate(`/family/${saved}`, { replace: true })
@@ -191,7 +191,7 @@ export function FamilyDetail() {
   const reminderText = (n: number) => ({ title: t('reminderTitle'), body: t('reminderBody', { n }) })
 
   if (loading) return null
-  if (!data?.person) return <EmptyState icon={<UserCircle size={32} />} title={t('noEntries')} action={<LinkButton to="/family" variant="secondary">{t('back')}</LinkButton>} />
+  if (!data?.person) return <EmptyState icon={<UserCircle size={32} />} title={t('personNotFound')} action={<LinkButton to="/family" variant="secondary">{t('back')}</LinkButton>} />
   const { person, entries, reports } = data
   const age = ageOf(person.birth_year)
 

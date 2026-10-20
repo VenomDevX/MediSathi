@@ -107,7 +107,7 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
 }
 
 export const inputClass =
-  'min-h-12 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3.5 text-ink placeholder:text-muted focus:border-neem focus:outline-none'
+  'min-h-12 w-full rounded-[var(--radius-control)] border border-line bg-surface px-3.5 text-ink placeholder:text-muted focus:border-neem'
 
 /** The assistant's mark: the only place marigold appears (design.md). */
 export function AssistantMark({ busy = false, className }: { busy?: boolean; className?: string }) {

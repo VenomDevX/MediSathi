@@ -134,13 +134,12 @@ function ModelCard() {
   const t = useT()
   const [canRun, setCanRun] = useState<boolean | null>(null)
   const [installed, setInstalled] = useState<ModelId[]>([])
-  const [choice, setChoice] = useState<ModelChoice>('auto')
+  const [choice, setChoice] = useState<ModelChoice>(getModelChoice)
   const [saving, setSaving] = useState<Saving | null>(null)
   const [error, setError] = useState<{ id: ModelId; key: StringKey } | null>(null)
   const refresh = () => void installedModels().then(setInstalled)
 
   useEffect(() => {
-    setChoice(getModelChoice())
     void canRunModels().then(setCanRun)
     refresh()
   }, [])

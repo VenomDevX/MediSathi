@@ -26,8 +26,7 @@ export function Today() {
   const t = useT()
   const fmt = useFormatDate()
   const { db, user } = useApp()
-  const [hour, setHour] = useState<number | null>(null)
-  useEffect(() => setHour(new Date().getHours()), [])
+  const [hour] = useState(() => new Date().getHours())
   const today = todayLocal()
 
   const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
@@ -40,11 +39,7 @@ export function Today() {
   }, [familyDue, db, user.id, t])
 
   const firstName = user?.display_name?.split(' ')[0]
-  const greeting = user?.display_name
-    ? t('greeting', { name: firstName ?? '' })
-    : hour !== null
-      ? t(greetingKey(hour))
-      : ''
+  const greeting = user?.display_name ? t('greeting', { name: firstName ?? '' }) : t(greetingKey(hour))
 
   const hasFollowUps = (familyDue && familyDue.length > 0) || (patientDue && patientDue.length > 0)
 

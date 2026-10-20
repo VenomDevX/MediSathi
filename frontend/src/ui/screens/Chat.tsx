@@ -30,7 +30,7 @@ export function Chat() {
   const [busy, setBusy] = useState(false)
   const [streaming, setStreaming] = useState('')
   const [listening, setListening] = useState<null | (() => void)>(null)
-  const [can, setCan] = useState({ listen: false, speak: false })
+  const [can] = useState(() => ({ listen: canListen(), speak: canSpeak() }))
   const [speakingId, setSpeakingId] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -46,8 +46,6 @@ export function Chat() {
     },
     [db, user, urlReport, chatId],
   )
-
-  useEffect(() => setCan({ listen: canListen(), speak: canSpeak() }), [])
 
   // Open a chat from the URL (or a fresh one when the id goes away, e.g. "New chat").
   useEffect(() => {
@@ -218,7 +216,7 @@ export function Chat() {
       </div>
 
       <form onSubmit={onSubmit} className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] mt-4 flex flex-col gap-2 bg-canvas pt-2 lg:bottom-4">
-        <div className="flex items-end gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-2 focus-within:border-neem">
+        <div className="flex items-end gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-2 focus-within:border-neem focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-neem">
           <textarea
             ref={inputRef}
             name="question"
