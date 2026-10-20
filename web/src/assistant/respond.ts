@@ -1,4 +1,5 @@
 import type { MessageKind, Source } from '../data/chats'
+import type { Guidance } from '../data/guidance'
 import type { Database } from '../database/types'
 import type { EmergencyRule } from '../domain/emergency'
 import type { Lang } from '../i18n'
@@ -19,22 +20,25 @@ export async function respond(o: {
   lang: Lang
   /** May be a promise, so model detection runs alongside the library search; emergencies never wait for it. */
   model?: ChatModel | Promise<ChatModel | undefined>
+  /** Items that come before the library, e.g. a checked report the person is asking about (reportSource). */
+  extra?: Guidance[]
   onPartial?: (text: string) => void
   signal?: AbortSignal
 }): Promise<Reply> {
   const plan = await planReply(o.db, o.rules, o.question, o.lang)
   if (plan.kind === 'emergency') return { kind: 'emergency', content: plan.rule.instruction[o.lang], sources: [{ id: plan.rule.id, title: plan.rule.title[o.lang] }] }
-  if (plan.kind === 'unknown') return { kind: 'unknown', content: '', sources: [] }
+  const items = [...(o.extra ?? []), ...(plan.kind === 'grounded' ? plan.sources : [])].slice(0, 3)
+  if (!items.length) return { kind: 'unknown', content: '', sources: [] }
 
-  const sources = plan.sources.map((s) => ({ id: s.id, title: s.title }))
-  const composed: Reply = { kind: 'composed', content: composeAnswer(plan.sources, o.lang), sources }
-  const texts = plan.sources.map(sourceText)
+  const sources = items.map((s) => ({ id: s.id, title: s.title }))
+  const composed: Reply = { kind: 'composed', content: composeAnswer(items, o.lang), sources }
+  const texts = items.map(sourceText)
   try {
     const model = await o.model
     if (!model) return composed
     let rejected = false
     const text = await model.stream(
-      groundedPrompt(plan.sources, o.question, o.lang),
+      groundedPrompt(items, o.question, o.lang),
       (soFar) => {
         if (!checkAnswer(soFar, texts, { partial: true }).ok) return !(rejected = true)
         o.onPartial?.(soFar)

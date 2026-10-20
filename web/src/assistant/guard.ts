@@ -30,7 +30,8 @@ export function checkAnswer(answer: string, sources: string[], { partial = false
 
   const source = toAscii(sources.join('\n'))
   const allowed = new Set(numbersIn(source))
-  const body = text.replace(/\[\d+\]/g, ' ')
+  let body = text.replace(/\[\d+\]/g, ' ')
+  if (partial) body = body.replace(/(\d)\.$/, '$1') // "9." may be on its way to "9.8"
   const nums = numbersIn(body)
   const trailing = partial && /\d$/.test(body) ? nums.pop() : undefined
   if (nums.some((n) => !allowed.has(n))) return { ok: false, reason: 'new-number' }

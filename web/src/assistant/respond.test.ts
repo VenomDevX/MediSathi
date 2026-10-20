@@ -30,6 +30,31 @@ const fake = (text: string): ChatModel & { calls: number } => ({
   },
 })
 
+const reportItem = {
+  id: 'report:r1', title: 'Your report: cbc.png', language: 'en', topic: 'report:r1', category: 'report', summary: 'Values from your report.',
+  content: 'Haemoglobin: 9.8 g/dL, low (usual range 12.0 to 15.5, printed on the report). This can be a sign of anaemia.',
+  source_name: 'Your report', source_reference: null, reviewed: 0, reviewed_at: null, limitations: 'Only a doctor can say what it means for you.', audience: 'public', version: '1',
+} as const
+
+describe('respond with a report', () => {
+  it('answers from the report first, even when the library has nothing on the question', async () => {
+    const r = await respond({ ...base, db, question: 'is my result okay?', extra: [reportItem] })
+    expect(r.kind).toBe('composed')
+    expect(r.sources[0]).toEqual({ id: 'report:r1', title: 'Your report: cbc.png' })
+    expect(r.content).toContain('Haemoglobin: 9.8 g/dL')
+  })
+
+  it('lets the model quote the report’s numbers', async () => {
+    const r = await respond({ ...base, db, question: 'what does low haemoglobin mean', extra: [reportItem], model: fake('* Your haemoglobin is 9.8, below 12.0 [1].') })
+    expect(r).toMatchObject({ kind: 'answer', content: '* Your haemoglobin is 9.8, below 12.0 [1].' })
+  })
+
+  it('still puts emergencies first', async () => {
+    const r = await respond({ ...base, db, question: 'snake bite', extra: [reportItem] })
+    expect(r.kind).toBe('emergency')
+  })
+})
+
 describe('respond', () => {
   it('never calls the model for an emergency', async () => {
     const model = fake('anything [1]')

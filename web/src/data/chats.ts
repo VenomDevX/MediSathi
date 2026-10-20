@@ -1,15 +1,20 @@
 import type { Database } from '../database/types'
 
-export type Chat = { id: string; title: string; created_at: string }
+export type Chat = { id: string; title: string; report_id: string | null; created_at: string }
 export type MessageKind = 'answer' | 'composed' | 'emergency' | 'unknown'
 /** A library item an answer is based on (or, for an emergency reply, the rule that matched). */
 export type Source = { id: string; title: string }
 export type Message = { id: string; role: 'user' | 'assistant'; content: string; kind: MessageKind; sources: Source[]; created_at: string }
 
-export async function createChat(db: Database, title: string): Promise<string> {
+/** `reportId`: the checked report this chat is about; its values are a source for every answer. */
+export async function createChat(db: Database, title: string, reportId: string | null = null): Promise<string> {
   const id = crypto.randomUUID()
-  await db.batch([{ sql: 'INSERT INTO chats (id, title) VALUES (?, ?)', bind: [id, title.slice(0, 80)] }])
+  await db.batch([{ sql: 'INSERT INTO chats (id, title, report_id) VALUES (?, ?, ?)', bind: [id, title.slice(0, 80), reportId] }])
   return id
+}
+
+export async function getChat(db: Database, id: string): Promise<Chat | undefined> {
+  return (await db.query<Chat>('SELECT id, title, report_id, created_at FROM chats WHERE id = ?', [id]))[0]
 }
 
 export async function addMessage(
@@ -39,7 +44,7 @@ export async function listMessages(db: Database, chatId: string): Promise<Messag
 /** Most recently active first. */
 export async function listChats(db: Database): Promise<Chat[]> {
   return db.query<Chat>(
-    `SELECT c.id, c.title, c.created_at FROM chats c
+    `SELECT c.id, c.title, c.report_id, c.created_at FROM chats c
      ORDER BY (SELECT max(m.rowid) FROM messages m WHERE m.chat_id = c.id) DESC NULLS LAST, c.rowid DESC`,
   )
 }

@@ -2,11 +2,13 @@
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, ChatCircleText, Microphone, Plus, SpeakerHigh, Stop, Trash } from '@phosphor-icons/react'
+import { ArrowUp, ChatCircleText, FileText, Microphone, Plus, SpeakerHigh, Stop, Trash } from '@phosphor-icons/react'
 import { useApp } from '@/app-context'
 import { pickModel } from '@/assistant/litert'
+import { reportSource } from '@/assistant/reportSource'
 import { respond } from '@/assistant/respond'
-import { addMessage, createChat, deleteChat, listChats, listMessages, type Message, type Source } from '@/data/chats'
+import { addMessage, createChat, deleteChat, getChat, listChats, listMessages, type Message, type Source } from '@/data/chats'
+import { getReport } from '@/data/reports'
 import { emergencyRules } from '@/emergencyRules'
 import { useLang, useT } from '@/i18n'
 import { canListen, listen } from '@/platform/listen'
@@ -35,6 +37,16 @@ function Chat() {
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { data: chats, reload: reloadChats } = useAsync((d) => listChats(d), [])
+  // A chat about a checked report: opened from the report (?report=) or a saved chat that was.
+  const urlReport = params.get('report')
+  const { data: report } = useAsync(
+    async (d) => {
+      const reportId = urlReport ?? (chatId ? (await getChat(d, chatId))?.report_id : null)
+      const r = reportId ? await getReport(d, reportId) : undefined
+      return r?.ocr_status === 'verified' ? r : undefined
+    },
+    [urlReport, chatId],
+  )
 
   useEffect(() => setCan({ listen: canListen(), speak: canSpeak() }), [])
 
@@ -59,13 +71,14 @@ function Chat() {
       await whenReady // first launch seeds the library; a question asked meanwhile waits rather than finding nothing
       let id = chatId
       if (!id) {
-        id = await createChat(db, q)
+        id = await createChat(db, q, report?.id)
         setChatId(id)
         history.replaceState(null, '', `/chat/?id=${id}`)
       }
       await addMessage(db, id, { role: 'user', content: q })
       setMessages(await listMessages(db, id))
-      const reply = await respond({ db, rules: emergencyRules, question: q, lang, model: pickModel(), onPartial: setStreaming })
+      const extra = report ? [reportSource(report, lang)] : undefined
+      const reply = await respond({ db, rules: emergencyRules, question: q, lang, extra, model: pickModel(), onPartial: setStreaming })
       await addMessage(db, id, { role: 'assistant', ...reply, content: reply.kind === 'unknown' ? t('chatUnknown') : reply.content })
       setMessages(await listMessages(db, id))
       reloadChats()
@@ -111,6 +124,13 @@ function Chat() {
         )}
       </div>
 
+      {report && (
+        <Link href={`/reports/view/?id=${report.id}`} className="mb-4 flex min-h-12 items-center gap-2 rounded-[var(--radius-control)] bg-neel-soft px-4 py-2 text-neel">
+          <FileText size={20} aria-hidden />
+          <span className="min-w-0 truncate font-semibold">{t('chatAboutReport', { name: report.file_name })}</span>
+        </Link>
+      )}
+
       <div className="flex flex-1 flex-col gap-5" aria-live="polite">
         {messages.length === 0 && !busy && (
           <div className="flex flex-col gap-6">
@@ -118,7 +138,7 @@ function Chat() {
               <AssistantMark className="mt-2.5" />
               {t('chatHello')}
             </p>
-            <ul className="flex flex-wrap gap-2">
+            <ul className="flex flex-wrap gap-2" hidden={!!report}>
               {suggestions.map((k) => (
                 <li key={k}>
                   <button type="button" onClick={() => void send(t(k))} className="min-h-11 rounded-full border border-line bg-surface px-4 hover:border-neel">
@@ -241,10 +261,10 @@ function Sources({ sources }: { sources: Source[] }) {
       <ul className="flex flex-wrap gap-2">
         {sources.map((s, i) => (
           <li key={s.id}>
-            <Link href={`/first-aid/view/?id=${s.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-sm hover:border-neel">
+            <Link href={s.id.startsWith('report:') ? `/reports/view/?id=${s.id.slice('report:'.length)}` : `/first-aid/view/?id=${s.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-sm hover:border-neel">
               <span className="font-semibold text-neel tabular-nums">{i + 1}</span>
               {s.title}
-              <span className="text-muted">· {t('demoContent')}</span>
+              {!s.id.startsWith('report:') && <span className="text-muted">· {t('demoContent')}</span>}
             </Link>
           </li>
         ))}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { openTestDb } from '../database/testDb'
-import { addMessage, createChat, deleteChat, listChats, listMessages } from './chats'
+import { addMessage, createChat, deleteChat, getChat, listChats, listMessages } from './chats'
 
 describe('chats', () => {
   it('keeps messages in order with their sources, newest chat first', async () => {
@@ -22,5 +22,13 @@ describe('chats', () => {
     await deleteChat(db, a)
     expect(await listChats(db)).toEqual([])
     expect(await listMessages(db, a)).toEqual([])
+  })
+
+  it('remembers the report a chat is about', async () => {
+    const db = await openTestDb()
+    await db.batch([{ sql: "INSERT INTO reports (id, file_name) VALUES ('r1', 'cbc.png')" }])
+    const a = await createChat(db, 'Is my Hb okay?', 'r1')
+    expect(await getChat(db, a)).toMatchObject({ title: 'Is my Hb okay?', report_id: 'r1' })
+    expect(await getChat(db, await createChat(db, 'Fever'))).toMatchObject({ report_id: null })
   })
 })

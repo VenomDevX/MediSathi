@@ -1,10 +1,15 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Drop, FileText, FirstAidKit, Microphone, UsersThree } from '@phosphor-icons/react'
-import { useT } from '@/i18n'
+import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UsersThree } from '@phosphor-icons/react'
+import { useApp } from '@/app-context'
+import { upcomingFollowUps } from '@/data/family'
+import { todayLocal } from '@/domain/dates'
+import { useFormatDate, useT } from '@/i18n'
+import { refreshReminders } from '@/platform/notify'
 import type { StringKey } from '@/strings'
 import { AssistantMark } from '@/ui/components'
+import { useAsync } from '@/ui/useAsync'
 
 const tiles: { href: string; label: StringKey; icon: typeof FileText }[] = [
   { href: '/reports/', label: 'tileReport', icon: FileText },
@@ -22,6 +27,14 @@ export default function Home() {
   // The page is prerendered at build time, so the hour is read after mount.
   const [hour, setHour] = useState<number | null>(null)
   useEffect(() => setHour(new Date().getHours()), [])
+  const fmt = useFormatDate()
+  const { db } = useApp()
+  const today = todayLocal()
+  const { data: due } = useAsync((d) => upcomingFollowUps(d, today), [today])
+  // Device reminders are rebuilt whenever the app opens, so they never point at removed or past follow-ups.
+  useEffect(() => {
+    if (due) void refreshReminders(db, (n) => ({ title: t('reminderTitle'), body: t('reminderBody', { n }) }))
+  }, [due, db, t])
 
   return (
     <div className="flex flex-col gap-8">
@@ -39,6 +52,26 @@ export default function Home() {
         <span className="pl-6 text-muted">{t('homeAskExample')}</span>
         <span className="pl-6 text-sm font-medium text-neel">{t('homeAskHint')}</span>
       </Link>
+
+      {!!due?.length && (
+        <section aria-labelledby="coming-up" className="flex flex-col gap-3">
+          <h2 id="coming-up" className="text-xl font-semibold">{t('comingUp')}</h2>
+          <ul className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
+            {due.map((d) => (
+              <li key={d.id}>
+                <Link href={`/records/person/?id=${d.profile_id}`} className="flex min-h-16 items-center gap-3 px-4 py-2 hover:bg-canvas">
+                  <CalendarCheck size={24} className="shrink-0 text-neel" aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{d.text}</p>
+                    <p className="text-sm text-muted">{d.profile_name}, {d.follow_up_at === today ? t('today') : fmt(d.follow_up_at!)}</p>
+                  </div>
+                  <CaretRight size={18} className="text-muted" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map(({ href, label, icon: Icon }) => (

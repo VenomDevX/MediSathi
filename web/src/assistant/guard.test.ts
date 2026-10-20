@@ -41,4 +41,11 @@ describe('checkAnswer', () => {
     expect(checkAnswer('Cool it under water. [1', sources, { partial: true })).toEqual({ ok: true }) // citation still arriving
     expect(checkAnswer('पानी डालें। [१', sources, { partial: true })).toEqual({ ok: true })
   })
+
+  it('waits for the digits after a decimal point while streaming', () => {
+    const report = ['Haemoglobin 9.8 g/dL, usual range 12.0 to 15.5']
+    expect(checkAnswer('Your haemoglobin is 9.', report, { partial: true })).toEqual({ ok: true })
+    expect(checkAnswer('below 12.', report, { partial: true })).toEqual({ ok: true })
+    expect(checkAnswer('Your haemoglobin is 7.', report, { partial: true })).toEqual({ ok: false, reason: 'new-number' })
+  })
 })
