@@ -25,12 +25,17 @@ _DUMMY_HASH = hasher.hash("not-a-real-password")
 
 
 def _network(address: str) -> str:
-    """IPv6 hands one person a whole /64, so the /64 counts as one address."""
+    """IPv6 hands one person a whole /64, so the /64 counts as one address. IPv4 clients seen through a dual-stack
+    socket (::ffff:a.b.c.d) stay their own IPv4 address."""
     try:
         ip = ipaddress.ip_address(address)
     except ValueError:
         return address
-    return str(ipaddress.ip_network(f"{ip}/64", strict=False)) if ip.version == 6 else address
+    if ip.version == 4:
+        return str(ip)
+    if ip.ipv4_mapped:
+        return str(ip.ipv4_mapped)
+    return str(ipaddress.ip_network(f"{ip}/64", strict=False))
 
 
 class LoginFailures:
@@ -38,7 +43,8 @@ class LoginFailures:
     parallel requests cannot slip past. Per 15 minutes, only failures count:
     - 20 per account, from anywhere. Kept only for accounts that exist, so this store is bounded by the number of
       accounts and is never evicted or refused: no flood can reopen guessing on a real account.
-    - 5 per account per address, and 30 per address overall (so one attacker cannot lock the real user out, nor try
+    - 5 per username per address (real or made up, so one address cannot tell which usernames exist), and 30 per
+      address overall (so one attacker cannot lock the real user out, nor try
       many usernames). These live in a capped store; when it is full, attempts are still checked against what is
       there but not recorded, so a flood never blocks everyone."""
 
@@ -59,19 +65,19 @@ class LoginFailures:
             store.pop(key, None)  # never store empty entries
         return len(recent)
 
-    def attempt(self, account: str | None, address: str) -> bool:
-        """Records one login attempt; False when it is over a limit. `account` is the username only if it exists."""
+    def attempt(self, name: str, address: str, exists: bool = True) -> bool:
+        """Records one login attempt; False when it is over a limit. `exists`: the username is a real account."""
         now, address = time.monotonic(), _network(address)
-        keys = [("address", address)] + ([("pair", account, address)] if account is not None else [])
+        keys = [("address", address), ("pair", name, address)]
         with self.lock:
-            if account is not None and self._recent(self.names, account, now) >= self.PER_NAME:
+            if exists and self._recent(self.names, name, now) >= self.PER_NAME:
                 return False
             if self._recent(self.other, keys[0], now) >= self.PER_ADDRESS_ALL:
                 return False
-            if account is not None and self._recent(self.other, keys[1], now) >= self.PER_ADDRESS:
+            if self._recent(self.other, keys[1], now) >= self.PER_ADDRESS:
                 return False
-            if account is not None:
-                self.names.setdefault(account, []).append(now)
+            if exists:
+                self.names.setdefault(name, []).append(now)
             new = sum(k not in self.other for k in keys)
             if len(self.other) + new > self.MAX_KEYS:
                 for k in list(self.other):
@@ -153,7 +159,7 @@ router = APIRouter(prefix="/api/v1/auth")
 def login(body: Credentials, request: Request, db: Session = Depends(session)):
     name, address, failures = body.username.strip().lower(), request.client.host if request.client else "", request.app.state.login_failures
     user = db.scalar(select(User).where(User.username == name))
-    if not failures.attempt(name if user else None, address):
+    if not failures.attempt(name, address, exists=bool(user)):
         raise HTTPException(429, "too_many_attempts")
     try:
         hasher.verify(user.password_hash if user else _DUMMY_HASH, body.password)

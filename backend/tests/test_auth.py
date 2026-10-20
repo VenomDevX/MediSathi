@@ -87,7 +87,7 @@ def test_a_full_store_never_forgets_a_live_lockout_and_never_blocks_everyone():
     while f.attempt("sunita", "6.6.6.6"):
         pass
     for i in range(1000):  # many addresses trying unknown usernames to fill the store
-        f.attempt(None, f"10.{i // 250}.{i % 250}.1")
+        f.attempt(f"ghost{i}", f"10.{i // 250}.{i % 250}.1", exists=False)
     assert len(f.other) <= 50
     assert not f.attempt("sunita", "6.6.6.6")
     assert f.attempt("ramesh", "192.0.2.10")  # a real user who was not attacked can still sign in
@@ -98,7 +98,7 @@ def test_unknown_usernames_never_get_a_counter_of_their_own():
 
     f = LoginFailures()
     for i in range(500):
-        f.attempt(None, f"10.0.{i // 250}.{i % 250}")
+        f.attempt(f"ghost{i}", f"10.0.{i // 250}.{i % 250}", exists=False)
     assert not f.names
 
 
@@ -126,3 +126,21 @@ def test_successful_logins_do_not_use_up_the_limits():
         assert f.attempt(f"worker{i % 7}", "203.0.113.5")
         f.succeeded(f"worker{i % 7}", "203.0.113.5")
     assert not f.names and not f.other
+
+
+def test_ipv4_clients_seen_through_ipv6_are_not_one_shared_bucket():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    while f.attempt("sunita", "::ffff:198.51.100.7"):
+        pass
+    assert f.attempt("sunita", "::ffff:203.0.113.9")
+
+
+def test_one_address_is_throttled_the_same_for_real_and_made_up_usernames():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    real = [f.attempt("sunita", "6.6.6.6", exists=True) for _ in range(LoginFailures.PER_ADDRESS + 1)]
+    fake = [f.attempt("nobody", "6.6.6.6", exists=False) for _ in range(LoginFailures.PER_ADDRESS + 1)]
+    assert real == fake

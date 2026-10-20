@@ -21,7 +21,7 @@ class AdminAuth(AuthenticationBackend):
         name, address = str(form.get("username", "")).strip().lower(), request.client.host if request.client else ""
         with self.sessions() as db:
             user = db.scalar(select(User).where(User.username == name, User.role == "admin"))
-            if not self.failures.attempt(name if user else None, address):
+            if not self.failures.attempt(name, address, exists=bool(user)):
                 return False
             try:
                 ok = bool(user) and hasher.verify(user.password_hash, str(form.get("password", "")))
