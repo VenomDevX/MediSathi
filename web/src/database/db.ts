@@ -1,3 +1,4 @@
+import { schema } from './schema'
 import type { Database } from './types'
 
 let worker: Worker | undefined
@@ -6,7 +7,9 @@ const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Err
 
 function call<T>(method: string, args: unknown[] = []): Promise<T> {
   if (!worker) {
-    worker = new Worker(new URL('../workers/sqlite.worker.ts', import.meta.url), { type: 'module' })
+    // public/db-worker.mjs (see its header for why it is not bundled). 'init' is always the first message.
+    worker = new Worker('/db-worker.mjs', { type: 'module' })
+    worker.postMessage({ id: nextId++, method: 'init', args: [schema] })
     worker.onmessage = (e: MessageEvent<{ id: number; result?: unknown; error?: string }>) => {
       const p = pending.get(e.data.id)
       if (!p) return

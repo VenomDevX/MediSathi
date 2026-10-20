@@ -8,7 +8,11 @@ import type { Database } from './database/types'
 import { watchOnline } from './platform/network'
 
 export type Boot = { status: 'loading' } | { status: 'error' } | { status: 'ready'; persistent: boolean }
-type AppState = { db: Database; boot: Boot; online: boolean }
+/** whenReady resolves once the database is open and seeded, so an early action waits instead of being dropped. */
+type AppState = { db: Database; boot: Boot; online: boolean; whenReady: Promise<void> }
+
+let markReady: () => void
+const whenReady = new Promise<void>((resolve) => (markReady = resolve))
 
 const AppContext = createContext<AppState | null>(null)
 
@@ -21,7 +25,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void navigator.storage?.persist?.().catch(() => false)
     seedIfNeeded(db, content)
       .then(() => dbStatus())
-      .then(({ persistent }) => setBoot({ status: 'ready', persistent }), () => setBoot({ status: 'error' }))
+      .then(
+        ({ persistent }) => {
+          setBoot({ status: 'ready', persistent })
+          markReady()
+        },
+        () => setBoot({ status: 'error' }),
+      )
     setOnline(navigator.onLine)
     return watchOnline(setOnline)
   }, [])
@@ -32,7 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       navigator.serviceWorker.register('/sw.js').catch(() => {})
   }, [])
 
-  return <AppContext.Provider value={{ db, boot, online }}>{children}</AppContext.Provider>
+  return <AppContext.Provider value={{ db, boot, online, whenReady }}>{children}</AppContext.Provider>
 }
 
 export function useApp() {
