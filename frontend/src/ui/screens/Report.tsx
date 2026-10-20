@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, Check, FileText, Info, PencilSimple, Plus, Question, SpeakerHigh, Stop, Trash, WarningCircle } from '@phosphor-icons/react'
+import { ArrowDown, ArrowUp, ChatCircleDots, Check, FileText, Info, PencilSimple, Plus, Question, SpeakerHigh, Stop, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { listProfiles } from '../../data/family'
 import { getPatient, listPatients } from '../../data/records'
@@ -300,6 +300,13 @@ export function ReportResults() {
             )
           })}
         </ol>
+        {/* The chat only uses checked values, so only a checked report can be asked about. */}
+        {report.ocr_status === 'verified' && (
+          <LinkButton to={`/chat?report=${report.id}`} className="w-fit">
+            <ChatCircleDots size={20} aria-hidden />
+            {t('askAboutReport')}
+          </LinkButton>
+        )}
         <p className="text-sm text-muted">{t('demoContent')}</p>
       </div>
     </>

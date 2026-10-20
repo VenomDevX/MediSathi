@@ -63,6 +63,15 @@ test('a citizen links a report to a family member and finds it on their page', a
   await page.getByRole('button', { name: 'Values are correct, explain' }).click()
   await expect(page.getByRole('heading', { name: 'What the report means' })).toBeVisible()
 
+  // Ask about it: the answer comes from the report's own checked values
+  await page.getByRole('link', { name: 'Ask about this report' }).click()
+  await expect(page.getByRole('link', { name: 'Talking about the report: sample-lab-report.png' })).toBeVisible()
+  const box = page.getByRole('textbox', { name: 'Type your question…' })
+  await box.fill('is my haemoglobin okay?')
+  await box.press('Enter')
+  await expect(page.getByText(/Haemoglobin: 9.8 g\/dL, low/)).toBeVisible()
+  await expect(page.getByRole('link', { name: /Your report: sample-lab-report.png/ })).toHaveAttribute('href', /^#\/scan\//)
+
   await page.goto('/#/family')
   await page.getByRole('link', { name: 'Me Me' }).click() // the person's name, then their relation
   await expect(page.getByRole('region', { name: 'Reports' }).getByRole('link', { name: /sample-lab-report.png/ })).toBeVisible()
