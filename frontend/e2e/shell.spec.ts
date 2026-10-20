@@ -16,3 +16,11 @@ test('app keeps working offline after first load and asks for the PIN again', as
   await expect(page.getByRole('heading', { name: 'Namaste, Sunita' })).toBeVisible()
   await expect(page.getByText('You are offline.')).toBeVisible()
 })
+
+test('a fresh device opens in English, and Hindi is one tap away', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await page.getByRole('button', { name: 'हिंदी' }).click()
+  await expect(page.getByRole('heading', { name: 'साइन इन करें' })).toBeVisible()
+})

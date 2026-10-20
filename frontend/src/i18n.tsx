@@ -3,7 +3,7 @@ import { strings, type StringKey } from './strings'
 
 export type Lang = 'hi' | 'en'
 
-export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: 'hi', setLang: () => {} })
+export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: 'en', setLang: () => {} })
 
 export const useLang = () => useContext(LangContext)
 

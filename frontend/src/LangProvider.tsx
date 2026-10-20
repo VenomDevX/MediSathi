@@ -3,9 +3,9 @@ import { LangContext, type Lang } from './i18n'
 
 function readLang(): Lang {
   try {
-    return localStorage.getItem('lang') === 'en' ? 'en' : 'hi'
+    return localStorage.getItem('lang') === 'hi' ? 'hi' : 'en'
   } catch {
-    return 'hi'
+    return 'en'
   }
 }
 

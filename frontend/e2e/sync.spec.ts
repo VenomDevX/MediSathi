@@ -5,11 +5,10 @@ const API = 'http://localhost:8000'
 
 async function signIn(page: Page) {
   await page.goto('/')
-  await page.getByLabel('यूज़रनेम').fill('sunita')
-  await page.getByLabel('पासवर्ड').fill('demo-1234')
-  await page.getByRole('button', { name: 'साइन इन करें' }).last().click()
+  await page.getByLabel('Username').fill('sunita')
+  await page.getByLabel('Password').fill('demo-1234')
+  await page.getByRole('button', { name: 'Sign in' }).last().click()
   await createPin(page)
-  await page.getByRole('button', { name: 'English' }).click()
 }
 
 test('changing the PIN keeps the account signed in and syncing', async ({ page }) => {

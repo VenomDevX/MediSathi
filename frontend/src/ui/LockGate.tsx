@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LockKey, SignIn as SignInIcon, Warning } from '@phosphor-icons/react'
+import { LockKey, SignIn as SignInIcon, Translate, Warning } from '@phosphor-icons/react'
 import { useBoot } from '../app-context'
 import { hasPin, setPin, unlock } from '../auth/pin'
-import { useT } from '../i18n'
+import { useLang, useT } from '../i18n'
 import { login, type LoginResult } from '../sync/api'
 import { AuthError, NetworkError } from '../sync/engine'
 import { SyncProvider } from '../sync/SyncProvider'
@@ -127,8 +127,15 @@ async function saveServerUser(db: ReturnType<typeof useBoot>['db'], r: LoginResu
 
 function Shell({ children }: { children: ReactNode }) {
   const t = useT()
+  const { lang, setLang } = useLang()
+  const other = lang === 'hi' ? 'en' : 'hi'
   return (
-    <main className="mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-8 px-4 py-8">
+    <main className="relative mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-8 px-4 py-8">
+      {/* Before sign-in too: the first screen must be readable for someone who reads only Hindi. */}
+      <button type="button" lang={other} onClick={() => setLang(other)} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-medium text-muted hover:text-ink">
+        <Translate size={18} aria-hidden />
+        {t('language')}
+      </button>
       {children}
       <Link to="/emergency" className="flex min-h-12 items-center justify-center gap-2 font-semibold text-danger">
         <Warning size={20} weight="bold" aria-hidden />
