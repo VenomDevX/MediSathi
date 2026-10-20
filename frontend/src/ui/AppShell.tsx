@@ -135,8 +135,8 @@ export function AppShell() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Minimal clean web top bar */}
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-line bg-surface/95 px-4 backdrop-blur lg:px-8">
+        {/* Minimal clean web & mobile top bar */}
+        <header className="sticky top-0 z-10 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between border-b border-line bg-surface/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur lg:h-14 lg:pt-0 lg:px-8">
           <div className="flex items-center gap-3">
             <NavLink to="/" translate="no" className="text-lg font-bold text-neem lg:hidden">
               {t('appName')}
