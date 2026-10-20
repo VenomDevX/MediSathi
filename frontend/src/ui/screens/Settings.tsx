@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, Translate, Trash, Warning } from '@phosphor-icons/react'
+import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, LockKey, Translate, Trash, UserCircle, Warning } from '@phosphor-icons/react'
 import { canRunModels, getModelChoice, setModelChoice, unloadModel, type ModelChoice } from '../../assistant/litert'
 import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelId } from '../../assistant/modelFiles'
+import { useBoot } from '../../app-context'
+import { setPin } from '../../auth/pin'
 import { useLang, useT } from '../../i18n'
 import type { StringKey } from '../../strings'
-import { Banner, Button, Card, PageHeader, buttonClass, cx } from '../components'
+import { Banner, Button, Card, Field, PageHeader, buttonClass, cx, inputClass } from '../components'
+import { DEMO_CITIZEN_ID, DEMO_WORKER_ID } from '../LockGate'
 
 export function Settings() {
   const t = useT()
@@ -15,6 +18,7 @@ export function Settings() {
     <>
       <PageHeader title={t('moreTitle')} />
       <div className="flex flex-col gap-4">
+        <AccountCard />
         <Card className="flex flex-col gap-3 p-5">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             <Translate size={22} className="text-neem" aria-hidden />
@@ -36,6 +40,7 @@ export function Settings() {
             ))}
           </div>
         </Card>
+        <PinCard />
         <ModelCard />
         <Card className="flex flex-col gap-2 p-5">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -46,6 +51,78 @@ export function Settings() {
         </Card>
       </div>
     </>
+  )
+}
+
+function AccountCard() {
+  const t = useT()
+  const { user, setUserId } = useBoot()
+  const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
+
+  const switchAccount = async (targetId: string) => {
+    if (user?.id === targetId) return
+    await setUserId(targetId)
+  }
+
+  return (
+    <Card className="flex flex-col gap-3 p-5">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <UserCircle size={22} className="text-neem" aria-hidden />
+          {user?.display_name || t('navMore')}
+        </h2>
+        <span
+          className={cx(
+            'rounded-[4px] border px-2 py-0.5 text-xs font-semibold',
+            isWorker ? 'border-neem/30 bg-neem-soft text-neem' : 'border-amber-200 bg-amber-50 text-amber-900',
+          )}
+        >
+          {isWorker ? t('role_asha_worker') : t('role_citizen')}
+        </span>
+      </div>
+      <p className="text-sm text-muted">
+        {isWorker ? t('demoWorkerDesc') : t('demoCitizenDesc')}
+      </p>
+
+      <div className="mt-1 flex flex-col gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('switchAccount')}</p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => switchAccount(DEMO_WORKER_ID)}
+            className={cx(
+              'flex items-center justify-between rounded-[var(--radius-control)] border p-3 text-left transition-colors',
+              user?.id === DEMO_WORKER_ID
+                ? 'border-neem bg-neem-soft text-neem font-semibold'
+                : 'border-line bg-canvas hover:border-neem/40',
+            )}
+          >
+            <div>
+              <p className="text-sm font-semibold">Sunita Devi</p>
+              <p className="text-xs opacity-75">{t('role_asha_worker')}</p>
+            </div>
+            {user?.id === DEMO_WORKER_ID && <CheckCircle size={18} weight="fill" className="text-neem" />}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => switchAccount(DEMO_CITIZEN_ID)}
+            className={cx(
+              'flex items-center justify-between rounded-[var(--radius-control)] border p-3 text-left transition-colors',
+              user?.id === DEMO_CITIZEN_ID
+                ? 'border-neem bg-neem-soft text-neem font-semibold'
+                : 'border-line bg-canvas hover:border-neem/40',
+            )}
+          >
+            <div>
+              <p className="text-sm font-semibold">Ramesh Kumar</p>
+              <p className="text-xs opacity-75">{t('role_citizen')}</p>
+            </div>
+            {user?.id === DEMO_CITIZEN_ID && <CheckCircle size={18} weight="fill" className="text-neem" />}
+          </button>
+        </div>
+      </div>
+    </Card>
   )
 }
 
@@ -200,6 +277,88 @@ function ModelCard() {
           ))}
         </div>
       </div>
+    </Card>
+  )
+}
+
+function PinCard() {
+  const t = useT()
+  const { db, user } = useBoot()
+  const [newPin, setNewPin] = useState('')
+  const [confirmPin, setConfirmPin] = useState('')
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function handleSave(e: FormEvent) {
+    e.preventDefault()
+    if (!/^\d{4,6}$/.test(newPin)) {
+      setStatus({ kind: 'error', message: t('pinInvalid') })
+      return
+    }
+    if (newPin !== confirmPin) {
+      setStatus({ kind: 'error', message: t('pinMismatch') })
+      return
+    }
+    setBusy(true)
+    try {
+      if (user) {
+        await setPin(db, user.id, newPin)
+        setStatus({ kind: 'success', message: t('pinSaved') })
+        setNewPin('')
+        setConfirmPin('')
+      }
+    } catch {
+      setStatus({ kind: 'error', message: t('pinInvalid') })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card className="flex flex-col gap-3 p-5">
+      <h2 className="flex items-center gap-2 text-lg font-semibold">
+        <LockKey size={22} className="text-neem" aria-hidden />
+        {t('securityTitle')}
+      </h2>
+      <p className="text-sm text-muted">{t('pinCreateHint')}</p>
+      {status && (
+        <Banner tone={status.kind === 'error' ? 'danger' : 'ok'}>
+          {status.message}
+        </Banner>
+      )}
+      <form onSubmit={handleSave} className="flex flex-col gap-3">
+        <Field label={t('pin')}>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={6}
+            placeholder="1234"
+            value={newPin}
+            onChange={(e) => {
+              setNewPin(e.target.value.replace(/\D/g, ''))
+              setStatus(null)
+            }}
+            className={inputClass}
+          />
+        </Field>
+        <Field label={t('pinConfirm')}>
+          <input
+            type="password"
+            inputMode="numeric"
+            maxLength={6}
+            placeholder="1234"
+            value={confirmPin}
+            onChange={(e) => {
+              setConfirmPin(e.target.value.replace(/\D/g, ''))
+              setStatus(null)
+            }}
+            className={inputClass}
+          />
+        </Field>
+        <Button type="submit" disabled={busy || !newPin || !confirmPin} className="self-start">
+          {t('changePin')}
+        </Button>
+      </form>
     </Card>
   )
 }

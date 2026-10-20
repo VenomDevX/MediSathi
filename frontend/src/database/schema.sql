@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   server_user_id TEXT,
   display_name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('asha_worker', 'coordinator', 'supervisor', 'admin')),
+  role TEXT NOT NULL CHECK (role IN ('asha_worker', 'coordinator', 'supervisor', 'admin', 'citizen')),
   assigned_scope_json TEXT NOT NULL DEFAULT '[]',
   pin_verifier TEXT,
   pin_salt TEXT,

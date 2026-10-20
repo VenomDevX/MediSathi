@@ -49,7 +49,7 @@ test('Journey B: record a patient and visit offline, correct it, see the follow-
 
   // Survives a reload, and the follow-up shows on Today
   await page.reload()
-  await page.getByLabel('PIN', { exact: true }).fill('4826')
+  await page.getByLabel('PIN', { exact: true }).fill('1234')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByText('Advised iron and calcium tablets.')).toBeVisible()
   await page.getByRole('link', { name: 'Today' }).first().click()

@@ -30,8 +30,9 @@ export function Today() {
   useEffect(() => setHour(new Date().getHours()), [])
   const today = todayLocal()
 
+  const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
   const { data: familyDue } = useAsync(() => upcomingFollowUps(db, today), [db, today])
-  const { data: patientDue } = useAsync(() => (user ? followUpsDue(db, user, today) : Promise.resolve([])), [db, user, today])
+  const { data: patientDue } = useAsync(() => (isWorker ? followUpsDue(db, user, today) : Promise.resolve([])), [db, user, isWorker, today])
 
   // Keep reminders in sync
   useEffect(() => {
@@ -113,7 +114,7 @@ export function Today() {
       </section>
 
       {/* ASHA specific action shortcuts if in healthcare worker mode */}
-      {user && (
+      {isWorker && (
         <section aria-labelledby="asha-actions" className="flex flex-col gap-3">
           <h2 id="asha-actions" className="text-lg font-semibold text-muted">{t('quickActions')}</h2>
           <div className="grid grid-cols-2 gap-3">

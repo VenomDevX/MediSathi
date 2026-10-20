@@ -4,14 +4,29 @@ import { CaretRight, MagnifyingGlass, UserPlus, Users } from '@phosphor-icons/re
 import { useApp } from '../../app-context'
 import { createPatient, listPatients } from '../../data/records'
 import { useT } from '../../i18n'
-import { Button, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
+import { Button, Banner, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
 import { useAsync } from '../useAsync'
 
 export function PatientList() {
   const t = useT()
   const { db, user } = useApp()
   const [search, setSearch] = useState('')
-  const { data: patients } = useAsync(() => listPatients(db, user, search), [db, user, search])
+  const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
+  const { data: patients } = useAsync(() => (isWorker ? listPatients(db, user, search) : Promise.resolve([])), [db, user, isWorker, search])
+
+  if (!isWorker) {
+    return (
+      <div className="flex flex-col gap-4 py-8">
+        <PageHeader title={t('navPatients')} />
+        <Banner tone="caution">
+          {t('workerOnly')}
+        </Banner>
+        <LinkButton to="/family" className="self-start">
+          {t('navRecords')}
+        </LinkButton>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -75,7 +90,22 @@ export function PatientNew() {
   const [nameError, setNameError] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+  const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
+
+  if (!isWorker) {
+    return (
+      <div className="flex flex-col gap-4 py-8">
+        <PageHeader title={t('addPatient')} />
+        <Banner tone="caution">
+          {t('workerOnly')}
+        </Banner>
+        <LinkButton to="/family" className="self-start">
+          {t('navRecords')}
+        </LinkButton>
+      </div>
+    )
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault()

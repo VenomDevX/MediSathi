@@ -24,16 +24,16 @@
   --color-info: var(--info);
   --color-marigold: var(--marigold);
   --color-neem-soft: var(--neem-soft);
-  --radius-card: 12px;
-  --radius-control: 10px;
+  --radius-card: 8px;
+  --radius-control: 6px;
 }
 
 :root {
-  --canvas: #f4f6f3;
+  --canvas: #ffffff;
   --surface: #ffffff;
-  --ink: #1d2522;
-  --muted: #56625d;
-  --line: #dfe5e1;
+  --ink: #19201d;
+  --muted: #5a6661;
+  --line: #e4e9e6;
   --neem: #1e6b52;
   --on-neem: #ffffff;
   --danger-bg: #fdebec;

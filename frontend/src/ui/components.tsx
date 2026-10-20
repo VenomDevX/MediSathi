@@ -48,7 +48,7 @@ export function Banner({ tone, icon, children }: { tone: Tone; icon?: ReactNode;
 
 export function Chip({ tone, icon, children }: { tone: Tone; icon?: ReactNode; children: ReactNode }) {
   return (
-    <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium', tones[tone])}>
+    <span className={cx('inline-flex items-center gap-1 rounded-[4px] px-2 py-0.5 text-xs font-semibold', tones[tone])}>
       {icon && <span aria-hidden>{icon}</span>}
       {children}
     </span>

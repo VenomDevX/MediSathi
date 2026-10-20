@@ -12,7 +12,8 @@ import { Banner, Button, Field, inputClass } from './components'
 import { Emergency } from './screens/Emergency'
 
 const IDLE_LOCK_MS = 10 * 60 * 1000
-const DEMO_USER_ID = 'u-sunita'
+export const DEMO_WORKER_ID = 'u-sunita'
+export const DEMO_CITIZEN_ID = 'u-ramesh'
 
 type Mode = 'checking' | 'signin' | 'create' | 'enter' | 'open'
 
@@ -86,10 +87,13 @@ export function LockGate({ children }: { children: ReactNode }) {
           await setUserId(r.user.id)
           setMode('create') // a fresh sign-in always sets a new PIN that wraps the new refresh token
         }}
-        onDemo={async () => {
+        onDemo={async (targetId = DEMO_WORKER_ID) => {
           setSignedIn(null)
-          await setUserId(DEMO_USER_ID)
-          setMode((await hasPin(db, DEMO_USER_ID)) ? 'enter' : 'create')
+          await setUserId(targetId)
+          if (!(await hasPin(db, targetId))) {
+            await setPin(db, targetId, '1234')
+          }
+          setMode('enter')
         }}
       />
     )
@@ -133,7 +137,7 @@ function Shell({ children }: { children: ReactNode }) {
   )
 }
 
-function SignIn({ onSignedIn, onDemo }: { onSignedIn: (r: LoginResult) => Promise<void>; onDemo: () => Promise<void> }) {
+function SignIn({ onSignedIn, onDemo }: { onSignedIn: (r: LoginResult) => Promise<void>; onDemo: (id?: string) => Promise<void> }) {
   const t = useT()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState<StringKey | null>(null)
@@ -172,9 +176,32 @@ function SignIn({ onSignedIn, onDemo }: { onSignedIn: (r: LoginResult) => Promis
         {error && <Banner tone="danger">{t(error)}</Banner>}
         <Button type="submit" disabled={busy}>{t(busy ? 'signingIn' : 'signIn')}</Button>
       </form>
-      <div className="flex flex-col gap-2 border-t border-line pt-6">
-        <p className="text-sm text-muted">{t('demoHint')}</p>
-        <Button variant="secondary" onClick={onDemo}>{t('useDemo')}</Button>
+      <div className="flex flex-col gap-3 border-t border-line pt-6">
+        <p className="text-sm font-semibold text-muted">{t('demoHint')}</p>
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => onDemo(DEMO_WORKER_ID)}
+            className="flex flex-col items-start gap-1 rounded-[var(--radius-control)] border border-line bg-surface p-3 text-left hover:border-neem hover:bg-canvas transition-colors"
+          >
+            <span className="font-semibold text-ink flex items-center gap-2">
+              <span className="size-2.5 rounded-full bg-neem" aria-hidden />
+              {t('demoWorker')}
+            </span>
+            <span className="text-xs text-muted">{t('demoWorkerDesc')}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onDemo(DEMO_CITIZEN_ID)}
+            className="flex flex-col items-start gap-1 rounded-[var(--radius-control)] border border-line bg-surface p-3 text-left hover:border-neem hover:bg-canvas transition-colors"
+          >
+            <span className="font-semibold text-ink flex items-center gap-2">
+              <span className="size-2.5 rounded-full bg-muted" aria-hidden />
+              {t('demoCitizen')}
+            </span>
+            <span className="text-xs text-muted">{t('demoCitizenDesc')}</span>
+          </button>
+        </div>
       </div>
     </Shell>
   )

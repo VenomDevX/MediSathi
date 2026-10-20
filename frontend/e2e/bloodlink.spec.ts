@@ -29,7 +29,7 @@ test('Journey C: find potential donors offline with a manual location when GPS i
 
   // Search state survives a reload
   await page.reload()
-  await page.getByLabel('PIN', { exact: true }).fill('4826')
+  await page.getByLabel('PIN', { exact: true }).fill('1234')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByRole('button', { name: 'A+', exact: true })).toHaveAttribute('aria-pressed', 'true')
 })

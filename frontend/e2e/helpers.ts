@@ -9,8 +9,8 @@ export async function openApp(page: Page, lang: 'hi' | 'en' = 'en') {
 }
 
 export async function createPin(page: Page) {
-  await page.getByLabel('पिन', { exact: true }).fill('4826')
-  await page.getByLabel('पिन दोबारा डालें').fill('4826')
+  await page.getByLabel('पिन', { exact: true }).fill('1234')
+  await page.getByLabel('पिन दोबारा डालें').fill('1234')
   await page.getByRole('button', { name: 'पिन सेव करें' }).click()
   await expect(page.getByRole('heading', { name: /नमस्ते/ })).toBeVisible()
 }

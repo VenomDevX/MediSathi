@@ -11,7 +11,7 @@ test('app keeps working offline after first load and asks for the PIN again', as
   await page.getByLabel('PIN', { exact: true }).fill('0000')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByText('Wrong PIN. 4 tries left.')).toBeVisible()
-  await page.getByLabel('PIN', { exact: true }).fill('4826')
+  await page.getByLabel('PIN', { exact: true }).fill('1234')
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(page.getByRole('heading', { name: 'Namaste, Sunita' })).toBeVisible()
   await expect(page.getByText('You are offline.')).toBeVisible()

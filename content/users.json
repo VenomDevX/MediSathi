@@ -1,4 +1,5 @@
 [
   {"id": "u-sunita", "display_name": "Sunita Devi", "role": "asha_worker", "assigned_scope": ["village-rampur", "village-sitapur-kalan"]},
+  {"id": "u-ramesh", "display_name": "Ramesh Kumar", "role": "citizen", "assigned_scope": []},
   {"id": "u-rakesh", "display_name": "Rakesh Verma", "role": "coordinator", "assigned_scope": ["block-mahmudabad", "village-rampur", "village-sitapur-kalan"]}
 ]
