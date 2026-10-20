@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import auth, sync
+from . import auth, blood, sync
 from .auth import current_user, hasher, session
 from .db import Base, Change, Donor, Patient, PatientVersion, User, make_engine, make_sessionmaker, utcnow
 
@@ -54,10 +54,11 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="MediSaathi API", version="1.0.0", lifespan=lifespan)
     app.state.sessions = make_sessionmaker(engine)
-    origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173,http://localhost:4173,capacitor://localhost,http://localhost,https://localhost")
+    origins = os.environ.get("CORS_ORIGINS", "http://localhost:3100,http://localhost:4200,http://localhost:5173,http://localhost:4173,capacitor://localhost,http://localhost,https://localhost")
     app.add_middleware(CORSMiddleware, allow_origins=origins.split(","), allow_methods=["GET", "POST"], allow_headers=["Authorization", "Content-Type"])
     app.include_router(auth.router)
     app.include_router(sync.router)
+    app.include_router(blood.router)
 
     @app.get("/api/v1/health")
     def health():

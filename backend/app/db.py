@@ -117,6 +117,38 @@ class Donor(Base):
     updated_at: Mapped[str] = mapped_column(String, default=utcnow)
 
 
+class DonorToken(Base):
+    """A self-registered donor's device key (hashed). Separate table so existing databases need no column migration."""
+
+    __tablename__ = "donor_tokens"
+    token_hash: Mapped[str] = mapped_column(String, primary_key=True)
+    donor_id: Mapped[str] = mapped_column(ForeignKey("donors.id"), index=True)
+
+
+class BloodRequest(Base):
+    __tablename__ = "blood_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    token_hash: Mapped[str] = mapped_column(String, unique=True)
+    blood_group: Mapped[str] = mapped_column(String, index=True)
+    locality_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    latitude: Mapped[float | None] = mapped_column(nullable=True)
+    longitude: Mapped[float | None] = mapped_column(nullable=True)
+    note: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String, default="open")
+    created_at: Mapped[str] = mapped_column(String, default=utcnow)
+    expires_at: Mapped[str] = mapped_column(String)
+
+
+class DonorResponse(Base):
+    """One answer per donor per request; the contact is shared only while accepted is true."""
+
+    __tablename__ = "donor_responses"
+    request_id: Mapped[str] = mapped_column(ForeignKey("blood_requests.id"), primary_key=True)
+    donor_id: Mapped[str] = mapped_column(ForeignKey("donors.id"), primary_key=True)
+    accepted: Mapped[bool] = mapped_column(Boolean)
+    responded_at: Mapped[str] = mapped_column(String, default=utcnow)
+
+
 class SyncOp(Base):
     """Unique operation ids make every push idempotent (TRD §8.4)."""
 

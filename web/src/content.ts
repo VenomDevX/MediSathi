@@ -6,3 +6,4 @@ import donors from '../../content/donors.json'
 import type { SeedContent } from './database/seed'
 
 export const content = { version: manifest.version, guidance, labCatalogue, donors } as SeedContent
+export { default as localities } from '../../content/localities.json'
