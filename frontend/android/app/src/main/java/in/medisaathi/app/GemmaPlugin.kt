@@ -44,6 +44,8 @@ class GemmaPlugin : Plugin() {
     private val engineLock = Mutex()
     private var engine: Engine? = null
     private var engineFile: String? = null
+    private var onGpu = false
+    private var gpuWorks = true // ponytail: per app run; persist it if the failed GPU attempt at start-up costs too much
     @Volatile private var conversation: Conversation? = null
     @Volatile private var cancelled = false
     @Volatile private var saving: Job? = null
@@ -175,14 +177,28 @@ class GemmaPlugin : Plugin() {
                         samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.2),
                         maxOutputToken = maxTokens,
                     )
+                    var streamed = false
                     // A fresh conversation per answer: each answer stands on its own sources, with no earlier turns.
-                    engineFor(file).createConversation(config).use { c ->
+                    suspend fun answer() = engineFor(file).createConversation(config).use { c ->
                         conversation = c
                         try {
-                            c.sendMessageAsync(prompt).collect { notifyListeners("text", JSObject().put("delta", textOf(it))) }
+                            c.sendMessageAsync(prompt).collect {
+                                streamed = true
+                                notifyListeners("text", JSObject().put("delta", textOf(it)))
+                            }
                         } finally {
                             conversation = null
                         }
+                    }
+                    try {
+                        answer()
+                    } catch (e: Exception) {
+                        // Some GPUs load the model but fail on the first answer (e.g. "Can not find OpenCL library"):
+                        // switch this device to the CPU for good and try once more.
+                        if (cancelled || streamed || !onGpu) throw e
+                        gpuWorks = false
+                        closeEngine()
+                        answer()
                     }
                 }
                 call.resolve()
@@ -216,8 +232,10 @@ class GemmaPlugin : Plugin() {
         val path = File(models(), file).path
         fun load(backend: Backend) =
             Engine(EngineConfig(modelPath = path, backend = backend, maxNumTokens = 4096, cacheDir = context.cacheDir.path)).also { it.initialize() }
+        onGpu = false
         val loaded = try {
-            load(Backend.GPU())
+            if (!gpuWorks) error("GPU failed before on this device")
+            load(Backend.GPU()).also { onGpu = true }
         } catch (e: Exception) {
             load(Backend.CPU()) // no usable GPU (emulators, older phones)
         }

@@ -42,6 +42,13 @@ describe('retrieve', () => {
     expect(await retrieve(db, 'hai kya kaise', 'en')).toEqual([])
     expect(await retrieve(db, '', 'en')).toEqual([])
   })
+
+  it('does not let "how much" and "give" pull in unrelated items (a dose question gets no answer)', async () => {
+    expect(await retrieve(db, 'पैरासिटामोल कितनी दें', 'hi')).toEqual([])
+    expect(await retrieve(db, 'paracetamol kitni dena hai', 'hi')).toEqual([])
+    expect(await retrieve(db, 'how much paracetamol should I give', 'en')).toEqual([])
+    expect((await retrieve(db, 'बुखार में कितना पानी दें', 'hi'))[0]?.topic).toBe('fever')
+  })
 })
 
 describe('planReply', () => {

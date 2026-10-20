@@ -11,8 +11,11 @@ export type Plan = { kind: 'emergency'; rule: EmergencyRule } | { kind: 'grounde
 const FILLER = new Set(
   (
     'है हैं था थी थे का की के को में से और या क्या कैसे क्यों मेरा मेरी मेरे मुझे मैं हम हो रहा रही रहे कर करें करना करे भी तो पर एक यह वह ये वो कल आज ' +
+    'कितना कितनी कितने दें दे देना दो दूं दूँ दीजिए लें ले लेना चाहिए ' +
     'hai hain tha thi the ka ki ke ko me mein se aur ya kya kaise kyu kyon mera meri mere mujhe mai main hum ho raha rahi rahe kar karu kare karna bhi to par ek ye wo yeh woh kal aaj ' +
-    'a an the is are was were be been what how why when which who my me i we you it its to of in on at for from and or do does did have has had with can could should would will please tell about this that there'
+    'kitna kitni kitne de dena do du dijiye le lena chahiye ' +
+    'a an the is are was were be been what how why when which who my me i we you it its to of in on at for from and or do does did have has had with can could should would will please tell about this that there ' +
+    'much many give take'
   ).split(' '),
 )
 
