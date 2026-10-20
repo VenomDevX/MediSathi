@@ -13,7 +13,8 @@ import { canListen, listen } from '../../platform/listen'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import type { StringKey } from '../../strings'
 import { EmergencyCard } from '../EmergencyCard'
-import { AssistantMark, cx } from '../components'
+import { AssistantMark } from '../components'
+import { cx } from '../styles'
 import { useAsync } from '../useAsync'
 
 const suggestions: StringKey[] = ['suggestFever', 'suggestBurn', 'suggestDiarrhoea', 'suggestHeat']
@@ -98,11 +99,14 @@ export function Chat() {
     setListening(() => stop)
   }
 
+  // "Don't know" follows the current language; other replies are kept as written.
+  const shown = (m: Message) => (m.kind === 'unknown' ? t('chatUnknown') : m.content)
+
   function toggleSpeak(m: Message) {
     stopSpeaking()
     if (speakingId === m.id) return setSpeakingId(null)
     setSpeakingId(m.id)
-    speak(m.content, lang, () => setSpeakingId(null))
+    speak(shown(m), lang, () => setSpeakingId(null))
   }
 
   async function remove(id: string) {
@@ -181,7 +185,7 @@ export function Chat() {
             <article key={m.id} className="flex gap-3">
               <AssistantMark className="mt-2.5" />
               <div className="flex min-w-0 flex-1 flex-col gap-3">
-                <p className="whitespace-pre-line">{m.content}</p>
+                <p className="whitespace-pre-line">{shown(m)}</p>
                 {m.kind === 'unknown' && (
                   <a href="tel:104" className="w-fit font-semibold text-neem underline underline-offset-4">{t('call', { n: 104 })}</a>
                 )}

@@ -2,16 +2,17 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { CalendarCheck, CaretRight, FileText, Note, PencilSimple, Pill, Plus, Stethoscope, Thermometer, Trash, UserCircle, UsersThree } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
-import { addEntry, getProfile, listEntries, listProfiles, saveProfile, voidEntry, type EntryKind, type Profile } from '../../data/family'
+import { addEntry, bloodGroups, getProfile, listEntries, listProfiles, saveProfile, voidEntry, type EntryKind, type Profile } from '../../data/family'
 import { listReports } from '../../data/reports'
 import { todayLocal } from '../../domain/dates'
 import { useFormatDate, useT } from '../../i18n'
 import { askReminderPermission, refreshReminders } from '../../platform/notify'
 import type { StringKey } from '../../strings'
-import { Button, Card, EmptyState, Field, LinkButton, PageHeader, cx, inputClass } from '../components'
+import { Button, Card, EmptyState, Field, LinkButton, PageHeader, inputClass } from '../components'
+import { cx } from '../styles'
 import { useAsync } from '../useAsync'
 
-export const relations: Record<string, StringKey> = {
+const relations: Record<string, StringKey> = {
   self: 'relSelf',
   spouse: 'relSpouse',
   child: 'relChild',
@@ -20,8 +21,7 @@ export const relations: Record<string, StringKey> = {
   other: 'relOther',
 }
 
-export const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-export const ageOf = (birthYear: number | null) => (birthYear ? new Date().getFullYear() - birthYear : null)
+const ageOf = (birthYear: number | null) => (birthYear ? new Date().getFullYear() - birthYear : null)
 
 const kinds: Record<EntryKind, { label: StringKey; icon: typeof Note }> = {
   medicine: { label: 'kindMedicine', icon: Pill },

@@ -27,6 +27,10 @@ test('assistant answers offline from the library, flags emergencies, admits what
   await box.press('Enter')
   await expect(page.getByText(/I don't have reliable information about this/)).toBeVisible()
   await expect(page.getByRole('link', { name: 'Call 104' })).toBeVisible()
+  // Saved replies follow the language picked later
+  await page.getByRole('button', { name: 'हिंदी' }).click()
+  await expect(page.getByText(/इस बारे में मेरे पास भरोसेमंद जानकारी नहीं है/)).toBeVisible()
+  await page.getByRole('button', { name: 'English' }).click()
 
   // The source opens the full item
   await source.click()

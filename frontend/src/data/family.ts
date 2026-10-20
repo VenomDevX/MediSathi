@@ -83,3 +83,5 @@ export function upcomingFollowUps(db: Database, owner: string, today: string, da
     [owner, today, today, days],
   )
 }
+
+export const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']

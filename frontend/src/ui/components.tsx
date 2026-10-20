@@ -1,28 +1,14 @@
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { CaretLeft } from '@phosphor-icons/react'
-
-export const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ')
-
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
-const variants: Record<Variant, string> = {
-  primary: 'bg-neem text-on-neem hover:opacity-90',
-  secondary: 'bg-surface text-ink border border-line hover:border-muted',
-  ghost: 'text-neem hover:bg-surface',
-  danger: 'bg-danger text-surface hover:opacity-90',
-}
-const buttonBase =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 font-semibold transition-[transform,opacity] duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none'
-
-/** For things that look like a button but are not one (a file picker label, an external link). */
-export const buttonClass = (variant: Variant = 'primary') => cx(buttonBase, variants[variant])
+import { buttonClass, cx, type Variant } from './styles'
 
 export function Button({ variant = 'primary', className, ...p }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
-  return <button className={cx(buttonBase, variants[variant], className)} {...p} />
+  return <button className={cx(buttonClass(variant), className)} {...p} />
 }
 
 export function LinkButton({ variant = 'primary', className, ...p }: ComponentProps<typeof Link> & { variant?: Variant }) {
-  return <Link className={cx(buttonBase, variants[variant], className)} {...p} />
+  return <Link className={cx(buttonClass(variant), className)} {...p} />
 }
 
 export function Card({ className, ...p }: ComponentProps<'div'>) {

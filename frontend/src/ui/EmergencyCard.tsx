@@ -1,7 +1,8 @@
 import { Phone, Warning } from '@phosphor-icons/react'
 import type { EmergencyRule } from '../domain/emergency'
 import { useLang, useT } from '../i18n'
-import { LinkButton, cx } from './components'
+import { LinkButton } from './components'
+import { cx } from './styles'
 
 /** Shown before anything else whenever a message or search matches a red-flag rule. */
 export function EmergencyCard({ rule, className }: { rule: EmergencyRule; className?: string }) {

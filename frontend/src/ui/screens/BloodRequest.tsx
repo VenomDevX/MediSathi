@@ -19,12 +19,13 @@ import {
   type MyRequest,
   type RequestStatus,
 } from '../../data/blood'
+import { bloodGroups } from '../../data/family'
 import { findDonors, type Donor } from '../../domain/donors'
 import { useFormatDate, useT } from '../../i18n'
 import type { StringKey } from '../../strings'
-import { Banner, Button, Card, Chip, Field, LinkButton, PageHeader, buttonClass, cx, inputClass } from '../components'
+import { Banner, Button, Card, Chip, Field, LinkButton, PageHeader, inputClass } from '../components'
+import { buttonClass, cx } from '../styles'
 import { useAsync } from '../useAsync'
-import { bloodGroups } from './Family'
 
 const FRESH_DAYS = 365
 const dialable = (contact: string) => /^\+?[\d\s-]{6,}$/.test(contact)

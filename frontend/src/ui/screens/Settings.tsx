@@ -7,7 +7,8 @@ import { useBoot } from '../../app-context'
 import { useLang, useT } from '../../i18n'
 import { useSync } from '../../sync/useSync'
 import type { StringKey } from '../../strings'
-import { Banner, Button, Card, Field, PageHeader, buttonClass, cx, inputClass } from '../components'
+import { Banner, Button, Card, Field, PageHeader, inputClass } from '../components'
+import { buttonClass, cx } from '../styles'
 import { DEMO_CITIZEN_ID, DEMO_WORKER_ID } from '../LockGate'
 
 export function Settings() {
@@ -86,7 +87,7 @@ function AccountCard() {
       </p>
 
       {!canSync && <div className="mt-1 flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('switchAccount')}</p>
+        <p className="text-sm font-semibold text-muted">{t('switchAccount')}</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
             type="button"

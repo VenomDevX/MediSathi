@@ -22,7 +22,8 @@ import { scheduleReminders } from '../platform/notify'
 import { useSync } from '../sync/useSync'
 import { useLang, useT } from '../i18n'
 import type { StringKey } from '../strings'
-import { Banner, cx } from './components'
+import { Banner } from './components'
+import { cx } from './styles'
 
 export function AppShell() {
   const t = useT()
@@ -86,7 +87,7 @@ export function AppShell() {
           <NavLink to="/" translate="no" className="text-xl font-bold tracking-tight text-neem">
             {t('appName')}
           </NavLink>
-          <p className="text-[11px] font-medium text-muted uppercase tracking-wider mt-0.5">Offline-first Health</p>
+          <p className="mt-0.5 text-sm text-muted">{t('tagline')}</p>
         </div>
 
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
