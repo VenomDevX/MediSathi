@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from . import auth, blood, sync
 from .auth import current_user, hasher, session
-from .db import Base, Change, Donor, Patient, PatientVersion, User, make_engine, make_sessionmaker, utcnow
+from .db import Base, Change, Donor, DonorToken, Patient, PatientVersion, User, make_engine, make_sessionmaker, utcnow
 
 CONTENT = Path(__file__).resolve().parents[2] / "content"
 
@@ -67,7 +67,10 @@ def create_app() -> FastAPI:
     @app.get("/api/v1/donors/directory")
     def directory(user: User = Depends(current_user), db: Session = Depends(session)):
         """Full snapshot of consenting donors. Coordinates rounded to ~1 km; contacts only for coordinators (PRD BL-05, BL-11)."""
-        rows = db.scalars(select(Donor).where(Donor.consent_status == "granted", Donor.registration_status == "active")).all()
+        # Self-registered donors (with a device token) consented to share only per accepted request, never via this list.
+        self_registered = select(DonorToken.donor_id)
+        rows = db.scalars(select(Donor).where(Donor.consent_status == "granted", Donor.registration_status == "active",
+                                              Donor.id.not_in(self_registered))).all()
         coordinator = user.role == "coordinator"
         return {
             "synced_at": utcnow(),

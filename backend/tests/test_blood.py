@@ -127,3 +127,10 @@ def test_tokens_are_not_stored_in_plain_text(client):
     with client.app.state.sessions() as db:
         assert donor["token"] not in {t.token_hash for t in db.scalars(select(DonorToken))}
         assert db.get(BloodRequest, req["id"]).token_hash != req["token"]
+
+
+def test_self_registered_donors_never_appear_in_the_coordinator_directory(client, rakesh):
+    donor = register(client, contact="Self-registered demo contact").json()
+    donors = client.get("/api/v1/donors/directory", headers=rakesh).json()["donors"]
+    assert donor["donor_id"] not in {d["id"] for d in donors}
+    assert "Self-registered demo contact" not in {d["contact"] for d in donors}
