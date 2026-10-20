@@ -1,0 +1,50 @@
+// All UI copy, Hindi first. Plain words, sentence case, no em-dashes. Spoken-style Hindi, not textbook.
+export const strings = {
+  appName: { hi: 'मेडीसाथी', en: 'MediSaathi' },
+  navHome: { hi: 'होम', en: 'Home' },
+  navChat: { hi: 'पूछें', en: 'Ask' },
+  navRecords: { hi: 'रिकॉर्ड', en: 'Records' },
+  navMore: { hi: 'और', en: 'More' },
+  sos: { hi: 'आपात', en: 'SOS' },
+  sosLabel: { hi: 'आपातकालीन नंबर खोलें', en: 'Open emergency numbers' },
+  language: { hi: 'English', en: 'हिंदी' },
+  languageLabel: { hi: 'Switch to English', en: 'हिंदी में देखें' },
+  skipToContent: { hi: 'मुख्य हिस्से पर जाएं', en: 'Skip to main content' },
+  loading: { hi: 'खुल रहा है…', en: 'Opening…' },
+  loadFailed: { hi: 'ऐप नहीं खुल पाया। पेज दोबारा खोलें।', en: 'The app could not open. Reload the page.' },
+  offline: { hi: 'इंटरनेट नहीं है। ऐप फिर भी चलेगा।', en: 'No internet. The app still works.' },
+  storageInMemory: { hi: 'यह ब्राउज़र डेटा सेव नहीं कर सकता। पेज बंद करने पर सब मिट जाएगा।', en: 'This browser cannot save data. Everything is lost when the page closes.' },
+
+  goodMorning: { hi: 'सुप्रभात', en: 'Good morning' },
+  goodAfternoon: { hi: 'नमस्ते', en: 'Good afternoon' },
+  goodEvening: { hi: 'शुभ संध्या', en: 'Good evening' },
+  homeAsk: { hi: 'सेहत से जुड़ा कोई भी सवाल पूछें', en: 'Ask about any health worry' },
+  homeAskExample: { hi: 'जैसे: बच्चे को कल से बुखार है', en: 'For example: my child has had fever since yesterday' },
+  homeAskHint: { hi: 'बिना इंटरनेट के भी जवाब मिलेगा', en: 'Works without internet' },
+  tileReport: { hi: 'रिपोर्ट समझें', en: 'Read a report' },
+  tileFamily: { hi: 'मेरा परिवार', en: 'My family' },
+  tileFirstAid: { hi: 'प्राथमिक उपचार', en: 'First aid' },
+  tileDonors: { hi: 'रक्तदाता', en: 'Blood donors' },
+  notADoctor: { hi: 'मेडीसाथी डॉक्टर नहीं है। जान का खतरा हो तो 108 पर कॉल करें।', en: 'MediSaathi is not a doctor. If a life is at risk, call 108.' },
+
+  emergencyTitle: { hi: 'आपातकाल', en: 'Emergency' },
+  emergencyIntro: { hi: 'जान का खतरा हो तो तुरंत कॉल करें। ये नंबर पूरे भारत में मुफ़्त हैं।', en: 'If a life is at risk, call now. These numbers are free across India.' },
+  call: { hi: '{n} पर कॉल करें', en: 'Call {n}' },
+  ambulance: { hi: 'एम्बुलेंस', en: 'Ambulance' },
+  maternalTransport: { hi: 'गर्भवती महिलाओं और बच्चों के लिए वाहन', en: 'Transport for pregnant women and children' },
+  nationalEmergency: { hi: 'राष्ट्रीय आपातकाल (पुलिस, आग, एम्बुलेंस)', en: 'National emergency (police, fire, ambulance)' },
+  healthHelpline: { hi: 'स्वास्थ्य सलाह हेल्पलाइन', en: 'Health advice helpline' },
+  dangerSigns: { hi: 'खतरे के संकेत और पहला कदम', en: 'Danger signs and first steps' },
+  demoContent: { hi: 'डेमो सामग्री, डॉक्टर से जांची नहीं गई', en: 'Demo content, not checked by a doctor' },
+
+  moreTitle: { hi: 'और', en: 'More' },
+  moreLanguage: { hi: 'भाषा', en: 'Language' },
+  moreAbout: { hi: 'मेडीसाथी के बारे में', en: 'About MediSaathi' },
+  moreAboutText: {
+    hi: 'मेडीसाथी आपके फ़ोन पर ही चलता है। आपकी जानकारी इसी फ़ोन में रहती है। यह डॉक्टर की जगह नहीं लेता। इसकी स्वास्थ्य सामग्री अभी डेमो है और डॉक्टर से जांची नहीं गई है।',
+    en: 'MediSaathi runs on your device. Your information stays on this device. It does not replace a doctor. Its health content is a demo and has not been checked by a doctor.',
+  },
+  back: { hi: 'वापस', en: 'Back' },
+} satisfies Record<string, { hi: string; en: string }>
+
+export type StringKey = keyof typeof strings

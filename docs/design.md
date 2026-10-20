@@ -1,42 +1,60 @@
-# MediSaathi design system
+# MediSaathi design v2 (personal app)
 
-**Design read:** trust-first health utility for ASHA workers and caregivers on low-cost Android phones and clinic laptops. Calm, minimal, bilingual (Hindi first). Dials: variance 3, motion 2, density 4.
+**Design read:** a personal health companion for Indian families (Hindi and English, mixed literacy, cheap Android phones and laptops). It should feel trust-first, calm and warm, and the assistant is the hero. Dials: variance 4, motion 3, density 3.
 
-## Color
+**Why it changed from v1:** v1 (Mukta, neem green, sage canvas) was a health-worker tool, with dense lists and a "today's work" mindset. v2 is for one person worrying about their family, so it needs to be quieter, give one clear place to ask, and use bigger type.
+
+## Colour
 | Token | Light | Dark | Use |
 |---|---|---|---|
-| `canvas` | `#F4F6F3` | `#111614` | Page background (cool sage off-white, not cream) |
-| `surface` | `#FFFFFF` | `#192019` | Cards, sheets, inputs |
-| `ink` | `#1D2522` | `#E6EBE8` | Text |
-| `muted` | `#56625D` | `#9BA8A2` | Secondary text |
-| `line` | `#DFE5E1` | `#2A332F` | 1px borders and dividers |
-| `neem` | `#1E6B52` | `#6CC3A0` | The one accent: primary actions, brand, focus ring |
+| canvas | `#F5F6FA` | `#10131F` | page background (cool paper, not cream) |
+| surface | `#FFFFFF` | `#171B2B` | cards, inputs, bars |
+| ink | `#18203A` | `#E9EBF3` | text |
+| muted | `#5B6178` | `#9AA0B5` | secondary text |
+| line | `#E2E5EE` | `#262B3F` | 1px borders, dividers |
+| neel (accent) | `#2D3A8C` | `#9AA6FF` | the one accent: primary actions, focus, active nav |
+| neel-soft | `#E8EAF6` | `#1F2547` | user chat bubble, selected tile, info banner |
+| marigold | `#E9A23B` | `#E9A23B` | **only** the assistant's mark (a small dot/flower glyph); never text |
+| danger / -bg | `#B42318` / `#FDECEA` | `#FF8A80` / `#3A1714` | SOS, emergency, HIGH |
+| caution / -bg | `#8A5A00` / `#FDF3DC` | `#F2C46D` / `#33270F` | LOW/HIGH flags, "check this" |
+| ok / -bg | `#1F6B45` / `#E6F4EC` | `#7FD3A4` / `#13291D` | normal, done |
 
-Semantic pastels are used **only** for meaning, always with text and an icon:
-- Danger / HIGH / emergency: bg `#FDEBEC`, text `#9F2F2D`
-- Caution / LOW / pending: bg `#FBF3DB`, text `#7A5200`
-- Normal / synced: bg `#E8F3EC`, text `#2E6340`
-- Info / local: bg `#E6F0FA`, text `#1F5F8F`
+Indigo (neel) comes from Indian indigo dye: deep and flat, never a gradient or a glow.
 
 ## Type
-- One family: **Mukta** (self-hosted, Latin + Devanagari), weights 400/500/600/700.
-- Scale: 14 / 16 / 17 (body) / 20 / 24 / 32. Line-height 1.6 for body, 1.25 for headings.
-- Sentence case everywhere. No all-caps labels, no eyebrows, no em-dashes in UI copy.
+- **Anek Devanagari** (variable; Devanagari and Latin), self-hosted via `next/font`. One family.
+- Display (h1, the assistant prompt): width 112, weight 650, tracking -0.01em, line-height 1.15.
+- Body: width 100, weight 420, 17px, line-height 1.6. Devanagari needs this height.
+- Labels: 15px weight 550. Sentence case, no all-caps, no em-dashes.
 
 ## Shape and depth
-- Radius: 12px cards and sheets, 10px buttons and inputs, full for small status chips.
-- Borders do the work; shadows only on floating sheets (`0 8px 24px rgb(29 37 34 / 0.08)`).
+- Cards 16px radius, controls 12px, pills (`9999px`) only for chips and the SOS button.
+- No shadows. Elevation is a 1px `line` border on `surface` over `canvas`.
+- Touch targets ≥ 48px. Focus: 2px neel outline, offset 2px.
 
 ## Layout
-- Phone (< 1024px): single column, 16px gutter, bottom tab bar with icon + label, 64px tall.
-- Laptop (>= 1024px): left rail navigation, content column max 760px; list + detail panes where useful.
-- Touch targets >= 48px. One primary action per screen.
+Phone (bottom bar: Home, Chat, Records, More):
+```
+MediSaathi                    (SOS)
+Good evening, Asha
++--------------------------------+
+| * Ask about any health worry   |   <- the hero: looks like an input, opens Chat
+|   "Child has fever since..."  (mic)
++--------------------------------+
+[ Read a report ] [ My family ]       2x2 tiles, icon + one line
+[ First aid     ] [ Reminders ]
+Coming up
+  Ma: BP check, tomorrow
+Not a doctor. In an emergency call 108.
+```
+Laptop: left rail for nav, content column max 720px, tiles in one row of 4, and chat with a sources pane on the right.
+
+## Chat
+- Assistant answers are plain text blocks on the canvas, with a marigold mark, not bubbles. User messages sit in neel-soft bubbles on the right.
+- Every answer ends with source chips: "First aid: fever · demo, not reviewed".
+- The emergency card is a full-width danger-bg card with a big "Call 108" button, and appears before anything else.
+- "I don't know" is a plain answer plus a "Find a doctor / call 104" link, never a guess.
+- Streaming shows text as it arrives with no typing animation, and the marigold mark pulses only while generating (and not at all with reduced motion).
 
 ## Motion
-- Only in response to user actions: sheet open, toast, status change. 150-200ms, ease-out. Off under `prefers-reduced-motion`.
-
-## Icons
-- Phosphor (regular weight in nav, bold for status). Always with a text label.
-
-## The one memorable thing
-The **Today** home screen: a large bilingual greeting and today's follow-ups as the first thing a worker sees. Everything else stays quiet.
+Only in response to the user: page transitions none, the sheet slides 150 ms, and the streaming caret. `prefers-reduced-motion` turns all of it off.

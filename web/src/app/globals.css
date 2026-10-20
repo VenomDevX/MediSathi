@@ -1,26 +1,102 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Tokens: docs/design.md (v2) */
+@theme {
+  --font-sans: var(--font-anek), system-ui, sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-neel: var(--neel);
+  --color-neel-soft: var(--neel-soft);
+  --color-on-neel: var(--on-neel);
+  --color-marigold: #e9a23b;
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-caution: var(--caution);
+  --color-caution-bg: var(--caution-bg);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --radius-card: 16px;
+  --radius-control: 12px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --canvas: #f5f6fa;
+  --surface: #ffffff;
+  --ink: #18203a;
+  --muted: #5b6178;
+  --line: #e2e5ee;
+  --neel: #2d3a8c;
+  --neel-soft: #e8eaf6;
+  --on-neel: #ffffff;
+  --danger: #b42318;
+  --danger-bg: #fdecea;
+  --caution: #8a5a00;
+  --caution-bg: #fdf3dc;
+  --ok: #1f6b45;
+  --ok-bg: #e6f4ec;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --canvas: #10131f;
+    --surface: #171b2b;
+    --ink: #e9ebf3;
+    --muted: #9aa0b5;
+    --line: #262b3f;
+    --neel: #9aa6ff;
+    --neel-soft: #1f2547;
+    --on-neel: #10131f;
+    --danger: #ff8a80;
+    --danger-bg: #3a1714;
+    --caution: #f2c46d;
+    --caution-bg: #33270f;
+    --ok: #7fd3a4;
+    --ok-bg: #13291d;
+    color-scheme: dark;
   }
 }
 
+html {
+  font-size: 17px;
+  touch-action: manipulation;
+  scroll-padding-top: 4.5rem;
+  scroll-padding-bottom: 6rem;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 420;
+  line-height: 1.6;
+}
+
+/* Display type: the same family, set wider (design.md "Type"). */
+.display {
+  font-stretch: 112%;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+:focus-visible {
+  outline: 2px solid var(--neel);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
