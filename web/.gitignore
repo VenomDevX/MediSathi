@@ -43,4 +43,5 @@ next-env.d.ts
 # copied from node_modules by scripts/copy-assets.mjs
 /public/sqlite/
 /public/ocr/
+/public/litert/
 /public/pdf.worker.min.mjs

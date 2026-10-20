@@ -1,8 +1,5 @@
 import { expect, test } from '@playwright/test'
 
-// These cover the library-only assistant: Ollama may really be running on the test machine, so keep it out.
-test.beforeEach(({ context }) => context.route('http://localhost:11434/**', (r) => r.abort()))
-
 test('assistant answers offline from the library, flags emergencies, admits what it does not know', async ({ page, context }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Switch to English' }).click()

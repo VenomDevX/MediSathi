@@ -15,6 +15,9 @@ const variants: Record<Variant, string> = {
 const buttonBase =
   'inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-control)] px-5 font-semibold transition-[transform,opacity] duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50'
 
+/** For things that look like a button but are not one (a file picker label, an external link). */
+export const buttonClass = (variant: Variant = 'primary') => cx(buttonBase, variants[variant])
+
 export function Button({ variant = 'primary', className, ...p }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   return <button className={cx(buttonBase, variants[variant], className)} {...p} />
 }

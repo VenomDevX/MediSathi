@@ -43,7 +43,8 @@ export async function respond(o: {
     )
     if (rejected || !checkAnswer(text, texts).ok) return composed
     return { kind: 'answer', content: text.trim(), sources }
-  } catch {
+  } catch (e) {
+    console.warn('Model answer failed; answering from the library.', e)
     return composed
   }
 }

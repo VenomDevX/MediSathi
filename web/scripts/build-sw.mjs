@@ -5,13 +5,15 @@ import { generateSW } from 'workbox-build'
 const { count, size, warnings } = await generateSW({
   globDirectory: 'out',
   globPatterns: ['**/*.{html,js,mjs,css,wasm,json,txt,png,svg,ico,woff2,gz,webmanifest}'],
-  globIgnores: ['sw.js', 'workbox-*.js'],
+  globIgnores: ['sw.js', 'workbox-*.js', 'litert/**'],
   swDest: 'out/sw.js',
   maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // tesseract cores are ~4 MB each
   clientsClaim: true, // control the first page load, so a first-visit user is already offline-ready
   directoryIndex: 'index.html', // trailingSlash export: /chat/ -> /chat/index.html
   navigateFallback: '/index.html',
-  navigateFallbackDenylist: [/^\/sqlite\//, /^\/ocr\//],
+  navigateFallbackDenylist: [/^\/sqlite\//, /^\/ocr\//, /^\/litert\//],
+  // The model runtime: four builds of 23-36 MB, of which a browser uses one. Cache the one it fetches, on first use.
+  runtimeCaching: [{ urlPattern: /\/litert\//, handler: 'CacheFirst', options: { cacheName: 'litert' } }],
   ignoreURLParametersMatching: [/.*/], // /reports/view/?id=… is the same page
 })
 for (const w of warnings) console.warn(w)

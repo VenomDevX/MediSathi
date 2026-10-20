@@ -1,59 +1,57 @@
 import { expect, test, type Page } from '@playwright/test'
 
-const answer = (text: string) => text.match(/.{1,6}/g)!.map((c) => JSON.stringify({ message: { content: c }, done: false }) + '\n').join('') + '{"done":true}\n'
+// A real model is 2-3 GB and needs a GPU; these cover getting a model file onto the device and choosing it.
+// The model's answers are covered by src/assistant/{litert,respond}.test.ts and a manual check (see README).
+const GEMMA4_URL = 'https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm'
 
-/** A fake Ollama with Gemma 3n E2B installed that always replies with `text`. Returns the questions it was sent. */
-async function fakeOllama(page: Page, text: string) {
-  const asked: string[] = []
-  await page.route('http://localhost:11434/api/tags', (r) => r.fulfill({ json: { models: [{ name: 'gemma3n:e2b' }] } }))
-  await page.route('http://localhost:11434/api/chat', (r) => {
-    asked.push(r.request().postDataJSON().messages.at(-1).content)
-    return r.fulfill({ contentType: 'application/x-ndjson', body: answer(text) })
-  })
-  return asked
-}
-
-async function ask(page: Page, question: string) {
-  await page.goto('/chat/')
+async function openMore(page: Page) {
+  await page.goto('/more/')
   await page.evaluate(() => localStorage.setItem('lang', 'en'))
   await page.reload()
-  const box = page.getByRole('textbox', { name: 'Type your question…' })
-  await box.fill(question)
-  await box.press('Enter')
 }
+const model = (page: Page, name: string) => page.getByRole('listitem').filter({ has: page.getByRole('heading', { name }) })
 
-test('Gemma explains library items in its own words, with the sources', async ({ page }) => {
-  const asked = await fakeOllama(page, '* Let your child rest and drink plenty of water. [1]')
-  await ask(page, 'my child has a fever')
-  await expect(page.getByText('Let your child rest and drink plenty of water. [1]')).toBeVisible()
-  await expect(page.getByText('Explained by Gemma on this device, using only the sources below.')).toBeVisible()
-  await expect(page.getByRole('link', { name: /What to do for a fever/ })).toBeVisible()
-  expect(asked[0]).toContain('[1] What to do for a fever') // the model is given the library item, numbered
+test('Gemma 4 E2B downloads once, stays on the device, and can be deleted', async ({ page }) => {
+  await page.route(GEMMA4_URL, (r) => r.fulfill({ body: Buffer.alloc(64 * 1024, 1), contentType: 'application/octet-stream' }))
+  await openMore(page)
+  const gemma4 = model(page, 'Gemma 4 E2B')
+  await expect(gemma4.getByText('2.0 GB, one time')).toBeVisible()
+  await gemma4.getByRole('button', { name: 'Download' }).click()
+  await expect(gemma4.getByText('On this device', { exact: true })).toBeVisible()
+
+  await page.reload()
+  await expect(gemma4.getByText('On this device', { exact: true })).toBeVisible()
+  await gemma4.getByRole('button', { name: 'Delete: Gemma 4 E2B' }).click()
+  await expect(gemma4.getByRole('button', { name: 'Download' })).toBeVisible()
 })
 
-test('a model answer that invents a dose is replaced by the library words', async ({ page }) => {
-  const asked = await fakeOllama(page, '* Give 500 mg paracetamol every 2 hours. [1]')
-  await ask(page, 'my child has a fever')
-  await expect(page.getByText('This answer is taken directly from the app library.')).toBeVisible()
-  await expect(page.getByText(/500 mg/)).toHaveCount(0)
-  expect(asked).toHaveLength(1)
+test('a failed download says so and leaves nothing half-saved', async ({ page }) => {
+  await page.route(GEMMA4_URL, (r) => r.fulfill({ status: 503 }))
+  await openMore(page)
+  const gemma4 = model(page, 'Gemma 4 E2B')
+  await gemma4.getByRole('button', { name: 'Download' }).click()
+  await expect(gemma4.getByRole('alert')).toHaveText('The model could not be saved. Check the connection and try again.')
+  await page.reload()
+  await expect(gemma4.getByRole('button', { name: 'Download' })).toBeVisible()
 })
 
-test('emergencies never reach the model', async ({ page }) => {
-  const asked = await fakeOllama(page, 'anything [1]')
-  await ask(page, 'snake bite')
-  await expect(page.getByRole('alert').filter({ hasText: 'This may be an emergency' })).toBeVisible()
-  expect(asked).toEqual([])
+test('Gemma 3n E2B is added from a file the person downloaded (Google licence)', async ({ page }) => {
+  await openMore(page)
+  const gemma3n = model(page, 'Gemma 3n E2B')
+  await expect(gemma3n.getByRole('link', { name: 'Open on Hugging Face' })).toHaveAttribute('href', 'https://huggingface.co/google/gemma-3n-E2B-it-litert-lm')
+  await gemma3n.getByLabel('Choose file: Gemma 3n E2B').setInputFiles({ name: 'gemma-3n-E2B-it-int4-Web.litertlm', mimeType: 'application/octet-stream', buffer: Buffer.alloc(32 * 1024, 2) })
+  await expect(gemma3n.getByText('On this device', { exact: true })).toBeVisible()
 })
 
-test('More shows the model status, and turning it off answers from the library', async ({ page }) => {
-  const asked = await fakeOllama(page, '* Rest. [1]')
-  await page.goto('/more/')
-  await page.getByRole('radio', { name: 'English' }).click()
-  await expect(page.getByRole('status').filter({ hasText: 'Ready: Gemma 3n E2B' })).toBeVisible()
-  await page.getByRole('radio', { name: 'Off' }).click()
+test('the model choice is remembered', async ({ page }) => {
+  await openMore(page)
+  await page.getByRole('radio', { name: 'Gemma 3n' }).click()
+  await page.reload()
+  await expect(page.getByRole('radio', { name: 'Gemma 3n' })).toHaveAttribute('aria-checked', 'true')
+})
 
-  await ask(page, 'my child has a fever')
-  await expect(page.getByText('This answer is taken directly from the app library.')).toBeVisible()
-  expect(asked).toEqual([])
+test('without WebGPU it says the model cannot run here', async ({ page }) => {
+  await page.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined }))
+  await openMore(page)
+  await expect(page.getByText(/This browser cannot run the model/)).toBeVisible()
 })
