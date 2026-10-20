@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { db, dbStatus } from './database/db'
 import { seedIfNeeded } from './database/seed'
-import { setPin } from './auth/pin'
 import { content } from './content'
 import { Capacitor } from '@capacitor/core'
 import { watchOnline } from './platform/network'
@@ -26,22 +25,6 @@ export async function loadUser(database: Database, id: string): Promise<User | n
 async function boot() {
   const [{ persistent }, granted] = await Promise.all([dbStatus(), navigator.storage?.persist?.().catch(() => false) ?? Promise.resolve(false)])
   await seedIfNeeded(db, content)
-  try {
-    await db.batch([
-      {
-        sql: "INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES ('u-sunita', 'Sunita Devi', 'asha_worker', '[\"village-rampura\"]')",
-      },
-      {
-        sql: "INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES ('u-ramesh', 'Ramesh Kumar', 'citizen', '[]')",
-      },
-    ]).catch(() => {})
-    for (const demoId of ['u-sunita', 'u-ramesh']) {
-      const [u] = await db.query<{ pin_verifier: string | null }>('SELECT pin_verifier FROM users WHERE id = ?', [demoId])
-      if (!u?.pin_verifier) {
-        await setPin(db, demoId, '1234').catch(() => {})
-      }
-    }
-  } catch {}
   const [meta] = await db.query<{ value: string }>("SELECT value FROM app_meta WHERE key = 'current_user_id'")
   return {
     // The Android app's storage is only cleared by uninstall or 'clear data', never evicted like a browser's.
@@ -67,15 +50,6 @@ export function AppProvider({ children, loading, error }: { children: ReactNode;
   const ready = state as Extract<typeof state, { status: 'ready' }>
 
   async function setUserId(id: string | null) {
-    if (id === 'u-ramesh') {
-      await db.batch([
-        { sql: "INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES ('u-ramesh', 'Ramesh Kumar', 'citizen', '[]')" },
-      ]).catch(() => {})
-    } else if (id === 'u-sunita') {
-      await db.batch([
-        { sql: "INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES ('u-sunita', 'Sunita Devi', 'asha_worker', '[\"village-rampura\"]')" },
-      ]).catch(() => {})
-    }
     await db.batch([id ? { sql: "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('current_user_id', ?)", bind: [id] } : { sql: "DELETE FROM app_meta WHERE key = 'current_user_id'" }])
     const user = id ? await loadUser(db, id) : null
     setState((s) => ({ ...(s as { status: 'ready'; storage: StorageState }), user }))

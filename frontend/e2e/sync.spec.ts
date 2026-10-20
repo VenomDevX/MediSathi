@@ -15,6 +15,11 @@ test('records made offline reach the server once connectivity returns, with no d
   await page.getByRole('button', { name: 'English' }).click()
   await page.evaluate(() => navigator.serviceWorker.ready)
 
+  // A signed-in account cannot hop to the offline demo accounts
+  await page.goto('/#/settings')
+  await expect(page.getByRole('button', { name: /Ramesh Kumar/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Switch Account' })).toHaveCount(0)
+
   // Work offline
   await context.setOffline(true)
   await page.goto('/#/patients/new')

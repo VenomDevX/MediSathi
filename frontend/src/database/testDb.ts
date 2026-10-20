@@ -4,9 +4,9 @@ import { wrapSqlite } from './sqlite'
 import schema from './schema.sql?raw'
 import type { Database } from './types'
 
-export async function openTestDb(): Promise<Database> {
+export async function openTestDb(withSchema: string = schema): Promise<Database> {
   const sqlite3 = await sqlite3InitModule()
   const db = wrapSqlite(new sqlite3.oo1.DB(':memory:', 'c'))
-  await db.exec(schema)
+  await db.exec(withSchema)
   return db
 }

@@ -28,6 +28,7 @@ export function LockGate({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<Mode>('checking')
   const [signedIn, setSignedIn] = useState<LoginResult | null>(null)
   const [session, setSession] = useState<Session | null>(null)
+  const [openFor, setOpenFor] = useState<string | null>(null)
 
   // Decide sign-in / create PIN / enter PIN only when the device's user changes,
   // never as a side effect of opening (which would immediately re-lock).
@@ -58,14 +59,15 @@ export function LockGate({ children }: { children: ReactNode }) {
     }
   }, [mode])
 
-  if (mode === 'open' && session) {
+  // Only the user who entered the PIN sees the app: switching accounts locks before the next account renders.
+  if (mode === 'open' && session && openFor === user?.id) {
     return (
       <SyncProvider session={session} onSignOut={() => (setSession(null), setSignedIn(null), setMode('signin'))}>
         {children}
       </SyncProvider>
     )
   }
-  if (mode === 'checking') return null
+  if (mode === 'checking' || mode === 'open') return null
   // Emergency numbers never sit behind sign-in or the PIN: a bystander may be holding the phone. No patient data here.
   if (pathname === '/emergency') {
     return (
@@ -90,10 +92,7 @@ export function LockGate({ children }: { children: ReactNode }) {
         onDemo={async (targetId = DEMO_WORKER_ID) => {
           setSignedIn(null)
           await setUserId(targetId)
-          if (!(await hasPin(db, targetId))) {
-            await setPin(db, targetId, '1234')
-          }
-          setMode('enter')
+          setMode((await hasPin(db, targetId)) ? 'enter' : 'create')
         }}
       />
     )
@@ -104,6 +103,7 @@ export function LockGate({ children }: { children: ReactNode }) {
       secret={signedIn?.refresh_token}
       onOpen={(s) => {
         setSession(s)
+        setOpenFor(user.id)
         setSignedIn(null)
         setMode('open')
       }}

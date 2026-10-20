@@ -3,7 +3,7 @@ import { expect, type Page } from '@playwright/test'
 /** Opens the app on a fresh device with the offline demo account and creates the PIN, landing on Today. */
 export async function openApp(page: Page, lang: 'hi' | 'en' = 'en') {
   await page.goto('/')
-  await page.getByRole('button', { name: 'डेमो खाता इस्तेमाल करें' }).click()
+  await page.getByRole('button', { name: 'स्वास्थ्य कार्यकर्ता (आशा) खाता' }).click()
   await createPin(page)
   if (lang === 'en') await page.getByRole('button', { name: 'English' }).click()
 }

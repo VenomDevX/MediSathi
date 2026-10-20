@@ -6,7 +6,7 @@ test('guidance search works offline and red-flag searches escalate to emergency 
   await page.evaluate(() => navigator.serviceWorker.ready)
   await context.setOffline(true)
 
-  await page.getByRole('link', { name: 'Guidance' }).first().click()
+  await page.getByRole('link', { name: 'First aid' }).click() // Today's tile: the phone nav has no Guidance tab
   await page.getByLabel(/Search a symptom/).fill('bukhar')
   await expect(page.getByRole('link', { name: /What to do for a fever/ })).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
@@ -16,7 +16,7 @@ test('guidance search works offline and red-flag searches escalate to emergency 
   await expect(page.getByText('Not clinically reviewed (demo)')).toBeVisible()
   await expect(page.getByText(/does not replace a doctor/)).toBeVisible()
 
-  await page.getByRole('link', { name: 'Guidance' }).first().click()
+  await page.goBack()
   await page.getByLabel(/Search a symptom/).fill('saanp ne kata')
   const alert = page.getByRole('alert')
   await expect(alert).toContainText('This may be an emergency: Snake bite')

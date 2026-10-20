@@ -6,6 +6,7 @@ import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelI
 import { useBoot } from '../../app-context'
 import { setPin } from '../../auth/pin'
 import { useLang, useT } from '../../i18n'
+import { useSync } from '../../sync/useSync'
 import type { StringKey } from '../../strings'
 import { Banner, Button, Card, Field, PageHeader, buttonClass, cx, inputClass } from '../components'
 import { DEMO_CITIZEN_ID, DEMO_WORKER_ID } from '../LockGate'
@@ -57,6 +58,7 @@ export function Settings() {
 function AccountCard() {
   const t = useT()
   const { user, setUserId } = useBoot()
+  const { canSync } = useSync() // a signed-in account never switches to the offline demo accounts
   const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
 
   const switchAccount = async (targetId: string) => {
@@ -84,7 +86,7 @@ function AccountCard() {
         {isWorker ? t('demoWorkerDesc') : t('demoCitizenDesc')}
       </p>
 
-      <div className="mt-1 flex flex-col gap-2">
+      {!canSync && <div className="mt-1 flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">{t('switchAccount')}</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <button
@@ -121,7 +123,7 @@ function AccountCard() {
             {user?.id === DEMO_CITIZEN_ID && <CheckCircle size={18} weight="fill" className="text-neem" />}
           </button>
         </div>
-      </div>
+      </div>}
     </Card>
   )
 }

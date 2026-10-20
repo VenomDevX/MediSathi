@@ -31,6 +31,10 @@ export default defineConfig({
         // OCR language data and the SQLite wasm are large; precache them so the app works offline.
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,woff2,wasm,gz}'],
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+        // The LiteRT runtime is ~110 MB and only needed once someone turns on the offline model: cache it on first use
+        // instead of making every install download it. The version is in the path, so cache-first never serves a stale one.
+        globIgnores: ['**/litert/**'],
+        runtimeCaching: [{ urlPattern: /\/litert\//, handler: 'CacheFirst', options: { cacheName: 'litert-runtime' } }],
       },
     }),
   ],

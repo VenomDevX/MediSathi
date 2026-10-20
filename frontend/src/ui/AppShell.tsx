@@ -28,7 +28,7 @@ export function AppShell() {
   const t = useT()
   const { lang, setLang } = useLang()
   const { db, user, online, storage, setUserId } = useApp()
-  const { pending } = useSync()
+  const { pending, canSync } = useSync() // canSync: signed in to a server; only offline demo accounts may switch
 
   const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
 
@@ -114,14 +114,15 @@ export function AppShell() {
               <p className="truncate text-xs font-bold text-ink">{user?.display_name || 'User'}</p>
               <p className="truncate text-[11px] text-muted">{isWorker ? t('role_asha_worker') : t('role_citizen')}</p>
             </div>
-            <button
+            {!canSync && <button
               type="button"
               onClick={switchDemoUser}
               title={t('switchAccount')}
+              aria-label={t('switchAccount')}
               className="flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-line bg-surface text-muted hover:text-neem hover:border-neem transition-colors"
             >
-              <ArrowsClockwise size={15} />
-            </button>
+              <ArrowsClockwise size={15} aria-hidden />
+            </button>}
           </div>
           <NavLink to="/sync" className="flex min-h-9 items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 text-xs font-medium text-muted hover:text-ink">
             <span className="relative">
@@ -149,14 +150,14 @@ export function AppShell() {
                 <span className={cx('size-1.5 rounded-full', isWorker ? 'bg-neem' : 'bg-info')} />
                 {isWorker ? t('role_asha_worker') : t('role_citizen')}
               </span>
-              <button
+              {!canSync && <button
                 type="button"
                 onClick={switchDemoUser}
                 className="inline-flex items-center gap-1 rounded-[var(--radius-control)] border border-line px-2 py-0.5 text-[11px] font-medium text-muted hover:border-neem hover:text-neem transition-colors"
               >
-                <ArrowsClockwise size={12} />
+                <ArrowsClockwise size={12} aria-hidden />
                 {t('switchAccount')}
-              </button>
+              </button>}
             </div>
           </div>
           <div className="flex items-center gap-1.5">

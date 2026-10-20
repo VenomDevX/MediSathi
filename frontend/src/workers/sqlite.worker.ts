@@ -2,6 +2,7 @@ import sqlite3InitModule from '@sqlite.org/sqlite-wasm'
 import { wrapSqlite } from '../database/sqlite'
 import schema from '../database/schema.sql?raw'
 import type { Database } from '../database/types'
+import { migrate } from '../database/migrate'
 
 const post = (msg: unknown) => (self as unknown as Worker).postMessage(msg)
 
@@ -22,32 +23,7 @@ const ready: Promise<{ db: Database; persistent: boolean }> = (async () => {
   }
   const db = wrapSqlite(raw)
   await db.exec(schema)
-  try {
-    const [row] = await db.query<{ sql: string }>("SELECT sql FROM sqlite_master WHERE type='table' AND name='users'")
-    if (row?.sql && !row.sql.includes('citizen')) {
-      await db.exec(`
-        PRAGMA foreign_keys = OFF;
-        CREATE TABLE users_migrated (
-          id TEXT PRIMARY KEY,
-          server_user_id TEXT UNIQUE,
-          display_name TEXT NOT NULL,
-          role TEXT NOT NULL CHECK (role IN ('asha_worker', 'coordinator', 'supervisor', 'admin', 'citizen')),
-          assigned_scope_json TEXT NOT NULL DEFAULT '[]',
-          last_server_contact_at TEXT,
-          pin_verifier TEXT,
-          pin_salt TEXT,
-          failed_pin_attempts INTEGER NOT NULL DEFAULT 0,
-          locked_until TEXT
-        );
-        INSERT OR IGNORE INTO users_migrated SELECT * FROM users;
-        DROP TABLE users;
-        ALTER TABLE users_migrated RENAME TO users;
-        PRAGMA foreign_keys = ON;
-      `)
-    }
-  } catch (err) {
-    console.warn('Migration check failed:', err)
-  }
+  await migrate(db).catch((err) => console.warn('Migration failed:', err))
   return { db, persistent }
 })()
 
