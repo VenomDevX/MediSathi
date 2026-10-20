@@ -39,4 +39,13 @@ describe('migrate', () => {
     await migrate(db)
     expect(await db.query('SELECT id, pin_verifier FROM users')).toEqual([{ id: 'u-ramesh', pin_verifier: 'V' }])
   })
+
+  it('adds the family-member link to reports on a device that already has reports', async () => {
+    const db = await openTestDb(schema.replace(/^ {2}profile_id TEXT REFERENCES profiles \(id\),\r?\n/m, ''))
+    await db.batch([{ sql: "INSERT INTO medical_reports (id, file_name) VALUES ('r-1', 'cbc.png')" }])
+    await migrate(db)
+    await migrate(db)
+    await db.batch([{ sql: "INSERT INTO profiles (id, name) VALUES ('f-1', 'Asha')" }, { sql: "UPDATE medical_reports SET profile_id = 'f-1' WHERE id = 'r-1'" }])
+    expect(await db.query('SELECT file_name, profile_id FROM medical_reports')).toEqual([{ file_name: 'cbc.png', profile_id: 'f-1' }])
+  })
 })

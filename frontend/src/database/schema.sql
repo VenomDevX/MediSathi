@@ -59,6 +59,7 @@ CREATE INDEX IF NOT EXISTS idx_visits_follow_up ON patient_visits (follow_up_at)
 CREATE TABLE IF NOT EXISTS medical_reports (
   id TEXT PRIMARY KEY,
   patient_id TEXT REFERENCES patients (id),
+  profile_id TEXT REFERENCES profiles (id),
   file_reference TEXT,
   file_hash TEXT,
   file_name TEXT,

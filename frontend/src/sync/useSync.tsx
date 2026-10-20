@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useApp } from '../app-context'
-import { storeSecret } from '../auth/pin'
+import { setPin, storeSecret } from '../auth/pin'
 import { createApi, logout } from './api'
 import { AuthError, runSync, type SyncSummary } from './engine'
 
@@ -13,6 +13,8 @@ type SyncState = {
   pending: number
   syncNow: () => Promise<void>
   signOut: () => Promise<void>
+  /** Sets a new PIN, keeping a signed-in account's refresh token wrapped under it. */
+  changePin: (pin: string) => Promise<void>
 }
 
 const SyncContext = createContext<SyncState | null>(null)
@@ -21,9 +23,10 @@ const INTERVAL_MS = 60_000
 /** Runs sync on unlock, when the network returns, when the app comes back to the foreground, and every minute (TRD §8.1). */
 export function SyncProvider({ session, onSignOut, children }: { session: Session; onSignOut: () => void; children: ReactNode }) {
   const { db, user, online, setUserId } = useApp()
-  const [state, setState] = useState<Omit<SyncState, 'syncNow' | 'signOut' | 'canSync'>>({ syncing: false, last: null, error: null, pending: 0 })
+  const [state, setState] = useState<Omit<SyncState, 'syncNow' | 'signOut' | 'canSync' | 'changePin'>>({ syncing: false, last: null, error: null, pending: 0 })
   const running = useRef(false)
   const refresh = useRef(session.refreshToken)
+  const pin = useRef(session.pin) // changes with changePin; token rotations are wrapped under the current one
   const canSync = !!session.refreshToken
 
   const countPending = useCallback(async () => {
@@ -38,7 +41,7 @@ export function SyncProvider({ session, onSignOut, children }: { session: Sessio
     try {
       const api = createApi(refresh.current, async (token) => {
         refresh.current = token
-        await storeSecret(db, user.id, session.pin, token)
+        await storeSecret(db, user.id, pin.current, token)
       })
       const summary = await runSync(db, api, user.id)
       setState((s) => ({ ...s, error: null, last: summary.offline ? s.last : { at: new Date().toISOString(), summary } }))
@@ -49,7 +52,7 @@ export function SyncProvider({ session, onSignOut, children }: { session: Sessio
       setState((s) => ({ ...s, syncing: false }))
       await countPending()
     }
-  }, [db, user.id, session.pin, countPending])
+  }, [db, user.id, countPending])
 
   useEffect(() => {
     void syncNow()
@@ -66,6 +69,11 @@ export function SyncProvider({ session, onSignOut, children }: { session: Sessio
     if (online) void syncNow()
   }, [online, syncNow])
 
+  async function changePin(next: string) {
+    await setPin(db, user.id, next, refresh.current ?? undefined)
+    pin.current = next
+  }
+
   async function signOut() {
     if (refresh.current) await logout(refresh.current)
     await db.batch([{ sql: 'UPDATE users SET wrapped_secret = NULL WHERE id = ?', bind: [user.id] }])
@@ -73,7 +81,7 @@ export function SyncProvider({ session, onSignOut, children }: { session: Sessio
     onSignOut()
   }
 
-  return <SyncContext.Provider value={{ ...state, canSync, syncNow, signOut }}>{children}</SyncContext.Provider>
+  return <SyncContext.Provider value={{ ...state, canSync, syncNow, signOut, changePin }}>{children}</SyncContext.Provider>
 }
 
 export function useSync() {

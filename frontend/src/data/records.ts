@@ -28,7 +28,7 @@ export type NewPatient = {
 }
 
 const now = () => new Date().toISOString()
-const inScope = (w: Worker) => ({ sql: `scope_id IN (${w.assigned_scope.map(() => '?').join(',') || 'NULL'})`, bind: w.assigned_scope })
+export const inScope = (w: Worker) => ({ sql: `scope_id IN (${w.assigned_scope.map(() => '?').join(',') || 'NULL'})`, bind: w.assigned_scope })
 
 export async function createPatient(db: Database, w: Worker, input: NewPatient): Promise<Patient> {
   const display_name = input.display_name.trim()

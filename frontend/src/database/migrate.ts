@@ -1,4 +1,4 @@
-// Brings an existing device's database up to the current schema.sql. Runs after schema.sql on every start.
+// Brings an existing device's database up to the current schema.sql. Runs after schema.sql on every start; each step is idempotent.
 import schema from './schema.sql?raw'
 import type { Database } from './types'
 
@@ -8,6 +8,10 @@ import type { Database } from './types'
  * it was. No other table references users.
  */
 export async function migrate(db: Database) {
+  // Reports can belong to a family member (not only a patient) since the web and worker apps merged.
+  const reportCols = await db.query<{ name: string }>("SELECT name FROM pragma_table_info('medical_reports')")
+  if (!reportCols.some((c) => c.name === 'profile_id')) await db.exec('ALTER TABLE medical_reports ADD COLUMN profile_id TEXT REFERENCES profiles (id)')
+
   await db.exec('DROP TABLE IF EXISTS users_migrated') // left behind by a failed attempt in an earlier build
   const [users] = await db.query<{ sql: string }>("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
   if (!users || users.sql.includes("'citizen'")) return

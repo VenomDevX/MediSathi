@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Crosshair, Drop, MapPin, Phone, Warning } from '@phosphor-icons/react'
+import { Crosshair, Drop, HandHeart, MapPin, PaperPlaneTilt, Phone, Warning } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { directoryUpdatedAt, listDonors, revealContact } from '../../data/donors'
 import { BLOOD_GROUPS, findDonors, type Point } from '../../domain/donors'
@@ -106,6 +106,17 @@ export function Donors() {
             </>
           )}
         </section>
+        {/* Blood requests go through the server: a donor's number is shared only after they say yes to that request. */}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <LinkButton to="/blood" variant="secondary">
+            <PaperPlaneTilt size={20} aria-hidden />
+            {t('askForBlood')}
+          </LinkButton>
+          <LinkButton to="/blood/give" variant="secondary">
+            <HandHeart size={20} aria-hidden />
+            {t('becomeDonor')}
+          </LinkButton>
+        </div>
       </div>
     </>
   )

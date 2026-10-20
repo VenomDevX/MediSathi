@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDown, ArrowUp, Check, FileText, Info, PencilSimple, Plus, Question, SpeakerHigh, Stop, Trash, WarningCircle } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
+import { listProfiles } from '../../data/family'
 import { getPatient, listPatients } from '../../data/records'
 import { getReport, updateReportFields } from '../../data/reports'
 import { checkRange, type RangeResult, type ReportField } from '../../domain/labs'
@@ -35,20 +36,32 @@ export function ReportReview() {
   const t = useT()
   const { id = '' } = useParams()
   const { db, user } = useApp()
-  const { data, loading } = useAsync(async () => ({ report: await getReport(db, id), patients: await listPatients(db, user, '') }), [db, user, id])
+  const { data, loading } = useAsync(
+    async () => ({ report: await getReport(db, user, id), patients: await listPatients(db, user, ''), people: await listProfiles(db) }),
+    [db, user, id],
+  )
   if (loading) return null
   if (!data?.report) return <EmptyState icon={<FileText size={32} />} title={t('ocrFailed')} action={<LinkButton to="/scan" variant="secondary">{t('back')}</LinkButton>} />
-  return <ReviewForm key={data.report.id} report={data.report} patients={data.patients} />
+  return <ReviewForm key={data.report.id} report={data.report} patients={data.patients} people={data.people} />
 }
 
-function ReviewForm({ report, patients }: { report: NonNullable<Awaited<ReturnType<typeof getReport>>>; patients: Awaited<ReturnType<typeof listPatients>> }) {
+function ReviewForm({
+  report,
+  patients,
+  people,
+}: {
+  report: NonNullable<Awaited<ReturnType<typeof getReport>>>
+  patients: Awaited<ReturnType<typeof listPatients>>
+  people: Awaited<ReturnType<typeof listProfiles>>
+}) {
   const t = useT()
   const { lang } = useLang()
   const nav = useNavigate()
   const { db } = useApp()
   const original = useOriginalUrl(report.id, report.file_name)
   const [fields, setFields] = useState(report.fields)
-  const [patientId, setPatientId] = useState(report.patient_id ?? '')
+  // Whose report: 'f:<id>' a family member, 'p:<id>' a health worker's patient, '' nobody.
+  const [owner, setOwner] = useState(report.profile_id ? `f:${report.profile_id}` : report.patient_id ? `p:${report.patient_id}` : '')
   const [adding, setAdding] = useState('')
   const [busy, setBusy] = useState(false)
   const [unchecked, setUnchecked] = useState(0)
@@ -74,7 +87,8 @@ function ReviewForm({ report, patients }: { report: NonNullable<Awaited<ReturnTy
       return list.current?.querySelector<HTMLInputElement>(`input[name="value-${i}"]`)?.focus()
     }
     setBusy(true)
-    await updateReportFields(db, report.id, fields.filter((f) => f.value.trim()), patientId || null)
+    const [kind, ownerId] = owner.split(':')
+    await updateReportFields(db, report.id, fields.filter((f) => f.value.trim()), kind === 'p' ? ownerId : null, kind === 'f' ? ownerId : null)
     nav(`/scan/${report.id}`, { replace: true })
   }
 
@@ -151,11 +165,22 @@ function ReviewForm({ report, patients }: { report: NonNullable<Awaited<ReturnTy
         </div>
 
         <Field label={t('reportFor')} hint={t('reportForHint')}>
-          <select name="patient" value={patientId} onChange={(e) => setPatientId(e.target.value)} className={inputClass}>
+          <select name="owner" value={owner} onChange={(e) => setOwner(e.target.value)} className={inputClass}>
             <option value="">{t('notLinked')}</option>
-            {patients.map((p) => (
-              <option key={p.id} value={p.id}>{p.display_name}{p.village ? `, ${p.village}` : ''}</option>
-            ))}
+            {people.length > 0 && (
+              <optgroup label={t('familyTitle')}>
+                {people.map((p) => (
+                  <option key={p.id} value={`f:${p.id}`}>{p.name}</option>
+                ))}
+              </optgroup>
+            )}
+            {patients.length > 0 && (
+              <optgroup label={t('navPatients')}>
+                {patients.map((p) => (
+                  <option key={p.id} value={`p:${p.id}`}>{p.display_name}{p.village ? `, ${p.village}` : ''}</option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </Field>
 
@@ -193,9 +218,9 @@ export function ReportResults() {
   const [speaking, setSpeaking] = useState(false)
   useEffect(() => () => void stopSpeaking(), [])
   const { data, loading } = useAsync(async () => {
-    const report = await getReport(db, id)
+    const report = await getReport(db, user, id)
     const patient = report?.patient_id ? await getPatient(db, user, report.patient_id) : undefined
-    return { report, sex: patient?.sex ?? null }
+    return { report, sex: report?.profile_sex || patient?.sex || null }
   }, [db, user, id])
 
   if (loading) return null

@@ -21,7 +21,7 @@ const suggestions: StringKey[] = ['suggestFever', 'suggestBurn', 'suggestDiarrho
 export function Chat() {
   const t = useT()
   const { lang } = useLang()
-  const { db } = useApp()
+  const { db, user } = useApp()
   const [params, setParams] = useSearchParams()
   const urlId = params.get('id')
   const [chatId, setChatId] = useState<string | null>(urlId)
@@ -41,10 +41,10 @@ export function Chat() {
   const { data: report } = useAsync(
     async () => {
       const reportId = urlReport ?? (chatId ? (await getChat(db, chatId))?.report_id : null)
-      const r = reportId ? await getReport(db, reportId) : undefined
+      const r = reportId ? await getReport(db, user, reportId) : undefined
       return r?.ocr_status === 'verified' ? r : undefined
     },
-    [db, urlReport, chatId],
+    [db, user, urlReport, chatId],
   )
 
   useEffect(() => setCan({ listen: canListen(), speak: canSpeak() }), [])

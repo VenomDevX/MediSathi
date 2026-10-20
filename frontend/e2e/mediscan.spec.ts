@@ -50,3 +50,20 @@ test('Journey A: read a lab report photo offline, review the values, see plain e
   await expect(page.getByText('sample-lab-report.png')).toBeVisible()
   await expect(page.getByText('Checked')).toBeVisible()
 })
+
+test('a citizen links a report to a family member and finds it on their page', async ({ page }) => {
+  test.setTimeout(120_000)
+  await openApp(page, 'en', 'citizen')
+  await page.getByRole('link', { name: 'Read a report' }).click()
+  await page.getByLabel('Choose a file').setInputFiles(sample)
+  await expect(page.getByRole('heading', { name: 'Check the values' })).toBeVisible({ timeout: 90_000 })
+  const flagged = page.getByRole('button', { name: 'Value is correct' })
+  while (await flagged.count()) await flagged.first().click()
+  await page.getByLabel('Whose report is this (optional)').selectOption({ label: 'Me' })
+  await page.getByRole('button', { name: 'Values are correct, explain' }).click()
+  await expect(page.getByRole('heading', { name: 'What the report means' })).toBeVisible()
+
+  await page.goto('/#/family')
+  await page.getByRole('link', { name: 'Me Me' }).click() // the person's name, then their relation
+  await expect(page.getByRole('region', { name: 'Reports' }).getByRole('link', { name: /sample-lab-report.png/ })).toBeVisible()
+})

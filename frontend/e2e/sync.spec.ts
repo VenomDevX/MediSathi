@@ -1,18 +1,42 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { createPin } from './helpers'
 
 const API = 'http://localhost:8000'
 
-test('records made offline reach the server once connectivity returns, with no duplicates', async ({ page, context, request }) => {
-  const name = `Sync Test ${Date.now()}`
-
-  // First sign-in needs the network
+async function signIn(page: Page) {
   await page.goto('/')
   await page.getByLabel('यूज़रनेम').fill('sunita')
   await page.getByLabel('पासवर्ड').fill('demo-1234')
   await page.getByRole('button', { name: 'साइन इन करें' }).last().click()
   await createPin(page)
   await page.getByRole('button', { name: 'English' }).click()
+}
+
+test('changing the PIN keeps the account signed in and syncing', async ({ page }) => {
+  await signIn(page)
+  await page.goto('/#/settings')
+  await page.getByLabel('PIN', { exact: true }).fill('4321')
+  await page.getByLabel('Enter the PIN again').fill('4321')
+  await page.getByRole('button', { name: 'Change PIN' }).click()
+  await expect(page.getByText('PIN updated successfully.')).toBeVisible()
+  // A sync after the change rotates the refresh token, which must be kept under the new PIN
+  await page.goto('/#/sync')
+  await page.getByRole('button', { name: 'Sync now' }).click()
+  await expect(page.getByText('Everything is synced')).toBeVisible()
+
+  await page.reload()
+  await page.getByLabel('PIN', { exact: true }).fill('4321')
+  await page.getByRole('button', { name: 'Unlock' }).click()
+  await page.getByRole('button', { name: 'Sync now' }).click()
+  await expect(page.getByText('Everything is synced')).toBeVisible()
+  await expect(page.getByText('The demo account does not sync.', { exact: false })).toHaveCount(0)
+})
+
+test('records made offline reach the server once connectivity returns, with no duplicates', async ({ page, context, request }) => {
+  const name = `Sync Test ${Date.now()}`
+
+  // First sign-in needs the network
+  await signIn(page)
   await page.evaluate(() => navigator.serviceWorker.ready)
 
   // A signed-in account cannot hop to the offline demo accounts

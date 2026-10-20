@@ -32,8 +32,8 @@ const kinds: Record<EntryKind, { label: StringKey; icon: typeof Note }> = {
 
 export function FamilyList() {
   const t = useT()
-  const { db } = useApp()
-  const { data } = useAsync(async () => ({ people: await listProfiles(db), reports: (await listReports(db)).length }), [db])
+  const { db, user } = useApp()
+  const { data } = useAsync(async () => ({ people: await listProfiles(db), reports: (await listReports(db, user)).length }), [db, user])
 
   return (
     <>
@@ -179,11 +179,11 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
 export function FamilyDetail() {
   const t = useT()
   const fmt = useFormatDate()
-  const { db } = useApp()
+  const { db, user } = useApp()
   const { id = '' } = useParams()
   const { data, loading, reload } = useAsync(
-    async () => ({ person: await getProfile(db, id), entries: await listEntries(db, id), reports: await listReports(db, { profileId: id }) }),
-    [db, id],
+    async () => ({ person: await getProfile(db, id), entries: await listEntries(db, id), reports: await listReports(db, user, { profileId: id }) }),
+    [db, user, id],
   )
   const [kind, setKind] = useState<EntryKind>('medicine')
   const [text, setText] = useState('')
@@ -271,7 +271,7 @@ export function FamilyDetail() {
         </form>
 
         <section aria-labelledby="history" className="flex flex-col gap-3">
-          <h2 id="history" className="text-xl font-semibold">{t('history')}</h2>
+          <h2 id="history" className="text-xl font-semibold">{t('entriesTitle')}</h2>
           {entries.length === 0 ? (
             <p className="text-muted">{t('noEntries')}</p>
           ) : (

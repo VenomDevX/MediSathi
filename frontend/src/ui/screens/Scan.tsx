@@ -18,7 +18,7 @@ export function ScanHome() {
   const fmt = useFormatDate()
   const nav = useNavigate()
   const { db, user } = useApp()
-  const { data: reports } = useAsync(() => listReports(db), [db])
+  const { data: reports } = useAsync(() => listReports(db, user), [db, user])
   const [busy, setBusy] = useState<Busy | null>(null)
   const [error, setError] = useState<StringKey | null>(null)
   const camera = useRef<HTMLInputElement>(null)

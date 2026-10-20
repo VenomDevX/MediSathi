@@ -4,7 +4,6 @@ import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, Loc
 import { canRunModels, getModelChoice, setModelChoice, unloadModel, type ModelChoice } from '../../assistant/litert'
 import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelId } from '../../assistant/modelFiles'
 import { useBoot } from '../../app-context'
-import { setPin } from '../../auth/pin'
 import { useLang, useT } from '../../i18n'
 import { useSync } from '../../sync/useSync'
 import type { StringKey } from '../../strings'
@@ -285,7 +284,7 @@ function ModelCard() {
 
 function PinCard() {
   const t = useT()
-  const { db, user } = useBoot()
+  const { changePin } = useSync()
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null)
@@ -303,12 +302,10 @@ function PinCard() {
     }
     setBusy(true)
     try {
-      if (user) {
-        await setPin(db, user.id, newPin)
-        setStatus({ kind: 'success', message: t('pinSaved') })
-        setNewPin('')
-        setConfirmPin('')
-      }
+      await changePin(newPin)
+      setStatus({ kind: 'success', message: t('pinSaved') })
+      setNewPin('')
+      setConfirmPin('')
     } catch {
       setStatus({ kind: 'error', message: t('pinInvalid') })
     } finally {
