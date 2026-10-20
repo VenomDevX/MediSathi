@@ -1,0 +1,45 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "predev": "node scripts/copy-assets.mjs",
+    "prebuild": "node scripts/copy-assets.mjs",
+    "test": "vitest run",
+    "postbuild": "node scripts/build-sw.mjs"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/network": "^8.0.1",
+    "@phosphor-icons/react": "^2.1.10",
+    "@sqlite.org/sqlite-wasm": "^3.54.1-build1",
+    "next": "16.4.2",
+    "pdfjs-dist": "^6.4.299",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/turbopack": "^4",
+    "@tesseract.js-data/eng": "^1.0.0",
+    "@tesseract.js-data/hin": "^1.0.0",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^5.0.5",
+    "workbox-build": "^7.4.1"
+  }
+}
