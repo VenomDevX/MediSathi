@@ -48,7 +48,7 @@ cp .env.example .env        # set MEDISAATHI_SECRET
 - Privacy-first: A donor's contact is only revealed after explicit in-app confirmation.
 
 ## Build the Android App
-Requires Android SDK and **JDK 21** (Capacitor 8 targets Java 21).
+Requires Android SDK and **JDK 17 or newer** (Android Studio's bundled JDK works). `android/build.gradle` compiles every module, Capacitor's included, for Java 17.
 ```bash
 cd frontend
 npm run build
