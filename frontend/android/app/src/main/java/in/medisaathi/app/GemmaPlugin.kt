@@ -45,7 +45,11 @@ class GemmaPlugin : Plugin() {
     private var engine: Engine? = null
     private var engineFile: String? = null
     private var onGpu = false
-    private var gpuWorks = true // ponytail: per app run; persist it if the failed GPU attempt at start-up costs too much
+    // A failed GPU attempt costs minutes (seen on the emulator), so the device remembers it across app starts.
+    private val prefs by lazy { context.getSharedPreferences("gemma", android.content.Context.MODE_PRIVATE) }
+    private var gpuWorks: Boolean
+        get() = !prefs.getBoolean("gpuFailed", false)
+        set(works) = prefs.edit().putBoolean("gpuFailed", !works).apply()
     @Volatile private var conversation: Conversation? = null
     @Volatile private var cancelled = false
     @Volatile private var saving: Job? = null
