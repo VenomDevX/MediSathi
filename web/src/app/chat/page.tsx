@@ -4,7 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowUp, ChatCircleText, Microphone, Plus, SpeakerHigh, Stop, Trash } from '@phosphor-icons/react'
 import { useApp } from '@/app-context'
-import { composeAnswer, planReply } from '@/assistant/answer'
+import { pickModel } from '@/assistant/ollama'
+import { respond } from '@/assistant/respond'
 import { addMessage, createChat, deleteChat, listChats, listMessages, type Message, type Source } from '@/data/chats'
 import { emergencyRules } from '@/emergencyRules'
 import { useLang, useT } from '@/i18n'
@@ -27,6 +28,7 @@ function Chat() {
   const [messages, setMessages] = useState<Message[]>([])
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
+  const [streaming, setStreaming] = useState('')
   const [listening, setListening] = useState<null | (() => void)>(null)
   const [can, setCan] = useState({ listen: false, speak: false })
   const [speakingId, setSpeakingId] = useState<string | null>(null)
@@ -46,7 +48,7 @@ function Chat() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' }) // braces: Chromium's scroll methods now return a Promise
-  }, [messages, busy])
+  }, [messages, busy, streaming])
 
   async function send(question: string) {
     const q = question.trim()
@@ -62,15 +64,13 @@ function Chat() {
         history.replaceState(null, '', `/chat/?id=${id}`)
       }
       await addMessage(db, id, { role: 'user', content: q })
-      const plan = await planReply(db, emergencyRules, q, lang)
-      if (plan.kind === 'emergency')
-        await addMessage(db, id, { role: 'assistant', kind: 'emergency', content: plan.rule.instruction[lang], sources: [{ id: plan.rule.id, title: plan.rule.title[lang] }] })
-      else if (plan.kind === 'grounded')
-        await addMessage(db, id, { role: 'assistant', kind: 'composed', content: composeAnswer(plan.sources, lang), sources: plan.sources.map((s) => ({ id: s.id, title: s.title })) })
-      else await addMessage(db, id, { role: 'assistant', kind: 'unknown', content: t('chatUnknown') })
+      setMessages(await listMessages(db, id))
+      const reply = await respond({ db, rules: emergencyRules, question: q, lang, model: pickModel(), onPartial: setStreaming })
+      await addMessage(db, id, { role: 'assistant', ...reply, content: reply.kind === 'unknown' ? t('chatUnknown') : reply.content })
       setMessages(await listMessages(db, id))
       reloadChats()
     } finally {
+      setStreaming('')
       setBusy(false)
       inputRef.current?.focus()
     }
@@ -165,6 +165,7 @@ function Chat() {
                 )}
                 {m.sources.length > 0 && <Sources sources={m.sources} />}
                 {m.kind === 'composed' && <p className="text-sm text-muted">{t('chatComposedNote')}</p>}
+                {m.kind === 'answer' && <p className="text-sm text-muted">{t('chatModelNote')}</p>}
                 {can.speak && (
                   <button type="button" onClick={() => toggleSpeak(m)} aria-pressed={speakingId === m.id} className="flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
                     {speakingId === m.id ? <Stop size={18} aria-hidden /> : <SpeakerHigh size={18} aria-hidden />}
@@ -176,12 +177,20 @@ function Chat() {
           ),
         )}
 
-        {busy && (
-          <p className="flex items-center gap-3 text-muted">
-            <AssistantMark busy />
-            {t('chatThinking')}
-          </p>
-        )}
+        {busy &&
+          (streaming ? (
+            // The finished answer is announced once it is saved; announcing every streamed word would be noise.
+            <article className="flex gap-3">
+              <AssistantMark busy className="mt-2.5" />
+              <span className="sr-only">{t('chatThinking')}</span>
+              <p aria-hidden className="min-w-0 flex-1 whitespace-pre-line">{streaming}</p>
+            </article>
+          ) : (
+            <p className="flex items-center gap-3 text-muted">
+              <AssistantMark busy />
+              {t('chatThinking')}
+            </p>
+          ))}
         <div ref={endRef} />
       </div>
 

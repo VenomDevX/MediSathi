@@ -18,9 +18,12 @@ const FILLER = new Set(
 
 const TOP = 3
 
+// ponytail: crude English suffix stripping so "burned" finds "Burns"; a real stemmer if the library outgrows it.
+const stem = (w: string) => (/^[a-z]{5,}$/.test(w) ? w.replace(/(ing|ed|es|s)$/, '') : w)
+
 /** Library items for a free-text question: one per topic, best first, in the reader's language when available. */
 export async function retrieve(db: Database, message: string, lang: Lang): Promise<Guidance[]> {
-  const words = [...new Set((message.toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu) ?? []).filter((w) => w.length > 1 && !FILLER.has(w)))]
+  const words = [...new Set((message.toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu) ?? []).filter((w) => w.length > 1 && !FILLER.has(w)).map(stem))]
   if (!words.length) return []
   // A hit must be in a title or keywords, so a word that happens to appear in some text is not enough.
   // Each word is a quoted prefix term, so user input is never read as FTS syntax.

@@ -21,6 +21,12 @@ describe('retrieve', () => {
     expect(r[0].language).toBe('en')
   })
 
+  it('matches English word forms: burned, bleeding, fainted', async () => {
+    expect((await retrieve(db, 'my hand got burned with hot oil', 'en'))[0]?.topic).toBe('burns')
+    expect((await retrieve(db, 'his leg is bleeding a lot', 'en'))[0]?.topic).toBe('bleeding')
+    expect((await retrieve(db, 'grandmother fainted', 'en'))[0]?.topic).toBe('fainting')
+  })
+
   it('finds Hindi questions', async () => {
     const r = await retrieve(db, 'बुखार में क्या करें', 'hi')
     expect(r[0].id).toBe('fever-hi')

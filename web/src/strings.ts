@@ -81,6 +81,24 @@ export const strings = {
   suggestBurn: { hi: 'हाथ जल गया', en: 'I burned my hand' },
   suggestDiarrhoea: { hi: 'दस्त हो रहे हैं', en: 'I have diarrhoea' },
   suggestHeat: { hi: 'लू लग गई', en: 'Heat stroke' },
+  chatModelNote: { hi: 'Gemma ने इसी डिवाइस पर, सिर्फ़ नीचे दिए स्रोतों से समझाया।', en: 'Explained by Gemma on this device, using only the sources below.' },
+  aiTitle: { hi: 'ऑफ़लाइन AI मॉडल', en: 'Offline AI model' },
+  aiIntro: {
+    hi: 'कंप्यूटर पर Ollama और Gemma 3n हो तो जवाब आसान शब्दों में समझाए जाते हैं — बिना इंटरनेट के। न हो तो ऐप अपनी जानकारी से सीधे जवाब देता है।',
+    en: 'With Ollama and Gemma 3n on this computer, answers are explained in simple words, with no internet. Without them, the app answers straight from its library.',
+  },
+  aiChecking: { hi: 'जांच रहे हैं…', en: 'Checking…' },
+  aiReady: { hi: 'चालू: {model}', en: 'Ready: {model}' },
+  aiNotRunning: { hi: 'Ollama नहीं मिला', en: 'Ollama is not running' },
+  aiNoModel: { hi: 'Ollama चालू है, पर Gemma 3n डाउनलोड नहीं है', en: 'Ollama is running, but Gemma 3n is not downloaded' },
+  aiUse: { hi: 'जवाब के लिए', en: 'Use for answers' },
+  aiAuto: { hi: 'अपने-आप', en: 'Automatic' },
+  aiOff: { hi: 'बंद', en: 'Off' },
+  aiSetup: { hi: 'सेट-अप कैसे करें', en: 'How to set it up' },
+  aiStep1: { hi: 'ollama.com से Ollama इंस्टॉल करें।', en: 'Install Ollama from ollama.com.' },
+  aiStep2: { hi: 'टर्मिनल में चलाएं (एक बार, लगभग 8 GB):', en: 'Run this once in a terminal (about 8 GB):' },
+  aiStep3: { hi: 'ज़्यादा RAM हो तो बेहतर मॉडल:', en: 'Better model, if you have more memory:' },
+  aiCheckAgain: { hi: 'फिर से जांचें', en: 'Check again' },
 } satisfies Record<string, { hi: string; en: string }>
 
 export type StringKey = keyof typeof strings
