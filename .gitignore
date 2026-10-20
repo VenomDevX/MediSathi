@@ -8,5 +8,3 @@ test-results/
 playwright-report/
 medisaathi.db
 e2e.db
-app/
-web/
