@@ -94,4 +94,9 @@ describe('built-in demo PIN', () => {
     expect(await hasPin(db, 'u1')).toBe(true)
     expect((await db.query<{ failed_pin_attempts: number }>("SELECT failed_pin_attempts FROM users WHERE id = 'u2'"))[0].failed_pin_attempts).toBe(0)
   })
+
+  it('survives two start-ups at once (React runs start-up twice in development)', async () => {
+    const db = await setup()
+    await expect(Promise.all([resetBuiltInDemoPins(db), resetBuiltInDemoPins(db)])).resolves.toBeDefined()
+  })
 })

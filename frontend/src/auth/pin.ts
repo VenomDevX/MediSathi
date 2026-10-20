@@ -63,7 +63,7 @@ export async function resetBuiltInDemoPins(db: Database): Promise<void> {
   for (const u of users) if ((await derive('1234', unb64(u.pin_salt))).verifier === u.pin_verifier) stale.push(u.id)
   await db.batch([
     ...stale.map((id) => ({ sql: 'UPDATE users SET pin_verifier = NULL, pin_salt = NULL, wrapped_secret = NULL, failed_pin_attempts = 0 WHERE id = ?', bind: [id] })),
-    { sql: "INSERT INTO app_meta (key, value) VALUES ('demo_pin_reset', '1')" },
+    { sql: "INSERT OR IGNORE INTO app_meta (key, value) VALUES ('demo_pin_reset', '1')" }, // start-up can run twice at once
   ])
 }
 
