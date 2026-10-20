@@ -79,17 +79,35 @@ def test_many_addresses_still_hit_a_per_username_limit():
     assert all(results[:-1]) and not results[-1]
 
 
-def test_a_full_store_never_forgets_a_live_lockout():
+def test_a_full_store_never_forgets_a_live_lockout_and_never_blocks_everyone():
     from app.auth import LoginFailures
 
     f = LoginFailures()
     f.MAX_KEYS = 50
     while f.attempt("sunita", "6.6.6.6"):
         pass
-    for i in range(1000):  # many addresses and usernames trying to push sunita's counter out
-        f.attempt(f"user{i}", f"10.{i // 250}.{i % 250}.1")
-    assert len(f.seen) <= 50
+    for i in range(1000):  # many addresses trying unknown usernames to fill the store
+        f.attempt(None, f"10.{i // 250}.{i % 250}.1")
+    assert len(f.other) <= 50
     assert not f.attempt("sunita", "6.6.6.6")
+    assert f.attempt("ramesh", "192.0.2.10")  # a real user who was not attacked can still sign in
+
+
+def test_unknown_usernames_never_get_a_counter_of_their_own():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    for i in range(500):
+        f.attempt(None, f"10.0.{i // 250}.{i % 250}")
+    assert not f.names
+
+
+def test_one_ipv6_network_counts_as_one_address():
+    from app.auth import LoginFailures
+
+    f = LoginFailures()
+    results = [f.attempt("sunita", f"2001:db8:0:1::{i:x}") for i in range(LoginFailures.PER_ADDRESS + 1)]
+    assert all(results[:-1]) and not results[-1]
 
 
 def test_one_address_cannot_try_many_usernames():
@@ -107,4 +125,4 @@ def test_successful_logins_do_not_use_up_the_limits():
     for i in range(LoginFailures.PER_ADDRESS_ALL * 2):  # a busy clinic Wi-Fi: many workers, one address
         assert f.attempt(f"worker{i % 7}", "203.0.113.5")
         f.succeeded(f"worker{i % 7}", "203.0.113.5")
-    assert not f.seen
+    assert not f.names and not f.other

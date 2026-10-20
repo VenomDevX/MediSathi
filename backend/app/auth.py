@@ -1,4 +1,5 @@
 import hashlib
+import ipaddress
 import os
 import secrets
 import threading
@@ -23,55 +24,73 @@ hasher = PasswordHasher()
 _DUMMY_HASH = hasher.hash("not-a-real-password")
 
 
+def _network(address: str) -> str:
+    """IPv6 hands one person a whole /64, so the /64 counts as one address."""
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    return str(ipaddress.ip_network(f"{ip}/64", strict=False)) if ip.version == 6 else address
+
+
 class LoginFailures:
     """Throttles password guessing. Every attempt is counted before the password is checked, under one lock, so
-    parallel requests cannot slip past. Limits per 15 minutes: 5 tries per username from one address, 20 per username
-    from all addresses (so one attacker cannot lock the real user out), and 30 tries per address across all usernames.
-    A full store refuses new entries rather than forgetting live ones."""
+    parallel requests cannot slip past. Per 15 minutes, only failures count:
+    - 20 per account, from anywhere. Kept only for accounts that exist, so this store is bounded by the number of
+      accounts and is never evicted or refused: no flood can reopen guessing on a real account.
+    - 5 per account per address, and 30 per address overall (so one attacker cannot lock the real user out, nor try
+      many usernames). These live in a capped store; when it is full, attempts are still checked against what is
+      there but not recorded, so a flood never blocks everyone."""
 
     # ponytail: in memory, per process; move to the database when running more than one server process.
     # Behind a reverse proxy every client shares one address: run uvicorn --proxy-headers --forwarded-allow-ips=<proxy>.
     PER_ADDRESS, PER_NAME, PER_ADDRESS_ALL, WINDOW, MAX_KEYS = 5, 20, 30, 15 * 60, 100_000
 
     def __init__(self):
-        self.seen: dict[tuple, list[float]] = {}
+        self.names: dict[str, list[float]] = {}
+        self.other: dict[tuple, list[float]] = {}
         self.lock = threading.Lock()
 
-    def _recent(self, key: tuple, now: float) -> int:
-        recent = [t for t in self.seen.get(key, ()) if t > now - self.WINDOW]
+    def _recent(self, store: dict, key, now: float) -> int:
+        recent = [t for t in store.get(key, ()) if t > now - self.WINDOW]
         if recent:
-            self.seen[key] = recent
+            store[key] = recent
         else:
-            self.seen.pop(key, None)  # never store empty entries
+            store.pop(key, None)  # never store empty entries
         return len(recent)
 
-    def attempt(self, name: str, address: str) -> bool:
-        """Records one login attempt; False when it is over a limit."""
-        now = time.monotonic()
-        keys = (("name", name), ("pair", name, address), ("address", address))
+    def attempt(self, account: str | None, address: str) -> bool:
+        """Records one login attempt; False when it is over a limit. `account` is the username only if it exists."""
+        now, address = time.monotonic(), _network(address)
+        keys = [("address", address)] + ([("pair", account, address)] if account is not None else [])
         with self.lock:
-            by_name, by_pair, by_address = (self._recent(k, now) for k in keys)
-            if by_pair >= self.PER_ADDRESS or by_name >= self.PER_NAME or by_address >= self.PER_ADDRESS_ALL:
+            if account is not None and self._recent(self.names, account, now) >= self.PER_NAME:
                 return False
-            new = sum(k not in self.seen for k in keys)
-            if len(self.seen) + new > self.MAX_KEYS:
-                for k in list(self.seen):
-                    self._recent(k, now)
-                if len(self.seen) + new > self.MAX_KEYS:
-                    return False  # fail closed: never drop a live counter to make room
-            for k in keys:
-                self.seen.setdefault(k, []).append(now)
+            if self._recent(self.other, keys[0], now) >= self.PER_ADDRESS_ALL:
+                return False
+            if account is not None and self._recent(self.other, keys[1], now) >= self.PER_ADDRESS:
+                return False
+            if account is not None:
+                self.names.setdefault(account, []).append(now)
+            new = sum(k not in self.other for k in keys)
+            if len(self.other) + new > self.MAX_KEYS:
+                for k in list(self.other):
+                    self._recent(self.other, k, now)
+            if len(self.other) + new <= self.MAX_KEYS:
+                for k in keys:
+                    self.other.setdefault(k, []).append(now)
             return True
 
-    def succeeded(self, name: str, address: str):
-        """Only failures count: refund this attempt and clear this address's tries for the name."""
+    def succeeded(self, account: str, address: str):
+        """Only failures count: refund this attempt and clear this address's tries for the account."""
+        address = _network(address)
         with self.lock:
-            self.seen.pop(("pair", name, address), None)
-            for k in (("name", name), ("address", address)):
-                if self.seen.get(k):
-                    self.seen[k].pop()
-                    if not self.seen[k]:
-                        del self.seen[k]
+            self.other.pop(("pair", account, address), None)
+            for store, key in ((self.names, account), (self.other, ("address", address))):
+                if store.get(key):
+                    store[key].pop()
+                    if not store[key]:
+                        del store[key]
 
 
 def secret() -> str:
@@ -133,9 +152,9 @@ router = APIRouter(prefix="/api/v1/auth")
 @router.post("/login")
 def login(body: Credentials, request: Request, db: Session = Depends(session)):
     name, address, failures = body.username.strip().lower(), request.client.host if request.client else "", request.app.state.login_failures
-    if not failures.attempt(name, address):
-        raise HTTPException(429, "too_many_attempts")
     user = db.scalar(select(User).where(User.username == name))
+    if not failures.attempt(name if user else None, address):
+        raise HTTPException(429, "too_many_attempts")
     try:
         hasher.verify(user.password_hash if user else _DUMMY_HASH, body.password)
     except VerifyMismatchError:

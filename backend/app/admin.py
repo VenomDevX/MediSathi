@@ -19,10 +19,10 @@ class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
         name, address = str(form.get("username", "")).strip().lower(), request.client.host if request.client else ""
-        if not self.failures.attempt(name, address):
-            return False
         with self.sessions() as db:
             user = db.scalar(select(User).where(User.username == name, User.role == "admin"))
+            if not self.failures.attempt(name if user else None, address):
+                return False
             try:
                 ok = bool(user) and hasher.verify(user.password_hash, str(form.get("password", "")))
             except VerifyMismatchError:
