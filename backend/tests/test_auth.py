@@ -144,3 +144,9 @@ def test_one_address_is_throttled_the_same_for_real_and_made_up_usernames():
     real = [f.attempt("sunita", "6.6.6.6", exists=True) for _ in range(LoginFailures.PER_ADDRESS + 1)]
     fake = [f.attempt("nobody", "6.6.6.6", exists=False) for _ in range(LoginFailures.PER_ADDRESS + 1)]
     assert real == fake
+
+
+def test_overlong_usernames_are_rejected_before_anything_is_stored(client):
+    r = client.post("/api/v1/auth/login", json={"username": "x" * 10_000, "password": "guess"})
+    assert r.status_code == 422
+    assert not client.app.state.login_failures.other

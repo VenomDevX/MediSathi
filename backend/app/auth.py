@@ -11,7 +11,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -144,8 +144,8 @@ def _hash(token: str) -> str:
 
 
 class Credentials(BaseModel):
-    username: str
-    password: str
+    username: str = Field(max_length=64)  # also keeps the login limiter's entries small
+    password: str = Field(max_length=256)
 
 
 class RefreshBody(BaseModel):

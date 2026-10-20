@@ -19,6 +19,8 @@ class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
         name, address = str(form.get("username", "")).strip().lower(), request.client.host if request.client else ""
+        if len(name) > 64 or len(str(form.get("password", ""))) > 256:
+            return False
         with self.sessions() as db:
             user = db.scalar(select(User).where(User.username == name, User.role == "admin"))
             if not self.failures.attempt(name, address, exists=bool(user)):
