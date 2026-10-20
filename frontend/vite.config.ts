@@ -15,8 +15,8 @@ export default defineConfig({
         short_name: 'MediSaathi',
         description: 'Offline health records, report explanations, first aid and blood donor search.',
         lang: 'hi',
-        theme_color: '#f4f6f3',
-        background_color: '#f4f6f3',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },

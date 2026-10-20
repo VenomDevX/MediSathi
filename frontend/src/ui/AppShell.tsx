@@ -23,7 +23,6 @@ import { useSync } from '../sync/useSync'
 import { useLang, useT } from '../i18n'
 import type { StringKey } from '../strings'
 import { Banner } from './components'
-import { cx } from './styles'
 
 export function AppShell() {
   const t = useT()
@@ -97,8 +96,8 @@ export function AppShell() {
               to={to}
               end={to === '/'}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 text-[15px] font-medium transition-colors ${
-                  isActive ? 'bg-neem-soft text-neem font-semibold' : 'text-muted hover:text-ink hover:bg-canvas'
+                `flex min-h-11 items-center gap-3 rounded-r-[var(--radius-control)] border-l-2 px-3 text-[15px] transition-colors ${
+                  isActive ? 'border-neem bg-neem-soft font-semibold text-neem' : 'border-transparent font-medium text-muted hover:bg-neem-soft/50 hover:text-ink'
                 }`
               }
             >
@@ -110,10 +109,10 @@ export function AppShell() {
 
         {/* Current user card & demo switch button */}
         <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
-          <div className="flex items-center justify-between rounded-[var(--radius-control)] bg-canvas p-2.5">
+          <div className="flex items-center justify-between px-3 py-1">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold text-ink">{user?.display_name || 'User'}</p>
-              <p className="truncate text-[11px] text-muted">{isWorker ? t('role_asha_worker') : t('role_citizen')}</p>
+              <p className="truncate text-sm font-semibold text-ink">{user?.display_name || 'User'}</p>
+              <p className="truncate text-xs text-muted">{isWorker ? t('role_asha_worker') : t('role_citizen')}</p>
             </div>
             {!canSync && <button
               type="button"
@@ -125,7 +124,7 @@ export function AppShell() {
               <ArrowsClockwise size={15} aria-hidden />
             </button>}
           </div>
-          <NavLink to="/sync" className="flex min-h-9 items-center gap-2.5 rounded-[var(--radius-control)] px-2.5 text-xs font-medium text-muted hover:text-ink">
+          <NavLink to="/sync" className="flex min-h-10 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium text-muted hover:bg-neem-soft/50 hover:text-ink">
             <span className="relative">
               <CloudArrowUp size={18} aria-hidden />
               {badge}
@@ -139,28 +138,9 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Minimal clean web & mobile top bar */}
         <header className="sticky top-0 z-10 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between border-b border-line bg-surface/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur lg:h-14 lg:pt-0 lg:px-8">
-          <div className="flex items-center gap-3">
-            <NavLink to="/" translate="no" className="text-lg font-bold text-neem lg:hidden">
-              {t('appName')}
-            </NavLink>
-            <div className="hidden lg:flex items-center gap-2">
-              <span className={cx(
-                'inline-flex items-center gap-1.5 rounded-[4px] px-2.5 py-0.5 text-xs font-semibold',
-                isWorker ? 'bg-neem-soft text-neem' : 'bg-info-bg text-info'
-              )}>
-                <span className={cx('size-1.5 rounded-full', isWorker ? 'bg-neem' : 'bg-info')} />
-                {isWorker ? t('role_asha_worker') : t('role_citizen')}
-              </span>
-              {!canSync && <button
-                type="button"
-                onClick={switchDemoUser}
-                className="inline-flex items-center gap-1 rounded-[var(--radius-control)] border border-line px-2 py-0.5 text-[11px] font-medium text-muted hover:border-neem hover:text-neem transition-colors"
-              >
-                <ArrowsClockwise size={12} aria-hidden />
-                {t('switchAccount')}
-              </button>}
-            </div>
-          </div>
+          <NavLink to="/" translate="no" className="text-lg font-bold text-neem lg:invisible">
+            {t('appName')}
+          </NavLink>
           <div className="flex items-center gap-1.5">
             <NavLink to="/emergency" className="flex min-h-9 items-center gap-1.5 rounded-[var(--radius-control)] px-3 text-xs font-semibold text-danger hover:bg-danger-bg/50">
               <Warning size={17} weight="bold" aria-hidden />

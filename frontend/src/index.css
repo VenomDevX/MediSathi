@@ -49,26 +49,11 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
+/* Laptop: tighter corners. Phones keep the softer ones. */
+@media (width >= 64rem) {
   :root {
-    --canvas: #111614;
-    --surface: #192019;
-    --ink: #e6ebe8;
-    --muted: #9ba8a2;
-    --line: #2a332f;
-    --neem: #6cc3a0;
-    --on-neem: #0d1f18;
-    --danger-bg: #3a1d1d;
-    --danger: #f2b8b5;
-    --caution-bg: #3a2f12;
-    --caution: #f0d48a;
-    --ok-bg: #18301f;
-    --ok: #a8d8b5;
-    --info-bg: #142a3d;
-    --info: #a7cdf0;
-    --marigold: #f0a820;
-    --neem-soft: #18301f;
-    color-scheme: dark;
+    --radius-card: 4px;
+    --radius-control: 4px;
   }
 }
 

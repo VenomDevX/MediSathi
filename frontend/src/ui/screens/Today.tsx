@@ -52,7 +52,7 @@ export function Today() {
         <span className="flex items-start gap-3">
           <AssistantMark className="mt-2.5" />
           <span className="flex-1 text-[22px] font-bold">{t('homeAsk')}</span>
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-neem text-on-neem" aria-hidden>
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full lg:rounded-[var(--radius-control)] bg-neem text-on-neem" aria-hidden>
             <Microphone size={22} weight="fill" />
           </span>
         </span>

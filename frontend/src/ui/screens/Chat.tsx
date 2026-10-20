@@ -147,7 +147,7 @@ export function Chat() {
             <ul className="flex flex-wrap gap-2" hidden={!!report}>
               {suggestions.map((k) => (
                 <li key={k}>
-                  <button type="button" onClick={() => void send(t(k))} className="min-h-11 rounded-full border border-line bg-surface px-4 hover:border-neem">
+                  <button type="button" onClick={() => void send(t(k))} className="min-h-11 rounded-full lg:rounded-[var(--radius-control)] border border-line bg-surface px-4 hover:border-neem">
                     {t(k)}
                   </button>
                 </li>
@@ -176,7 +176,7 @@ export function Chat() {
 
         {messages.map((m) =>
           m.role === 'user' ? (
-            <p key={m.id} className="max-w-[85%] self-end rounded-[var(--radius-card)] rounded-br-md bg-neem-soft px-4 py-2.5 whitespace-pre-line">
+            <p key={m.id} className="max-w-[85%] self-end rounded-[var(--radius-card)] rounded-br-md lg:rounded-br-none bg-neem-soft px-4 py-2.5 whitespace-pre-line">
               {m.content}
             </p>
           ) : m.kind === 'emergency' ? (
@@ -243,12 +243,12 @@ export function Chat() {
               onClick={toggleListen}
               aria-pressed={!!listening}
               aria-label={t('chatSpeak')}
-              className={cx('flex size-11 shrink-0 items-center justify-center rounded-full', listening ? 'bg-danger text-surface' : 'text-neem hover:bg-neem-soft')}
+              className={cx('flex size-11 shrink-0 items-center justify-center rounded-full lg:rounded-[var(--radius-control)]', listening ? 'bg-danger text-surface' : 'text-neem hover:bg-neem-soft')}
             >
               <Microphone size={22} weight="fill" aria-hidden />
             </button>
           )}
-          <button type="submit" disabled={!text.trim() || busy} aria-label={t('chatSend')} className="flex size-11 shrink-0 items-center justify-center rounded-full bg-neem text-on-neem disabled:opacity-40">
+          <button type="submit" disabled={!text.trim() || busy} aria-label={t('chatSend')} className="flex size-11 shrink-0 items-center justify-center rounded-full lg:rounded-[var(--radius-control)] bg-neem text-on-neem disabled:opacity-40">
             <ArrowUp size={22} weight="bold" aria-hidden />
           </button>
         </div>
@@ -266,7 +266,7 @@ function Sources({ sources }: { sources: Source[] }) {
       <ul className="flex flex-wrap gap-2">
         {sources.map((s, i) => (
           <li key={s.id}>
-            <Link to={s.id.startsWith('report:') ? `/scan/${s.id.slice('report:'.length)}` : `/guidance/${s.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-3 text-sm hover:border-neem">
+            <Link to={s.id.startsWith('report:') ? `/scan/${s.id.slice('report:'.length)}` : `/guidance/${s.id}`} className="inline-flex min-h-9 items-center gap-1.5 rounded-full lg:rounded-[var(--radius-control)] border border-line bg-surface px-3 text-sm hover:border-neem">
               <span className="font-semibold text-neem tabular-nums">{i + 1}</span>
               {s.title}
               {!s.id.startsWith('report:') && <span className="text-muted">· {t('demoContent')}</span>}
