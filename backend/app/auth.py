@@ -24,19 +24,20 @@ _DUMMY_HASH = hasher.hash("not-a-real-password")
 
 
 class LoginFailures:
-    """Throttles password guessing. Every attempt is counted before the password is checked (one lock, so parallel
-    requests cannot slip past). One address gets 10 tries per username; all addresses together get 50, so a single
-    attacker cannot lock the real user out of their own phone's address."""
+    """Throttles password guessing. Every attempt is counted before the password is checked, under one lock, so
+    parallel requests cannot slip past. Limits per 15 minutes: 5 tries per username from one address, 20 per username
+    from all addresses (so one attacker cannot lock the real user out), and 30 tries per address across all usernames.
+    A full store refuses new entries rather than forgetting live ones."""
 
     # ponytail: in memory, per process; move to the database when running more than one server process.
-    # Behind a reverse proxy every client shares one address: pass the real one through (uvicorn --proxy-headers).
-    PER_ADDRESS, PER_NAME, WINDOW, MAX_KEYS = 10, 50, 15 * 60, 100_000
+    # Behind a reverse proxy every client shares one address: run uvicorn --proxy-headers --forwarded-allow-ips=<proxy>.
+    PER_ADDRESS, PER_NAME, PER_ADDRESS_ALL, WINDOW, MAX_KEYS = 5, 20, 30, 15 * 60, 100_000
 
     def __init__(self):
-        self.seen: dict[object, list[float]] = {}
+        self.seen: dict[tuple, list[float]] = {}
         self.lock = threading.Lock()
 
-    def _recent(self, key, now: float) -> int:
+    def _recent(self, key: tuple, now: float) -> int:
         recent = [t for t in self.seen.get(key, ()) if t > now - self.WINDOW]
         if recent:
             self.seen[key] = recent
@@ -45,23 +46,32 @@ class LoginFailures:
         return len(recent)
 
     def attempt(self, name: str, address: str) -> bool:
-        """Records one login attempt; False when this username is locked for this address."""
+        """Records one login attempt; False when it is over a limit."""
         now = time.monotonic()
+        keys = (("name", name), ("pair", name, address), ("address", address))
         with self.lock:
-            if len(self.seen) >= self.MAX_KEYS:
-                for key in list(self.seen):
-                    self._recent(key, now)
-                for key in list(self.seen)[: max(0, len(self.seen) - self.MAX_KEYS + 2)]:
-                    del self.seen[key]  # still full of recent entries: drop the oldest
-            if self._recent((name, address), now) >= self.PER_ADDRESS or self._recent(name, now) >= self.PER_NAME:
+            by_name, by_pair, by_address = (self._recent(k, now) for k in keys)
+            if by_pair >= self.PER_ADDRESS or by_name >= self.PER_NAME or by_address >= self.PER_ADDRESS_ALL:
                 return False
-            for key in (name, (name, address)):
-                self.seen.setdefault(key, []).append(now)
+            new = sum(k not in self.seen for k in keys)
+            if len(self.seen) + new > self.MAX_KEYS:
+                for k in list(self.seen):
+                    self._recent(k, now)
+                if len(self.seen) + new > self.MAX_KEYS:
+                    return False  # fail closed: never drop a live counter to make room
+            for k in keys:
+                self.seen.setdefault(k, []).append(now)
             return True
 
     def succeeded(self, name: str, address: str):
+        """Only failures count: refund this attempt and clear this address's tries for the name."""
         with self.lock:
-            self.seen.pop((name, address), None)
+            self.seen.pop(("pair", name, address), None)
+            for k in (("name", name), ("address", address)):
+                if self.seen.get(k):
+                    self.seen[k].pop()
+                    if not self.seen[k]:
+                        del self.seen[k]
 
 
 def secret() -> str:
