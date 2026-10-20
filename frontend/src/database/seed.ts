@@ -50,6 +50,14 @@ export type SeedContent = {
  * so a worker's own records are never overwritten.
  */
 export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> {
+  // Every start, not only on a new content version: a database from before the citizen role silently skipped that
+  // account (OR IGNORE also skips CHECK failures), and migrate() has fixed the table since. Existing rows are untouched.
+  await db.batch(
+    (c.users ?? []).map((u) => ({
+      sql: 'INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES (?, ?, ?, ?)',
+      bind: [u.id, u.display_name, u.role, JSON.stringify(u.assigned_scope)],
+    })),
+  )
   const [meta] = await db.query<{ value: string }>("SELECT value FROM app_meta WHERE key = 'content_version'")
   if (meta?.value === c.version) return
 
@@ -58,12 +66,6 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
     { sql: 'DELETE FROM lab_test_catalogue' },
     { sql: 'DELETE FROM donors' },
   ]
-  for (const u of c.users ?? []) {
-    s.push({
-      sql: 'INSERT OR IGNORE INTO users (id, display_name, role, assigned_scope_json) VALUES (?, ?, ?, ?)',
-      bind: [u.id, u.display_name, u.role, JSON.stringify(u.assigned_scope)],
-    })
-  }
   for (const g of c.guidance ?? []) {
     s.push({
       sql: `INSERT INTO guidance_documents (id, title, language, topic, category, summary, content, keywords,

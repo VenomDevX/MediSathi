@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import schema from './schema.sql?raw'
+import { migrate } from './migrate'
 import { openTestDb } from './testDb'
 import { seedIfNeeded, type SeedContent } from './seed'
 
@@ -67,5 +69,16 @@ describe('seedIfNeeded', () => {
     })
     const rows = await db.query<{ title: string }>('SELECT title FROM guidance_documents')
     expect(rows.map((r) => r.title)).toEqual(['बुखार (नया)'])
+  })
+})
+
+describe('demo accounts on an older device', () => {
+  it('adds the citizen account that an older database silently refused, once the table allows it', async () => {
+    const withCitizen = { ...content, users: [...content.users!, { id: 'u-ramesh', display_name: 'Ramesh Kumar', role: 'citizen', assigned_scope: [] }] }
+    const db = await openTestDb(schema.replace(", 'citizen'", '')) // before the citizen role
+    await seedIfNeeded(db, withCitizen) // OR IGNORE skips the row that breaks the role CHECK
+    await migrate(db)
+    await seedIfNeeded(db, withCitizen) // same content version: the next start-up
+    expect(await db.query('SELECT id FROM users ORDER BY id')).toEqual([{ id: 'u-ramesh' }, { id: 'u1' }])
   })
 })

@@ -130,7 +130,7 @@ function Shell({ children }: { children: ReactNode }) {
   const { lang, setLang } = useLang()
   const other = lang === 'hi' ? 'en' : 'hi'
   return (
-    <main className="relative mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-8 px-4 py-8">
+    <main className="relative mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-8 px-4 pt-[calc(4rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
       {/* Before sign-in too: the first screen must be readable for someone who reads only Hindi. */}
       <button type="button" lang={other} onClick={() => setLang(other)} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-medium text-muted hover:text-ink">
         <Translate size={18} aria-hidden />
