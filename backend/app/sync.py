@@ -219,13 +219,21 @@ def _apply(db: Session, user: User, op: Operation) -> dict:
 router = APIRouter(prefix="/api/v1/sync")
 
 
+def _stored(op: Operation, row: SyncOp, user: User) -> dict:
+    """An operation id already used: its result, but only to the user who pushed it."""
+    if row.user_id == user.id:
+        return row.result
+    return {"operation_id": op.operation_id, "status": "rejected", "entity_id": op.entity_id, "record_version": None,
+            "error_code": "operation_id_taken", "server_time": utcnow()}
+
+
 @router.post("/push")
 def push(body: PushBody, user: User = Depends(current_user), db: Session = Depends(session)):
     results = []
     for op in body.operations[:MAX_OPS]:
         stored = db.get(SyncOp, op.operation_id)
         if stored:
-            results.append(stored.result)
+            results.append(_stored(op, stored, user))
             continue
         try:
             outcome = _apply(db, user, op)
@@ -238,7 +246,7 @@ def push(body: PushBody, user: User = Depends(current_user), db: Session = Depen
             db.commit()
         except IntegrityError:  # same operation pushed concurrently: return the stored result
             db.rollback()
-            result = db.get(SyncOp, op.operation_id).result
+            result = _stored(op, db.get(SyncOp, op.operation_id), user)
         results.append(result)
     return {"results": results}
 

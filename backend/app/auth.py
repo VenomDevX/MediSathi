@@ -1,6 +1,7 @@
 import hashlib
 import os
 import secrets
+import time
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -19,6 +20,27 @@ REFRESH_DAYS = 30
 hasher = PasswordHasher()
 # Hash compared against when the username does not exist, so timing does not reveal valid usernames.
 _DUMMY_HASH = hasher.hash("not-a-real-password")
+
+
+class LoginFailures:
+    """Locks a username after repeated wrong passwords, so a password cannot be guessed online."""
+
+    # ponytail: in memory, per process; move to the database when running more than one server process.
+    LIMIT, WINDOW = 10, 15 * 60
+
+    def __init__(self):
+        self.seen: dict[str, list[float]] = {}
+
+    def locked(self, name: str) -> bool:
+        cutoff = time.monotonic() - self.WINDOW
+        self.seen[name] = [t for t in self.seen.get(name, []) if t > cutoff]
+        return len(self.seen[name]) >= self.LIMIT
+
+    def failed(self, name: str):
+        self.seen.setdefault(name, []).append(time.monotonic())
+
+    def cleared(self, name: str):
+        self.seen.pop(name, None)
 
 
 def secret() -> str:
@@ -78,14 +100,19 @@ router = APIRouter(prefix="/api/v1/auth")
 
 
 @router.post("/login")
-def login(body: Credentials, db: Session = Depends(session)):
-    user = db.scalar(select(User).where(User.username == body.username.strip().lower()))
+def login(body: Credentials, request: Request, db: Session = Depends(session)):
+    name, failures = body.username.strip().lower(), request.app.state.login_failures
+    if failures.locked(name):
+        raise HTTPException(429, "too_many_attempts")
+    user = db.scalar(select(User).where(User.username == name))
     try:
         hasher.verify(user.password_hash if user else _DUMMY_HASH, body.password)
     except VerifyMismatchError:
         user = None
     if not user or not user.active:
+        failures.failed(name)
         raise HTTPException(401, "invalid_credentials")
+    failures.cleared(name)
     return _issue(db, user)
 
 

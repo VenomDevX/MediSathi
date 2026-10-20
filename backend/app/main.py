@@ -23,7 +23,9 @@ def seed(db: Session):
     """Loads the synthetic demo data from content/ on first start. Never real people."""
     if db.scalar(select(User).limit(1)):
         return
-    password = hasher.hash(os.environ.get("DEMO_PASSWORD", "demo-1234"))
+    if not os.environ.get("DEMO_PASSWORD"):
+        raise RuntimeError("Set DEMO_PASSWORD for the seeded demo accounts (including admin)")
+    password = hasher.hash(os.environ["DEMO_PASSWORD"])
     for u in _load("users.json"):
         db.add(User(id=u["id"], username=u["id"].removeprefix("u-"), password_hash=password, display_name=u["display_name"], role=u["role"], scope=u["assigned_scope"]))
     db.add(User(id="u-admin", username="admin", password_hash=password, display_name="Admin", role="admin", scope=[]))
@@ -54,6 +56,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="MediSaathi API", version="1.0.0", lifespan=lifespan)
     app.state.sessions = make_sessionmaker(engine)
+    app.state.login_failures = auth.LoginFailures()
     origins = os.environ.get("CORS_ORIGINS", "http://localhost:3100,http://localhost:4200,http://localhost:5173,http://localhost:4173,capacitor://localhost,http://localhost,https://localhost")
     app.add_middleware(CORSMiddleware, allow_origins=origins.split(","), allow_methods=["GET", "POST"], allow_headers=["Authorization", "Content-Type"])
     app.include_router(auth.router)

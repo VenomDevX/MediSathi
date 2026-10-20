@@ -11,20 +11,27 @@ from .db import AuditEvent, Donor, Patient, User, Visit
 
 
 class AdminAuth(AuthenticationBackend):
-    def __init__(self, engine_sessions):
+    def __init__(self, engine_sessions, failures):
         super().__init__(secret_key=secret())
         self.sessions = engine_sessions
+        self.failures = failures
 
     async def login(self, request: Request) -> bool:
         form = await request.form()
+        name = str(form.get("username", "")).strip().lower()
+        if self.failures.locked(name):
+            return False
         with self.sessions() as db:
-            user = db.scalar(select(User).where(User.username == str(form.get("username", "")).lower(), User.role == "admin"))
+            user = db.scalar(select(User).where(User.username == name, User.role == "admin"))
             try:
                 ok = bool(user) and hasher.verify(user.password_hash, str(form.get("password", "")))
             except VerifyMismatchError:
                 ok = False
         if ok:
+            self.failures.cleared(name)
             request.session.update({"admin": user.id})
+        else:
+            self.failures.failed(name)
         return ok
 
     async def logout(self, request: Request) -> bool:
@@ -63,6 +70,6 @@ class UserAdmin(ModelView, model=User):
 
 
 def mount_admin(app, engine):
-    admin = Admin(app, engine, authentication_backend=AdminAuth(app.state.sessions), title="MediSaathi admin")
+    admin = Admin(app, engine, authentication_backend=AdminAuth(app.state.sessions, app.state.login_failures), title="MediSaathi admin")
     for view in (PatientAdmin, VisitAdmin, DonorAdmin, AuditAdmin, UserAdmin):
         admin.add_view(view)

@@ -8,3 +8,30 @@ test-results/
 playwright-report/
 medisaathi.db
 e2e.db
+
+# Secrets: never commit (the committed template is backend/.env.example)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+google-services.json
+
+# Model files (gigabytes; downloaded or picked inside the app)
+*.litertlm
+*.task
+*.tflite
+
+# Local data, caches, editors
+*.db
+*.sqlite
+*.sqlite3
+.pytest_cache/
+coverage/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

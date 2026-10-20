@@ -38,3 +38,22 @@ def test_logout_revokes_the_refresh_token(client):
 
 def test_health(client):
     assert client.get("/api/v1/health").json() == {"status": "ok"}
+
+
+def test_repeated_wrong_passwords_lock_the_username_for_a_while(client):
+    for _ in range(10):
+        assert client.post("/api/v1/auth/login", json={"username": "sunita", "password": "guess"}).status_code == 401
+    r = client.post("/api/v1/auth/login", json={"username": "sunita", "password": "demo-1234"})
+    assert r.status_code == 429
+
+
+def test_the_server_will_not_start_with_a_default_demo_password(monkeypatch):
+    import pytest
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    monkeypatch.delenv("DEMO_PASSWORD")
+    with pytest.raises(RuntimeError, match="DEMO_PASSWORD"):
+        with TestClient(create_app()):
+            pass

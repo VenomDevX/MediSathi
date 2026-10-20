@@ -143,3 +143,12 @@ def test_audit_events_are_stored_with_the_authenticated_actor(client, sunita):
          "entity_id": "d-001", "timestamp": "2026-10-19T11:00:00Z", "result": "denied"}
     [r] = push(client, sunita, op("audit_event", e["id"], e))
     assert r["status"] == "accepted"
+
+
+def test_another_users_operation_id_does_not_return_their_result(client, sunita, rakesh):
+    o = op("patient", "x", patient())
+    [mine] = push(client, sunita, o)
+    assert mine["status"] == "accepted"
+    [theirs] = push(client, rakesh, {**o, "payload": {}})
+    assert theirs["status"] == "rejected" and theirs["error_code"] == "operation_id_taken"
+    assert theirs["entity_id"] == "x" and theirs["record_version"] is None
