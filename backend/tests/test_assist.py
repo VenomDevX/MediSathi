@@ -38,6 +38,7 @@ class FakeGemini:
 def gemini(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     assist.calls.clear()
+    assist.day.clear()
     fake = FakeGemini()
     monkeypatch.setattr(assist, "urlopen", fake)
     return fake
@@ -97,3 +98,63 @@ def test_limits_calls_per_address(client, gemini):
         assert client.post("/api/v1/assist", json=PROMPT).status_code == 200
     assert client.post("/api/v1/assist", json=PROMPT).status_code == 429
     assert len(gemini.requests) == assist.PER_HOUR
+
+
+def test_tries_the_next_model_when_one_is_overloaded(client, gemini, monkeypatch):
+    from urllib.error import HTTPError
+
+    answers = iter([HTTPError("u", 503, "busy", None, None), None])
+
+    def flaky(req, timeout):
+        err = next(answers)
+        if err:
+            gemini.requests.append(req)
+            raise err
+        return gemini(req, timeout)
+
+    monkeypatch.setattr(assist, "urlopen", flaky)
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 200
+    first, second = (r.full_url for r in gemini.requests)
+    assert first != second  # a different model the second time
+
+
+def test_a_daily_cap_covers_all_addresses_together(client, gemini, monkeypatch):
+    monkeypatch.setattr(assist, "PER_DAY", 2)
+    assist.day.clear()
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 200
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 200
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 429
+
+
+def test_the_limiter_cannot_grow_without_bound(gemini, monkeypatch):
+    monkeypatch.setattr(assist, "MAX_ADDRESSES", 3)
+    assert all(assist._allow(f"10.0.0.{i}") for i in range(3))
+    assert not assist._allow("10.0.0.99")  # table full: new addresses wait, nothing is evicted to make room
+    assert len(assist.calls) == 3
+
+
+def test_tries_the_next_model_when_one_times_out(client, gemini, monkeypatch):
+    answers = iter([TimeoutError("timed out"), None])
+
+    def slow(req, timeout):
+        err = next(answers)
+        if err:
+            raise err
+        return gemini(req, timeout)
+
+    monkeypatch.setattr(assist, "urlopen", slow)
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 200
+
+
+def test_a_bad_request_does_not_try_other_models(client, gemini, monkeypatch):
+    from urllib.error import HTTPError
+
+    tried = []
+
+    def bad(req, timeout):
+        tried.append(req)
+        raise HTTPError("u", 400, "bad", None, None)
+
+    monkeypatch.setattr(assist, "urlopen", bad)
+    assert client.post("/api/v1/assist", json=PROMPT).status_code == 502
+    assert len(tried) == 1

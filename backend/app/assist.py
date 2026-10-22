@@ -10,9 +10,10 @@ import json
 import os
 import threading
 import time
-from collections import defaultdict, deque
+from collections import deque
 from pathlib import Path
 from typing import Literal
+from urllib.error import HTTPError
 from urllib.request import Request as Outgoing, urlopen
 
 from fastapi import APIRouter, HTTPException, Request
@@ -22,11 +23,15 @@ from .auth import _network
 
 router = APIRouter(prefix="/api/v1")
 
-PER_HOUR = 30
+PER_HOUR = 30  # per address (IPv6 per /64)
+PER_DAY = 500  # all addresses together: caps what anyone can spend on our key
+MAX_ADDRESSES = 10_000
 URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+FALLBACKS = ["gemini-3.5-flash", "gemini-3.1-flash-lite"]  # tried in order when a model is overloaded
 
-# ponytail: in-memory, per-process limit; move to the database or a shared cache if the API runs on more than one process.
-calls: dict[str, deque] = defaultdict(deque)
+# ponytail: in-memory, per-process limits; move to the database or a shared cache if the API runs on more than one process.
+calls: dict[str, deque] = {}
+day: deque = deque()
 lock = threading.Lock()
 
 
@@ -70,12 +75,25 @@ def _user(p: Prompt) -> str:
 def _allow(address: str) -> bool:
     now = time.monotonic()
     with lock:
-        q = calls[_network(address)]
+        while day and now - day[0] > 86400:
+            day.popleft()
+        if len(day) >= PER_DAY:
+            return False
+        key = _network(address)
+        if key not in calls:
+            if len(calls) >= MAX_ADDRESSES:
+                for k in [k for k, q in calls.items() if now - q[-1] > 3600]:  # windows that have fully passed
+                    del calls[k]
+            if len(calls) >= MAX_ADDRESSES:
+                return False  # never evict a live window: that would reset its count
+            calls[key] = deque()
+        q = calls[key]
         while q and now - q[0] > 3600:
             q.popleft()
         if len(q) >= PER_HOUR:
             return False
         q.append(now)
+        day.append(now)
         return True
 
 
@@ -89,14 +107,20 @@ def explain(p: Prompt, request: Request):
     body = {
         "systemInstruction": {"parts": [{"text": _system(p.lang)}]},
         "contents": [{"role": "user", "parts": [{"text": _user(p)}]}],
-        "generationConfig": {"maxOutputTokens": 2048, "thinkingConfig": {"thinkingLevel": "LOW"}},
+        "generationConfig": {"maxOutputTokens": 1024, "thinkingConfig": {"thinkingLevel": "LOW"}},
     }
-    req = Outgoing(URL.format(model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")), data=json.dumps(body).encode(),
-                   headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
-    try:
-        with urlopen(req, timeout=30) as res:
-            data = json.loads(res.read())
-        parts = data["candidates"][0]["content"]["parts"]
-    except Exception:
-        raise HTTPException(502, "online_ai_failed")  # no upstream detail: it can echo the request
-    return {"text": "".join(x.get("text", "") for x in parts if not x.get("thought"))}
+    models = list(dict.fromkeys([os.environ.get("GEMINI_MODEL") or "gemini-3.8-flash", *FALLBACKS]))
+    for model in models:
+        req = Outgoing(URL.format(model=model), data=json.dumps(body).encode(),
+                       headers={"Content-Type": "application/json", "x-goog-api-key": key}, method="POST")
+        try:
+            with urlopen(req, timeout=20) as res:
+                data = json.loads(res.read())
+            parts = data["candidates"][0]["content"]["parts"]
+            return {"text": "".join(x.get("text", "") for x in parts if not x.get("thought"))}
+        except HTTPError as e:
+            if 400 <= e.code < 500 and e.code != 429:
+                break  # a bad request will not get better on another model
+        except Exception:
+            pass  # overloaded models also just hang until the timeout: try the next one
+    raise HTTPException(502, "online_ai_failed")  # no upstream detail: it can echo the request
