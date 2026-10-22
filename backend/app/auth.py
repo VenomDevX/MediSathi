@@ -1,10 +1,13 @@
 import hashlib
 import ipaddress
+import json
 import os
 import secrets
 import threading
 import time
 from datetime import datetime, timedelta, timezone
+from urllib.parse import quote
+from urllib.request import urlopen
 
 import jwt
 from argon2 import PasswordHasher
@@ -12,6 +15,7 @@ from argon2.exceptions import VerifyMismatchError
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -148,6 +152,16 @@ class Credentials(BaseModel):
     password: str = Field(max_length=256)
 
 
+class SignUp(BaseModel):
+    display_name: str = Field(min_length=1, max_length=80)
+    username: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9._-]+$")  # no ":", kept for google:<sub>
+    password: str = Field(min_length=8, max_length=256)
+
+
+class GoogleToken(BaseModel):
+    id_token: str = Field(max_length=4096)
+
+
 class RefreshBody(BaseModel):
     refresh_token: str
 
@@ -191,3 +205,56 @@ def logout(body: RefreshBody, db: Session = Depends(session)):
         row.revoked = True
         db.commit()
     return Response(status_code=204)
+
+
+def _citizen(db: Session, username: str, display_name: str, password: str) -> User:
+    user = User(id=f"u-{secrets.token_hex(8)}", username=username, password_hash=hasher.hash(password),
+                display_name=display_name.strip(), role="citizen", scope=[])  # sign-up never grants a role or a scope
+    db.add(user)
+    db.commit()
+    return user
+
+
+@router.post("/signup")
+def signup(body: SignUp, request: Request, db: Session = Depends(session)):
+    """Citizens only: ASHA workers and coordinators carry a village scope, so an admin creates them."""
+    # Every sign-up counts against the address's login limit (never refunded), so one address cannot mass-create accounts.
+    if not request.app.state.login_failures.attempt("signup", request.client.host if request.client else "", exists=False):
+        raise HTTPException(429, "too_many_attempts")
+    name = body.username.lower()
+    if db.scalar(select(User).where(User.username == name)):
+        raise HTTPException(409, "username_taken")
+    try:
+        return _issue(db, _citizen(db, name, body.display_name, body.password))
+    except IntegrityError:  # the same name signed up at the same moment
+        raise HTTPException(409, "username_taken")
+
+
+def _google_claims(token: str, client_id: str) -> dict | None:
+    """Google checks the signature and expiry; we check it was issued to our app for a verified email."""
+    try:
+        with urlopen(f"https://oauth2.googleapis.com/tokeninfo?id_token={quote(token)}", timeout=10) as res:
+            c = json.loads(res.read())
+    except Exception:  # Google answers 400 for a bad or expired token
+        return None
+    ok = (c.get("aud") == client_id and c.get("iss") in ("accounts.google.com", "https://accounts.google.com")
+          and c.get("email_verified") in (True, "true") and int(c.get("exp", 0)) > time.time() and c.get("sub"))
+    return c if ok else None
+
+
+@router.post("/google")
+def google(body: GoogleToken, db: Session = Depends(session)):
+    client_id = os.environ.get("GOOGLE_CLIENT_ID")
+    if not client_id:
+        raise HTTPException(503, "google_sign_in_off")
+    claims = _google_claims(body.id_token, client_id)
+    if not claims:
+        raise HTTPException(401, "invalid_google_token")
+    name = f"google:{claims['sub']}"  # sign-up names cannot contain ":", so this never meets a password account
+    user = db.scalar(select(User).where(User.username == name))
+    if not user:
+        # random password nobody knows: the account is reachable only through Google
+        user = _citizen(db, name, claims.get("name") or claims.get("email", "").split("@")[0] or "Google user", secrets.token_urlsafe(32))
+    if not user.active:
+        raise HTTPException(401, "invalid_credentials")
+    return _issue(db, user)

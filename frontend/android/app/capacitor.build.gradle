@@ -12,6 +12,7 @@ dependencies {
     implementation project(':capacitor-community-text-to-speech')
     implementation project(':capacitor-local-notifications')
     implementation project(':capacitor-network')
+    implementation project(':capgo-capacitor-social-login')
 
 }
 

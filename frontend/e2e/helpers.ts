@@ -5,7 +5,7 @@ export async function openApp(page: Page, lang: 'hi' | 'en' = 'en', account: 'wo
   await page.goto('/')
   await page.getByRole('button', { name: account === 'worker' ? 'Health Worker (ASHA) Demo' : 'Citizen / Family (Normal User)' }).click()
   await createPin(page)
-  if (lang === 'hi') await page.getByRole('button', { name: 'हिंदी' }).click()
+  if (lang === 'hi') await page.getByLabel('Change language').selectOption('hi')
 }
 
 export async function createPin(page: Page) {

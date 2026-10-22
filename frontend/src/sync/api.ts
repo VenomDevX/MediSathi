@@ -21,12 +21,24 @@ async function request(path: string, init: RequestInit = {}): Promise<Response> 
   return res
 }
 
-export async function login(username: string, password: string): Promise<LoginResult> {
-  const res = await request('/api/v1/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) })
-  if (res.status === 401) throw new AuthError('invalid_credentials')
-  if (!res.ok) throw new Error(`login failed: ${res.status}`)
-  return res.json()
+/** Sign-in calls: a refused sign-in throws AuthError with the server's reason (invalid_credentials, username_taken…). */
+async function authPost(path: string, body: object): Promise<LoginResult> {
+  const res = await request(`/api/v1/auth/${path}`, { method: 'POST', body: JSON.stringify(body) })
+  if (res.ok) return res.json()
+  if (res.status === 401 || res.status === 409) {
+    const detail = await res.json().then((b) => b.detail, () => null)
+    throw new AuthError(typeof detail === 'string' ? detail : 'invalid_credentials')
+  }
+  throw new Error(`${path} failed: ${res.status}`)
 }
+
+export const login = (username: string, password: string) => authPost('login', { username, password })
+
+/** Creates a citizen account (health workers are created by an admin, with their villages). */
+export const signup = (display_name: string, username: string, password: string) => authPost('signup', { display_name, username, password })
+
+/** Signs in with a Google ID token; the server checks it with Google and creates a citizen account the first time. */
+export const googleSignIn = (idToken: string) => authPost('google', { id_token: idToken })
 
 export async function logout(refreshToken: string) {
   await request('/api/v1/auth/logout', { method: 'POST', body: JSON.stringify({ refresh_token: refreshToken }) }).catch(() => {})

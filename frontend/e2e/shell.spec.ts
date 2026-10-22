@@ -21,6 +21,6 @@ test('a fresh device opens in English, and Hindi is one tap away', async ({ page
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
-  await page.getByRole('button', { name: 'हिंदी' }).click()
+  await page.getByLabel('Change language').selectOption('hi')
   await expect(page.getByRole('heading', { name: 'साइन इन करें' })).toBeVisible()
 })

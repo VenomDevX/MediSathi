@@ -68,3 +68,20 @@ test('records made offline reach the server once connectivity returns, with no d
   await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible()
   await expect(page.getByText('Not synced')).toHaveCount(0)
 })
+
+test('a citizen creates an account, sets a PIN and lands on their own home', async ({ page }) => {
+  const username = `asha${Date.now()}`
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Create account' }).click()
+  await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible()
+  await page.getByLabel('Your name').fill('Asha Devi')
+  await page.getByLabel('Username').fill(username)
+  await page.getByLabel('Password').fill('long-enough-1')
+  await page.getByRole('button', { name: 'Create account' }).last().click()
+  await createPin(page)
+  await expect(page.getByRole('heading', { name: 'Namaste, Asha' })).toBeVisible()
+
+  // The same username cannot be taken twice
+  const again = await page.request.post(`${API}/api/v1/auth/signup`, { data: { display_name: 'Other', username, password: 'long-enough-2' } })
+  expect(again.status()).toBe(409)
+})

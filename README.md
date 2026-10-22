@@ -59,15 +59,24 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # macOS/Linux: .venv/bin/pip
 cp .env.example .env        # set MEDISAATHI_SECRET; DEMO_PASSWORD is required to seed the demo accounts
 .venv/Scripts/python -m uvicorn app.main:app --port 8000 --env-file .env
-.venv/Scripts/python -m pytest   # 56 tests
+.venv/Scripts/python -m pytest   # 80 tests
 ```
 - API documentation: http://localhost:8000/docs. The frontend calls `VITE_API_URL` (default `http://localhost:8000`).
 - No user accounts required for blood requests. Each request and donor registration uses random local cryptographic tokens.
 - Privacy-first: A donor's contact is only revealed after explicit in-app confirmation.
 - Worker accounts: Argon2 passwords, 15-minute access tokens with rotating refresh tokens, login limits per account, user + address and address; sync is idempotent and scoped to the worker's assigned area. Admin panel (SQLAdmin) at `/admin`.
 
+### Accounts: sign up and Google sign-in
+- **Create account** on the sign-in screen makes a **citizen** account (`POST /api/v1/auth/signup`: name, username of 3 to 32 letters, numbers, `.` `_` `-`, password of at least 8 characters; 5 sign-ups per address per 15 minutes). ASHA worker and coordinator accounts carry a village scope, so an admin creates them at `/admin`.
+- **Continue with Google** appears only when a client ID is set. On the website it is Google's own button; in the Android app it is the system account picker (Google blocks its sign-in page inside WebViews). The server checks the ID token with Google (audience, issuer, verified email, expiry) and creates a citizen account the first time.
+- Setup in [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+  1. OAuth consent screen: External, app name MediSaathi.
+  2. Create an OAuth client of type **Web application**. Authorised JavaScript origins: `http://localhost:5173`, `http://localhost:4173` and your website's origin.
+  3. Put its client ID in `backend/.env` as `GOOGLE_CLIENT_ID=` and in `frontend/.env.local` as `VITE_GOOGLE_CLIENT_ID=` (the same value), then rebuild the frontend.
+  4. For Android, also create an OAuth client of type **Android**: package `in.medisaathi.app`, and the SHA-1 from `cd frontend/android && ./gradlew signingReport` (debug and release keys each need one). The app still sends the **Web** client ID; the Android client only tells Google that this signed app may ask.
+
 ## Build the Android App
-Requires Android SDK and **JDK 17 or newer** (Android Studio's bundled JDK works). `android/build.gradle` compiles every module, Capacitor's included, for Java 17.
+Requires Android SDK and **JDK 17 or 21** (this Gradle version cannot run on JDK 25; set `JAVA_HOME` to a 17 or 21 JDK). `android/build.gradle` compiles every module, Capacitor's included, for Java 17.
 ```bash
 cd frontend
 npm run build

@@ -1,10 +1,11 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LockKey, SignIn as SignInIcon, Translate, Warning } from '@phosphor-icons/react'
+import { GoogleLogo, LockKey, SignIn as SignInIcon, Translate, UserPlus, Warning } from '@phosphor-icons/react'
 import { useBoot } from '../app-context'
+import { GOOGLE_CLIENT_ID, nativeGoogle, nativeGoogleIdToken, renderGoogleButton } from '../auth/google'
 import { hasPin, setPin, unlock } from '../auth/pin'
 import { ALL_LANGS, LANG_META, useLang, useT } from '../i18n'
-import { login, type LoginResult } from '../sync/api'
+import { googleSignIn, login, signup, type LoginResult } from '../sync/api'
 import { AuthError, NetworkError } from '../sync/engine'
 import { SyncProvider } from '../sync/SyncProvider'
 import type { Session } from '../sync/useSync'
@@ -155,43 +156,72 @@ function Shell({ children }: { children: ReactNode }) {
 
 function SignIn({ onSignedIn, onDemo }: { onSignedIn: (r: LoginResult) => Promise<void>; onDemo: (id?: string) => Promise<void> }) {
   const t = useT()
-  const [form, setForm] = useState({ username: '', password: '' })
+  const [tab, setTab] = useState<'signin' | 'signup'>('signin')
+  const [form, setForm] = useState({ name: '', username: '', password: '' })
   const [error, setError] = useState<StringKey | null>(null)
   const [busy, setBusy] = useState(false)
+  const signingUp = tab === 'signup'
 
-  async function submit(e: FormEvent) {
-    e.preventDefault()
+  async function run(call: () => Promise<LoginResult>) {
     setError(null)
     setBusy(true)
     try {
-      await onSignedIn(await login(form.username, form.password))
+      await onSignedIn(await call())
     } catch (err) {
-      setError(err instanceof AuthError ? 'signInWrong' : err instanceof NetworkError ? 'signInOffline' : 'signInFailed')
+      setError(err instanceof AuthError ? (err.message === 'username_taken' ? 'signUpTaken' : 'signInWrong') : err instanceof NetworkError ? 'signInOffline' : 'signInFailed')
     } finally {
       setBusy(false)
     }
   }
 
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    run(() => (signingUp ? signup(form.name, form.username, form.password) : login(form.username, form.password)))
+  }
+
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
+  const tabClass = (on: boolean) =>
+    `flex min-h-11 flex-1 items-center justify-center rounded-[calc(var(--radius-control)-4px)] font-semibold transition-colors ${on ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`
+
   return (
     <Shell>
       <div className="flex flex-col gap-3">
         <span className="flex size-14 items-center justify-center rounded-[var(--radius-card)] bg-ok-bg text-neem" aria-hidden>
-          <SignInIcon size={30} />
+          {signingUp ? <UserPlus size={30} /> : <SignInIcon size={30} />}
         </span>
         <p translate="no" className="text-muted">{t('appName')}</p>
-        <h1 className="text-[28px] leading-tight font-bold">{t('signInTitle')}</h1>
-        <p className="text-muted">{t('signInHint')}</p>
+        <h1 className="text-[28px] leading-tight font-bold">{t(signingUp ? 'signUpTitle' : 'signInTitle')}</h1>
+        <p className="text-muted">{t(signingUp ? 'signUpHint' : 'signInHint')}</p>
+      </div>
+      <div className="flex gap-1 rounded-[var(--radius-control)] border border-line bg-canvas p-1">
+        {(['signin', 'signup'] as const).map((k) => (
+          <button key={k} type="button" aria-pressed={tab === k} onClick={() => (setTab(k), setError(null))} className={tabClass(tab === k)}>
+            {t(k === 'signin' ? 'signIn' : 'createAccount')}
+          </button>
+        ))}
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4">
-        <Field label={t('username')}>
-          <input name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className={inputClass} />
+        {signingUp && (
+          <Field label={t('fullName')}>
+            <input name="name" autoComplete="name" required maxLength={80} value={form.name} onChange={set('name')} className={inputClass} />
+          </Field>
+        )}
+        <Field label={t('username')} hint={signingUp ? t('usernameHint') : undefined}>
+          <input
+            name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={form.username} onChange={set('username')} className={inputClass}
+            {...(signingUp && { minLength: 3, maxLength: 32, pattern: '[A-Za-z0-9._\\-]+' })}
+          />
         </Field>
-        <Field label={t('password')}>
-          <input name="password" type="password" autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className={inputClass} />
+        <Field label={t('password')} hint={signingUp ? t('passwordHint') : undefined}>
+          <input
+            name="password" type="password" autoComplete={signingUp ? 'new-password' : 'current-password'} required value={form.password} onChange={set('password')} className={inputClass}
+            {...(signingUp && { minLength: 8, maxLength: 256 })}
+          />
         </Field>
         {error && <Banner tone="danger">{t(error)}</Banner>}
-        <Button type="submit" disabled={busy}>{t(busy ? 'signingIn' : 'signIn')}</Button>
+        <Button type="submit" disabled={busy}>{t(busy ? (signingUp ? 'signingUp' : 'signingIn') : signingUp ? 'createAccount' : 'signIn')}</Button>
       </form>
+      {GOOGLE_CLIENT_ID && <GoogleButton disabled={busy} onToken={(token) => run(() => googleSignIn(token))} onFail={() => setError('googleFailed')} />}
       <div className="flex flex-col gap-3 border-t border-line pt-6">
         <p className="text-sm font-semibold text-muted">{t('demoHint')}</p>
         <div className="flex flex-col gap-2">
@@ -220,6 +250,50 @@ function SignIn({ onSignedIn, onDemo }: { onSignedIn: (r: LoginResult) => Promis
         </div>
       </div>
     </Shell>
+  )
+}
+
+/** "or", then Google: Google's own button on the website, the system account picker in the Android app (auth/google.ts). */
+function GoogleButton({ disabled, onToken, onFail }: { disabled: boolean; onToken: (idToken: string) => void; onFail: () => void }) {
+  const t = useT()
+  const { lang } = useLang()
+  const slot = useRef<HTMLDivElement>(null)
+  const latest = useRef({ onToken, onFail })
+  useEffect(() => {
+    latest.current = { onToken, onFail }
+  })
+
+  useEffect(() => {
+    if (nativeGoogle || !slot.current) return
+    renderGoogleButton(slot.current, LANG_META[lang].locale, (token) => latest.current.onToken(token)).catch(() => latest.current.onFail())
+  }, [lang])
+
+  async function native() {
+    let token: string
+    try {
+      token = await nativeGoogleIdToken()
+    } catch {
+      return onFail() // also when the person closes the picker
+    }
+    onToken(token)
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-3 text-sm text-muted" aria-hidden>
+        <span className="h-px flex-1 bg-line" />
+        {t('orDivider')}
+        <span className="h-px flex-1 bg-line" />
+      </div>
+      {nativeGoogle ? (
+        <Button type="button" variant="secondary" disabled={disabled} onClick={native}>
+          <GoogleLogo size={20} weight="bold" aria-hidden />
+          {t('googleContinue')}
+        </Button>
+      ) : (
+        <div ref={slot} className="flex min-h-11 justify-center" />
+      )}
+    </div>
   )
 }
 
