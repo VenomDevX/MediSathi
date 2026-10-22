@@ -233,7 +233,7 @@ def signup(body: SignUp, request: Request, db: Session = Depends(session)):
 def _google_claims(token: str, client_id: str) -> dict | None:
     """Google checks the signature and expiry; we check it was issued to our app for a verified email."""
     try:
-        with urlopen(f"https://oauth2.googleapis.com/tokeninfo?id_token={quote(token)}", timeout=10) as res:
+        with urlopen(f"https://oauth2.googleapis.com/tokeninfo?id_token={quote(token)}", timeout=5) as res:
             c = json.loads(res.read())
     except Exception:  # Google answers 400 for a bad or expired token
         return None
@@ -243,13 +243,18 @@ def _google_claims(token: str, client_id: str) -> dict | None:
 
 
 @router.post("/google")
-def google(body: GoogleToken, db: Session = Depends(session)):
+def google(body: GoogleToken, request: Request, db: Session = Depends(session)):
     client_id = os.environ.get("GOOGLE_CLIENT_ID")
     if not client_id:
         raise HTTPException(503, "google_sign_in_off")
+    # Each bad token costs a call to Google, so failures count against the address like wrong passwords.
+    address, failures = request.client.host if request.client else "", request.app.state.login_failures
+    if not failures.attempt("google", address, exists=False):
+        raise HTTPException(429, "too_many_attempts")
     claims = _google_claims(body.id_token, client_id)
     if not claims:
         raise HTTPException(401, "invalid_google_token")
+    failures.succeeded("google", address)
     name = f"google:{claims['sub']}"  # sign-up names cannot contain ":", so this never meets a password account
     user = db.scalar(select(User).where(User.username == name))
     if not user:

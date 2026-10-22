@@ -1,9 +1,9 @@
 # MediSaathi
 ## Technical Requirements Document (TRD)
 
-**Document version:** 1.3  
+**Document version:** 1.4  
 **Status:** As built for Hack-o-Relay 2026 (October 2026). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
-**Related document:** MediSaathi PRD v1.2
+**Related document:** MediSaathi PRD v1.4
 
 ---
 
@@ -42,11 +42,12 @@ The architecture must allow individual capabilities to operate independently. If
 | API backend | FastAPI (`backend/`) | Built |
 | Server database | PostgreSQL in production; SQLite for local development and tests | Built |
 | Authentication | Argon2 password hashes, 15-minute JWT access token, rotating hashed refresh token; offline PIN unlock on the device (§8.0) | Built |
+| Sign up and Google sign-in | `POST /api/v1/auth/signup` creates citizens only (Argon2, username 3 to 32 of `[A-Za-z0-9._-]`, password 8 to 256). `POST /api/v1/auth/google` checks the ID token with Google's `tokeninfo` endpoint (audience = `GOOGLE_CLIENT_ID`, issuer, verified email, expiry) and finds or creates the citizen `google:<sub>`; failed tokens count against the address in the login limiter. Client: Google Identity Services button on the website, `@capgo/capacitor-social-login` (Credential Manager) on Android, both in `src/auth/google.ts`; hidden unless `VITE_GOOGLE_CLIENT_ID` is set | Built; Google needs OAuth clients (README) |
 | Login abuse limits | Per account (20 / 15 min), per username + address (5), per address (30); IPv6 grouped by /64 | Built |
 | Admin tools | SQLAdmin on the FastAPI app, behind the same login limiter | Built |
 | API format | HTTPS REST with versioned JSON contracts; OpenAPI exported to `contracts/` | Built |
 | Sync trigger | On app open, on `online` event, on app resume, and a periodic timer while open | Built |
-| Tests | Vitest (165 unit tests), pytest (56), Playwright (22 flows on phone and laptop sizes) | Built |
+| Tests | Vitest (168 unit tests), pytest (81), Playwright (23 flows on phone and laptop sizes) | Built |
 | Hosting | Static hosting for the PWA; any container host with managed PostgreSQL for the API | Proposed |
 
 **Important:** a LiteRT-LM model is built for a target. The web build (`gemma-4-E2B-it-web.litertlm`) and the Android build (`gemma-4-E2B-it.litertlm`) are different files; the app's catalogue (`src/assistant/modelFiles.ts`) names the right one per platform.
@@ -454,7 +455,7 @@ A cached donor directory cannot establish current donor availability while fully
 
 ### 8.0 Authentication and offline unlock
 
-1. First sign-in requires network: the server returns an access token (short-lived, e.g. 15 minutes), a refresh token, the user's role, and assigned scope.
+1. First sign-in (password, new citizen sign-up, or Google) requires network: the server returns an access token (short-lived, e.g. 15 minutes), a refresh token, the user's role, and assigned scope.
 2. The user sets a local PIN (4 to 6 digits). One PBKDF2-SHA256 run (310,000 iterations, random 16-byte salt) gives a verifier and an AES-GCM key; the refresh token is stored only encrypted with that key (`src/auth/pin.ts`). The PIN itself is never stored. *Proposed:* encrypting the whole local database, Android Keystore protection and biometric unlock.
 3. Offline, the app unlocks with the PIN. No server call is needed for local reads and writes. Android cloud backup and device transfer are disabled (`data_extraction_rules.xml`), so the local database does not leave the phone that way.
 4. Offline access expires after `max_offline_days` (default 7) since `last_server_contact_at`. After that, an online sign-in is required.
@@ -484,11 +485,13 @@ Both clients process the persistent `sync_operations` queue on app open, app res
 All endpoints use a versioned base path such as `/api/v1`. Every protected endpoint requires authentication and server-side authorization.
 
 **Authentication**
-- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/login`: username and password.
+- `POST /api/v1/auth/signup`: `{display_name, username, password}`; always creates `role = citizen`, `scope = []`. 409 `username_taken`; 429 after 5 sign-ups per address per 15 minutes (counted in the login limiter and never refunded).
+- `POST /api/v1/auth/google`: `{id_token}`. 503 when `GOOGLE_CLIENT_ID` is unset, 401 `invalid_google_token` when Google rejects it or any claim check fails. Google users get the username `google:<sub>` (sign-up names cannot contain `:`) and a random password nobody knows, so only Google reaches the account.
 - `POST /api/v1/auth/refresh`
 - `POST /api/v1/auth/logout`
 
-The exact identity provider and token strategy must be selected during implementation.
+As built: our own accounts with Argon2 hashes and HS256 JWTs; Google is an optional identity provider for citizens only. All sign-in responses have the same shape (`access_token`, `refresh_token`, `user`, `server_time`), so the client sets the PIN the same way after each. Android uses the native account picker because Google blocks its OAuth page inside WebViews.
 
 **Synchronization (the only client write path)**
 - `POST /api/v1/sync/push` — patients, visits, visit amendments, reports metadata, donor registrations, consent changes, and audit events, all as operations.
@@ -863,6 +866,10 @@ The implementation is acceptable when:
 **Final technical decision:** The hackathon build proves the architecture end to end. Before any pilot, measure the model on real low-cost phones, have the guidance and report text clinically reviewed, and only then lock supported device tiers and release scope.
 
 ## 19. Change log
+
+**v1.4**
+- Added citizen sign-up and Google sign-in (website and Android) with their API contracts; worker accounts stay admin-created (§2, §8.0, §8.2).
+- Test counts updated (§2).
 
 **v1.3 (as built, October 2026)**
 - Added an optional online model: Gemini through the backend, chosen per device, behind the same guard; reports never sent (§2).

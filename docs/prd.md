@@ -1,7 +1,7 @@
 # MediSaathi
 ## Product Requirements Document (PRD)
 
-**Document version:** 1.3  
+**Document version:** 1.4  
 **Status:** Hackathon build delivered (October 2026); requirements not yet met are listed in §10 (see §14 change log)  
 **Product category:** Offline-first AI healthcare support platform  
 **Primary platforms:** Android app and offline-capable website (used on laptops and desktops)  
@@ -302,6 +302,21 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 
 **BR-03:** The requester's name and number are not sent to donors.
 
+### 5.10 Accounts: sign up and sign in
+
+**AC-01:** A person can create their own account with a name, username and password. Self sign-up always creates a **citizen** account with no village scope; ASHA worker, coordinator and admin accounts are created by an administrator, because they grant access to other people's records.
+
+**AC-02:** A person can sign in or sign up with Google, on the website and in the Android app. The first Google sign-in creates a citizen account; later ones reuse it. Google sign-in is shown only when the deployment has configured it.
+
+**AC-03:** Sign-up is limited per network address, usernames are unique, and passwords have at least 8 characters. A Google account cannot be reached with a password.
+
+**AC-04:** After any sign-in or sign-up the person sets a local PIN, and the app then opens offline exactly as in AA-10. The offline demo accounts stay available without a server.
+
+**Acceptance criteria**
+- Creating an account signs the person in and lands them on their own home after setting a PIN.
+- Choosing a taken username shows "That username is taken" and creates nothing.
+- A sign-up request that asks for a worker role or a village scope still creates a citizen with no scope.
+
 ## 6. Cross-platform requirements
 
 MediSaathi ships as two products built from one web codebase: a mobile app and a website. Domain rules, data access, synchronization, donor search, and guidance search are implemented once. Only platform-specific parts (OCR engine, AI runtime, notifications, location, text-to-speech, secure key storage) differ. There is no separate installable desktop application; laptops and desktops use the website.
@@ -422,8 +437,9 @@ The hackathon build delivers a working vertical slice on the website, as a PWA a
 4. Guidance library with offline search, deterministic emergency rules and the 108/102/112 screen.
 5. BloodLink with seeded donors, approximate distance, freshness labels, manual location, and blood requests with donor consent (§5.9).
 6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
+7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 165 unit, 56 backend, 22 end-to-end flows on phone and laptop sizes.
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 168 unit, 81 backend, 23 end-to-end flows on phone and laptop sizes.
 
 Not delivered yet: mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
@@ -468,6 +484,10 @@ A feature is complete only when its implementation, tests, failure handling, doc
 **Product decision:** MediSaathi is a decision-support and health-information tool, not an autonomous clinical system. Human healthcare professionals retain responsibility for diagnosis, treatment, and transfusion decisions.
 
 ## 14. Change log
+
+**v1.4**
+- Added accounts (§5.10): citizen self sign-up and Google sign-in on the website and Android; worker accounts stay admin-created (AC-01 to AC-04).
+- Delivered scope and test counts updated (§10).
 
 **v1.3**
 - Status: hackathon build delivered; §10 lists what was built, what was measured, and what is still missing.

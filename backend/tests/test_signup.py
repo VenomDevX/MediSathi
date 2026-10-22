@@ -90,3 +90,11 @@ def test_a_google_account_cannot_be_reached_with_a_password(client, google):
     client.post("/api/v1/auth/google", json={"id_token": "tok"})
     r = client.post("/api/v1/auth/login", json={"username": "google:1234567890", "password": ""})
     assert r.status_code == 401
+
+
+def test_bad_google_tokens_are_limited_per_address_but_good_ones_are_not(client, google):
+    for _ in range(auth.LoginFailures.PER_ADDRESS + 2):
+        assert client.post("/api/v1/auth/google", json={"id_token": "tok"}).status_code == 200
+    google["aud"] = "someone-else"
+    codes = [client.post("/api/v1/auth/google", json={"id_token": "tok"}).status_code for _ in range(auth.LoginFailures.PER_ADDRESS + 1)]
+    assert codes[-1] == 429 and codes[:-1] == [401] * auth.LoginFailures.PER_ADDRESS
