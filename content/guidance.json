@@ -13,7 +13,12 @@
    "bukhar",
    "fever",
    "temperature",
-   "garmi"
+   "garmi",
+   "taap",
+   "tez bukhar",
+   "badan garam",
+   "फीवर",
+   "टेम्परेचर"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -35,7 +40,12 @@
    "bukhar",
    "fever",
    "temperature",
-   "garmi"
+   "garmi",
+   "taap",
+   "tez bukhar",
+   "badan garam",
+   "फीवर",
+   "टेम्परेचर"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -64,7 +74,14 @@
    "dehydration",
    "ors",
    "ulti",
-   "vomiting"
+   "vomiting",
+   "pet kharab",
+   "patle dast",
+   "dast lagna",
+   "पेट खराब",
+   "लूज़ मोशन",
+   "पतले दस्त",
+   "वोमिटिंग"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -93,7 +110,14 @@
    "dehydration",
    "ors",
    "ulti",
-   "vomiting"
+   "vomiting",
+   "pet kharab",
+   "patle dast",
+   "dast lagna",
+   "पेट खराब",
+   "लूज़ मोशन",
+   "पतले दस्त",
+   "वोमिटिंग"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -117,7 +141,11 @@
    "burns",
    "jal gaya",
    "jalna",
-   "aag"
+   "aag",
+   "jala",
+   "garam pani",
+   "बर्न",
+   "जल गई"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -141,7 +169,11 @@
    "burns",
    "jal gaya",
    "jalna",
-   "aag"
+   "aag",
+   "jala",
+   "garam pani",
+   "बर्न",
+   "जल गई"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -166,7 +198,12 @@
    "cut",
    "wound",
    "khoon",
-   "chot"
+   "chot",
+   "kat gaya",
+   "chot lagi",
+   "ब्लीडिंग",
+   "कट गया",
+   "चोट लगी"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -191,7 +228,12 @@
    "cut",
    "wound",
    "khoon",
-   "chot"
+   "chot",
+   "kat gaya",
+   "chot lagi",
+   "ब्लीडिंग",
+   "कट गया",
+   "चोट लगी"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -214,7 +256,11 @@
    "snake",
    "snake bite",
    "saanp",
-   "sanp"
+   "sanp",
+   "naag",
+   "स्नेक",
+   "नाग",
+   "डसा"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -237,7 +283,11 @@
    "snake",
    "snake bite",
    "saanp",
-   "sanp"
+   "sanp",
+   "naag",
+   "स्नेक",
+   "नाग",
+   "डसा"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -263,7 +313,12 @@
    "kutta",
    "rabies",
    "bandar",
-   "monkey"
+   "monkey",
+   "kutte",
+   "kutte ne kata",
+   "bandar ne kata",
+   "डॉग",
+   "कुत्ते ने काटा"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -289,7 +344,12 @@
    "kutta",
    "rabies",
    "bandar",
-   "monkey"
+   "monkey",
+   "kutte",
+   "kutte ne kata",
+   "bandar ne kata",
+   "डॉग",
+   "कुत्ते ने काटा"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -313,7 +373,12 @@
    "heat",
    "heat stroke",
    "sunstroke",
-   "dhoop"
+   "dhoop",
+   "lu lagna",
+   "garmi lagna",
+   "धूप",
+   "लू लगना",
+   "हीटस्ट्रोक"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -337,7 +402,12 @@
    "heat",
    "heat stroke",
    "sunstroke",
-   "dhoop"
+   "dhoop",
+   "lu lagna",
+   "garmi lagna",
+   "धूप",
+   "लू लगना",
+   "हीटस्ट्रोक"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -358,7 +428,11 @@
    "दम घुटना",
    "choking",
    "choke",
-   "gale me atka"
+   "gale me atka",
+   "atak gaya",
+   "gale me phansa",
+   "गले में फंसा",
+   "चोकिंग"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -379,7 +453,11 @@
    "दम घुटना",
    "choking",
    "choke",
-   "gale me atka"
+   "gale me atka",
+   "atak gaya",
+   "gale me phansa",
+   "गले में फंसा",
+   "चोकिंग"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -403,7 +481,12 @@
    "pregnant",
    "garbh",
    "delivery",
-   "anc"
+   "anc",
+   "garbhvati",
+   "prasav",
+   "प्रेगनेंसी",
+   "प्रेग्नेंट",
+   "डिलीवरी"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -427,7 +510,12 @@
    "pregnant",
    "garbh",
    "delivery",
-   "anc"
+   "anc",
+   "garbhvati",
+   "prasav",
+   "प्रेगनेंसी",
+   "प्रेग्नेंट",
+   "डिलीवरी"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -449,7 +537,11 @@
    "fainting",
    "faint",
    "dizzy",
-   "chakkar"
+   "chakkar",
+   "behosh",
+   "chakkar aana",
+   "बेहोश",
+   "चक्कर आना"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",
@@ -471,7 +563,11 @@
    "fainting",
    "faint",
    "dizzy",
-   "chakkar"
+   "chakkar",
+   "behosh",
+   "chakkar aana",
+   "बेहोश",
+   "चक्कर आना"
   ],
   "source_name": "Demo content, not clinically reviewed",
   "version": "1",

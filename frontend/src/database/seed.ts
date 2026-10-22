@@ -1,3 +1,4 @@
+import { withFolded } from '../domain/hinglish'
 import type { Database, Statement } from './types'
 
 export type SeedGuidance = {
@@ -72,7 +73,7 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
               source_name, source_reference, reviewed, limitations, audience, version, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
       bind: [
-        g.id, g.title, g.language, g.topic, g.category, g.summary, g.content, g.keywords.join(' '),
+        g.id, g.title, g.language, g.topic, g.category, g.summary, g.content, withFolded(g.keywords.flatMap((k) => k.split(' '))).join(' '),
         g.source_name, g.source_reference ?? null, g.reviewed ? 1 : 0, g.limitations, g.audience, g.version,
       ],
     })

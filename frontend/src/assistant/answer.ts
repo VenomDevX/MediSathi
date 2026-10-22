@@ -3,6 +3,7 @@
 import type { Guidance } from '../data/guidance'
 import type { Database } from '../database/types'
 import { matchEmergency, type EmergencyRule } from '../domain/emergency'
+import { fold, withFolded } from '../domain/hinglish'
 import type { Lang } from '../i18n'
 
 export type Plan = { kind: 'emergency'; rule: EmergencyRule } | { kind: 'grounded'; sources: Guidance[] } | { kind: 'unknown' }
@@ -16,7 +17,9 @@ const FILLER = new Set(
     'kitna kitni kitne de dena do du dijiye le lena chahiye ' +
     'a an the is are was were be been what how why when which who my me i we you it its to of in on at for from and or do does did have has had with can could should would will please tell about this that there ' +
     'much many give take'
-  ).split(' '),
+  )
+    .split(' ')
+    .flatMap((w) => [w, fold(w)]),
 )
 
 const TOP = 3
@@ -26,7 +29,9 @@ const stem = (w: string) => (/^[a-z]{5,}$/.test(w) ? w.replace(/(ing|ed|es|s)$/,
 
 /** Library items for a free-text question: one per topic, best first, in the reader's language when available. */
 export async function retrieve(db: Database, message: string, lang: Lang): Promise<Guidance[]> {
-  const words = [...new Set((message.toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu) ?? []).filter((w) => w.length > 1 && !FILLER.has(w)).map(stem))]
+  const asked = (message.toLowerCase().match(/[\p{L}\p{N}\p{M}]+/gu) ?? []).filter((w) => w.length > 1 && !FILLER.has(fold(w)))
+  // Each word also as its Hinglish spelling key; the index holds keyed keywords too (seed.ts).
+  const words = withFolded(asked.map(stem))
   if (!words.length) return []
   // A hit must be in a title or keywords, so a word that happens to appear in some text is not enough.
   // Each word is a quoted prefix term, so user input is never read as FTS syntax.

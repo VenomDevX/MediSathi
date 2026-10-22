@@ -1,4 +1,5 @@
 import type { Database } from '../database/types'
+import { withFolded } from '../domain/hinglish'
 
 export type Guidance = {
   id: string
@@ -29,7 +30,8 @@ export async function searchGuidance(db: Database, query: string, lang: string):
   if (!words.length) {
     return db.query<Guidance>(`SELECT ${cols} FROM guidance_documents g WHERE g.status = 'active' AND g.language = ? ORDER BY g.category, g.title`, [docLang])
   }
-  const match = words.map((w) => `"${w}"*`).join(' ')
+  // Every word must match, in any of its spellings (the index holds Hinglish keys too, see seed.ts).
+  const match = words.map((w) => `(${withFolded([w.toLowerCase()]).map((v) => `"${v}"*`).join(' OR ')})`).join(' AND ')
   return db.query<Guidance>(
     `SELECT ${cols} FROM guidance_fts f JOIN guidance_documents g ON g.id = f.id
      WHERE guidance_fts MATCH ? AND g.status = 'active'

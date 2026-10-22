@@ -7,49 +7,49 @@
   },
   {
     "id": "unconscious",
-    "all": [["unconscious", "not waking", "won't wake", "unresponsive", "behosh", "बेहोश", "होश नहीं"]],
+    "all": [["unconscious", "not waking", "won't wake", "unresponsive", "behosh", "बेहोश", "होश नहीं", "hosh nahi", "hosh me nahi", "होश में नहीं", "बेहोशी"]],
     "title": { "en": "Unconscious", "hi": "बेहोश" },
     "instruction": { "en": "Call 108 now. Check breathing. If breathing, turn them on their side. Do not give food or water.", "hi": "अभी 108 पर कॉल करें। सांस देखें। सांस चल रही हो तो करवट पर लिटाएं। कुछ खाने-पीने को न दें।" }
   },
   {
     "id": "chest-pain",
-    "all": [["chest pain", "pain in chest", "seene me dard", "seene mein dard", "सीने में दर्द", "छाती में दर्द", "chhati me dard"]],
+    "all": [["chest pain", "pain in chest", "seene me dard", "seene mein dard", "सीने में दर्द", "छाती में दर्द", "chhati me dard", "chest me dard", "chest mein dard", "heart attack", "हार्ट अटैक", "चेस्ट पेन"]],
     "title": { "en": "Chest pain", "hi": "सीने में दर्द" },
     "instruction": { "en": "Call 108 now. Keep the person sitting and calm. Loosen tight clothing. Do not let them walk around.", "hi": "अभी 108 पर कॉल करें। व्यक्ति को बैठाकर शांत रखें। तंग कपड़े ढीले करें। चलने-फिरने न दें।" }
   },
   {
     "id": "heavy-bleeding",
-    "all": [["heavy bleeding", "bleeding a lot", "won't stop bleeding", "bleeding not stopping", "bahut khoon", "khoon band nahi", "बहुत खून", "खून नहीं रुक", "खून बंद नहीं"]],
+    "all": [["heavy bleeding", "bleeding a lot", "won't stop bleeding", "bleeding not stopping", "bahut khoon", "khoon band nahi", "बहुत खून", "खून नहीं रुक", "खून बंद नहीं", "khoon ruk nahi", "खून रुक नहीं"]],
     "title": { "en": "Heavy bleeding", "hi": "बहुत खून बह रहा है" },
     "instruction": { "en": "Call 108 now. Press hard on the wound with a clean cloth and keep pressing. Raise the injured part if possible.", "hi": "अभी 108 पर कॉल करें। साफ़ कपड़े से घाव पर ज़ोर से दबाकर रखें। हो सके तो चोट वाले हिस्से को ऊपर उठाएं।" }
   },
   {
     "id": "snake-bite",
-    "all": [["snake", "saanp", "sanp", "सांप", "साँप", "नाग"], ["bite", "bit", "bitten", "kata", "kaata", "काटा", "काट"]],
+    "all": [["snake", "saanp", "sanp", "सांप", "साँप", "नाग", "naag", "स्नेक"], ["bite", "bit", "bitten", "kata", "kaata", "काटा", "काट", "dasa", "डसा", "बाइट"]],
     "title": { "en": "Snake bite", "hi": "सांप ने काटा" },
     "instruction": { "en": "Call 108 and go to the nearest hospital now. Keep the person still and calm. Do not cut, suck or tie the bite.", "hi": "108 पर कॉल करें और तुरंत नज़दीकी अस्पताल जाएं। व्यक्ति को हिलने न दें, शांत रखें। काटे हुए हिस्से को न काटें, न चूसें, न बांधें।" }
   },
   {
     "id": "seizure",
-    "all": [["seizure", "fits", "convulsion", "mirgi", "daura", "दौरा", "मिर्गी", "झटके"]],
+    "all": [["seizure", "fits", "convulsion", "mirgi", "daura", "दौरा", "मिर्गी", "झटके", "jhatke", "dora"]],
     "title": { "en": "Seizure (fits)", "hi": "दौरा (मिर्गी)" },
     "instruction": { "en": "Call 108 if it lasts more than 5 minutes or is the first time. Move hard objects away. Turn them on their side. Put nothing in the mouth.", "hi": "5 मिनट से ज़्यादा चले या पहली बार हो तो 108 पर कॉल करें। आसपास की सख्त चीज़ें हटाएं। करवट पर लिटाएं। मुंह में कुछ न डालें।" }
   },
   {
     "id": "poisoning",
-    "all": [["poison", "pesticide", "keetnashak", "zehar", "jahar", "ज़हर", "जहर", "कीटनाशक"]],
+    "all": [["poison", "pesticide", "keetnashak", "zehar", "jahar", "ज़हर", "जहर", "कीटनाशक", "zeher", "पॉइज़न", "जहर खा"]],
     "title": { "en": "Poisoning", "hi": "ज़हर" },
     "instruction": { "en": "Call 108 and go to hospital now. Take the poison container with you. Do not make the person vomit.", "hi": "108 पर कॉल करें और तुरंत अस्पताल जाएं। ज़हर का डिब्बा साथ ले जाएं। उल्टी न करवाएं।" }
   },
   {
     "id": "pregnancy-bleeding",
-    "all": [["pregnant", "pregnancy", "garbh", "garbhvati", "गर्भ", "गर्भवती", "प्रेगनेंट"], ["bleeding", "khoon", "खून", "रक्तस्राव", "fits", "दौरा", "severe headache", "तेज़ सिरदर्द", "blurred vision", "धुंधला"]],
+    "all": [["pregnant", "pregnancy", "garbh", "garbhvati", "गर्भ", "गर्भवती", "प्रेगनेंट", "प्रेग्नेंट", "प्रेगनेंसी"], ["bleeding", "khoon", "खून", "रक्तस्राव", "fits", "दौरा", "severe headache", "तेज़ सिरदर्द", "blurred vision", "धुंधला", "ब्लीडिंग"]],
     "title": { "en": "Danger sign in pregnancy", "hi": "गर्भावस्था में खतरे का संकेत" },
     "instruction": { "en": "Call 102 or 108 now and go to the nearest hospital with a delivery room. Keep the woman lying on her left side.", "hi": "अभी 102 या 108 पर कॉल करें और प्रसव सुविधा वाले नज़दीकी अस्पताल जाएं। महिला को बाईं करवट लिटाएं।" }
   },
   {
     "id": "choking",
-    "all": [["choking", "choke", "something stuck in throat", "gale me atka", "गले में अटक", "दम घुट"]],
+    "all": [["choking", "choke", "something stuck in throat", "gale me atka", "गले में अटक", "दम घुट", "gale me phans", "गले में फंस", "चोकिंग"]],
     "title": { "en": "Choking", "hi": "गले में कुछ अटका" },
     "instruction": { "en": "If they cannot cough or speak, give 5 firm back blows between the shoulder blades. Call 108 if it does not come out.", "hi": "अगर खांस या बोल नहीं पा रहे, तो कंधों के बीच पीठ पर 5 ज़ोरदार थपकी दें। न निकले तो 108 पर कॉल करें।" }
   }

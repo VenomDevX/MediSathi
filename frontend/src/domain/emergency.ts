@@ -1,4 +1,5 @@
 // Deterministic red-flag detection (PRD HG-06, TRD §11). Runs before any search result or model call.
+import { foldText } from './hinglish'
 
 export type EmergencyRule = {
   id: string
@@ -15,10 +16,11 @@ export function ruleText(text: Record<string, string>, lang: string): string {
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 // Whole-word match. A trailing Devanagari vowel sign is allowed so "काट" also matches "काटा".
-const termRe = (term: string) => new RegExp(`(?<![\\p{L}\\p{N}\\p{M}])${escape(term.toLowerCase())}(?![\\p{L}\\p{N}])`, 'u')
+const termRe = (term: string) => new RegExp(`(?<![\\p{L}\\p{N}\\p{M}])${escape(foldText(term.toLowerCase()))}(?![\\p{L}\\p{N}])`, 'u')
 
 export function matchEmergency(rules: EmergencyRule[], query: string): EmergencyRule | undefined {
-  const q = query.toLowerCase().replace(/\s+/g, ' ').trim()
+  // Both sides are spelling-folded, so "saamp ne kaata" meets the rule's "saanp" and "kata".
+  const q = foldText(query.toLowerCase().replace(/\s+/g, ' ').trim())
   if (!q) return undefined
   return rules.find((rule) => rule.all.every((group) => group.some((term) => termRe(term).test(q))))
 }
