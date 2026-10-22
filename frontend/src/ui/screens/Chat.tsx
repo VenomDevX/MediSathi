@@ -9,7 +9,7 @@ import { addMessage, createChat, deleteChat, getChat, listChats, listMessages, t
 import { getReport } from '../../data/reports'
 import { emergencyRules } from '../../emergencyRules'
 import { useLang, useT } from '../../i18n'
-import { canListen, listen } from '../../platform/listen'
+import { canListen, listen, type ListenError } from '../../platform/listen'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import type { StringKey } from '../../strings'
 import { EmergencyCard } from '../EmergencyCard'
@@ -18,6 +18,12 @@ import { cx } from '../styles'
 import { useAsync } from '../useAsync'
 
 const suggestions: StringKey[] = ['suggestFever', 'suggestBurn', 'suggestDiarrhoea', 'suggestHeat']
+const VOICE_ERRORS: Record<ListenError, StringKey> = {
+  'no-speech': 'voiceNoSpeech',
+  offline: 'voiceOffline',
+  denied: 'voiceDenied',
+  unavailable: 'voiceUnavailable',
+}
 
 export function Chat() {
   const t = useT()
@@ -31,6 +37,7 @@ export function Chat() {
   const [busy, setBusy] = useState(false)
   const [streaming, setStreaming] = useState('')
   const [listening, setListening] = useState<null | (() => void)>(null)
+  const [voiceError, setVoiceError] = useState<ListenError | null>(null)
   const [can] = useState(() => ({ listen: canListen(), speak: canSpeak() }))
   const [speakingId, setSpeakingId] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
@@ -62,9 +69,17 @@ export function Chat() {
     endRef.current?.scrollIntoView({ block: 'end' })
   }, [messages, busy, streaming])
 
+  // Leaving the screen turns the microphone off.
+  const stopRef = useRef(listening)
+  useEffect(() => {
+    stopRef.current = listening
+  }, [listening])
+  useEffect(() => () => stopRef.current?.(), [])
+
   async function send(question: string) {
     const q = question.trim()
     if (!q || busy) return
+    listening?.()
     setText('')
     setBusy(true)
     try {
@@ -95,7 +110,12 @@ export function Chat() {
 
   function toggleListen() {
     if (listening) return listening()
-    const stop = listen(lang, setText, () => setListening(null))
+    setVoiceError(null)
+    const before = text.trim() ? `${text.trimEnd()} ` : '' // speaking adds to what was typed
+    const stop = listen(lang, (heard) => setText(before + heard), (error) => {
+      setListening(null)
+      setVoiceError(error ?? null)
+    })
     setListening(() => stop)
   }
 
@@ -253,6 +273,11 @@ export function Chat() {
             <ArrowUp size={22} weight="bold" aria-hidden />
           </button>
         </div>
+        {voiceError && (
+          <p role="status" className="px-1 text-sm text-danger">
+            {t(VOICE_ERRORS[voiceError])}
+          </p>
+        )}
         <p className="px-1 text-xs text-muted">{t('chatDisclaimer')}</p>
       </form>
     </div>
