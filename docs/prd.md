@@ -1,8 +1,8 @@
 # MediSaathi
 ## Product Requirements Document (PRD)
 
-**Document version:** 1.2  
-**Status:** Proposed — revised for website + mobile app (see §14 change log)  
+**Document version:** 1.3  
+**Status:** Hackathon build delivered (October 2026); requirements not yet met are listed in §10 (see §14 change log)  
 **Product category:** Offline-first AI healthcare support platform  
 **Primary platforms:** Android app and offline-capable website (used on laptops and desktops)  
 **Primary deployment context:** Rural communities, ASHA workers, low-connectivity areas, and disaster-response environments
@@ -239,9 +239,11 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 
 **AI-06:** Model updates must not overwrite the only working model until the new version passes integrity checks.
 
-**AI-07:** Model downloads must be explicit and show their size. On the website, the model is downloaded once and cached by the browser for offline use. On the mobile app (post-MVP), models must also be installable without a large internet download, from SD card, USB, or a local file share, with checksum verification before activation.
+**AI-07:** Model downloads must be explicit and show their size. The model is downloaded once and kept on the device for offline use (website and Android). Models must also be installable without a large internet download by choosing a file already on the device (built). Checksum verification before activation is still required before a pilot.
 
-**AI-08:** The application must support device tiers: an in-browser model on laptops whose browser supports it, on-device models on capable phones (post-MVP), and a no-model tier where all non-AI features, including rule-based explanations, remain fully usable. The no-model tier is the MVP default on mobile.
+**AI-08:** The application must support device tiers: an in-browser model on laptops whose browser supports WebGPU, an on-device model on Android phones (GPU first, CPU fallback), and a no-model tier where all non-AI features, including library answers and rule-based explanations, remain fully usable. The no-model tier is the default until the user downloads a model.
+
+**AI-09:** The supported models are Gemma 4 E2B (default, one-tap download) and Gemma 3n E2B (the user accepts Google's licence and supplies the file), both run with Google LiteRT-LM.
 
 ### 5.6 Synchronization and multi-device support
 
@@ -267,15 +269,48 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 - Conflicting edits are surfaced or resolved by a documented rule.
 - A server rejection does not erase the user's local record.
 
+### 5.7 Ask: health questions in plain words
+
+**AQ-01:** Anyone can ask a health question by text or voice, in Hindi or English, with no internet.
+
+**AQ-02:** Emergency rules run before anything else. A red-flag question (for example snake bite, not breathing, heavy bleeding) shows the emergency card with one-tap calling, and the model is not asked.
+
+**AQ-03:** Answers come from the guidance library. When a model is installed it rewords the matched library item and must cite it; an answer without a valid citation, with a number not in the source, or naming a medicine is replaced by the library text.
+
+**AQ-04:** Every answer shows where it came from, and says that MediSaathi is not a doctor and does not diagnose or give medicine doses.
+
+**AQ-06 (prototype):** A user may choose an online model (Google Gemini) instead of the on-device one. It is off by default, the choice explains what is sent, only the question and matched library cards leave the device (never records or reports), answers pass the same guard and are labelled "Explained online", and without internet the app falls back to the on-device model or the library. The API key stays on the server.
+
+**AQ-05:** Answers can be read aloud. Conversations are kept on the device and can be deleted.
+
+**Acceptance criteria**
+- "Someone was bitten by a snake" shows the emergency card and never calls the model.
+- A fever question in Hindi gets a Hindi answer that cites the fever card.
+- "How much paracetamol" never returns a dose.
+
+### 5.8 Family health records
+
+**FR-01:** A personal user can keep health records for themselves and family members on the device, without a worker account.
+
+**FR-02:** Saved reports can be linked to a family member so their ranges and history are used.
+
+### 5.9 Blood requests
+
+**BR-01:** A person who needs blood can send a request for a blood group near a place, without creating an account.
+
+**BR-02:** Donors of that group see the request. A donor's phone number is shared with the requester only after that donor accepts, and every share is audited.
+
+**BR-03:** The requester's name and number are not sent to donors.
+
 ## 6. Cross-platform requirements
 
 MediSaathi ships as two products built from one web codebase: a mobile app and a website. Domain rules, data access, synchronization, donor search, and guidance search are implemented once. Only platform-specific parts (OCR engine, AI runtime, notifications, location, text-to-speech, secure key storage) differ. There is no separate installable desktop application; laptops and desktops use the website.
 
 ### Mobile app (Android)
 - Android app installed from an APK or app store.
-- Encrypted local database and on-device OCR (English and Hindi).
+- Local database and on-device OCR (English and Hindi), with Android cloud backup turned off. Full database encryption is still required before a pilot.
 - Rule-based explanations and offline read-aloud.
-- On-device AI is post-MVP, and only where the device meets tested requirements.
+- Optional on-device AI (Gemma 4 E2B with LiteRT-LM), downloaded once.
 - Synchronization when the app is opened or the network returns.
 - Local notifications for follow-ups.
 - GPS location with manual entry as a fallback.
@@ -362,7 +397,7 @@ These are project acceptance targets, not claims of achieved performance.
 - Android app.
 - Offline-capable website (PWA) for laptops and desktops, from the same codebase.
 - Offline patient records and append-only visit notes.
-- Offline PIN/biometric unlock.
+- Offline PIN unlock (biometric unlock deferred).
 - Local OCR for supported report images and PDFs.
 - Report review, rule-based plain-language explanations, and read-aloud.
 - Versioned offline guidance library.
@@ -379,15 +414,18 @@ These are project acceptance targets, not claims of achieved performance.
 - Real-time donor availability claims.
 - ABDM / ABHA integration.
 
-### Hackathon demo scope (Hack-o-Relay 2026)
-For the hackathon build, deliver a working vertical slice rather than the full MVP:
-1. Website first, then the Android app from the same code: local database, patients, append-only visits, follow-up reminders, and offline PIN unlock.
-2. MediScan: OCR → review screen → rule-based range check → reviewed explanation + read-aloud. In-browser AI rewording on the website only if time permits.
-3. Guidance library of about 20 reviewed first-aid items with offline search and deterministic emergency rules.
-4. BloodLink with seeded donors, approximate distance, freshness labels, and manual location.
-5. Backend with sync push/pull, operation-ID idempotency, and token authentication.
+### Hackathon demo scope (Hack-o-Relay 2026): delivered
+The hackathon build delivers a working vertical slice on the website, as a PWA and as an Android app from the same code:
+1. Local database, patients, append-only visits, follow-up reminders, and offline PIN unlock. Two demo accounts (ASHA worker and citizen).
+2. MediScan: OCR on the device → review screen with flagged values → range check → reviewed explanation + read-aloud.
+3. Ask (§5.7): emergency rules, library search and on-device Gemma 4 E2B in Hindi and English, behind the answer guard.
+4. Guidance library with offline search, deterministic emergency rules and the 108/102/112 screen.
+5. BloodLink with seeded donors, approximate distance, freshness labels, manual location, and blood requests with donor consent (§5.9).
+6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
 
-Skip for the demo: mesh, embedding retrieval, admin portal (seed data by script), advanced conflict UI.
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 165 unit, 56 backend, 22 end-to-end flows on phone and laptop sizes.
+
+Not delivered yet: mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
 ## 11. Dependencies and risks
 
@@ -403,9 +441,10 @@ Skip for the demo: mesh, embedding retrieval, admin portal (seed data by script)
 | Model download too large | Optional download, integrity checks, storage warnings |
 | Unclear regulatory obligations | DPDP Act 2023 assessment, legal, privacy, and clinical review before pilot |
 | Device too weak for any model | Rule-based explanations work with no model (MS-11) |
-| Model download impossible on rural networks | AI is optional; rule-based explanations need no model; sideloading on mobile post-MVP (AI-07, MS-11) |
+| Model download impossible on rural networks | AI is optional; library answers and rule-based explanations need no model; a model file can be copied onto the device and chosen (AI-07, MS-11) |
 | Browser clears website data before sync | Request persistent storage, show pending count prominently, warn users (§6) |
 | Browser lacks AI support | Website works fully without AI (AI-08) |
+| Model gives an unsafe or invented answer | Emergency rules before the model; answer guard requires a citation and blocks new numbers and medicine names (AQ-02, AQ-03) |
 | Lost device leaks donor directory | Coordinator-only encrypted contacts, coarsened locations (BL-05, BL-11) |
 | Worker cannot sign in without network | Offline PIN unlock with bounded offline period (AA-10) |
 | Divergent rules between website and app | One shared codebase for domain logic (§6) |
@@ -429,6 +468,12 @@ A feature is complete only when its implementation, tests, failure handling, doc
 **Product decision:** MediSaathi is a decision-support and health-information tool, not an autonomous clinical system. Human healthcare professionals retain responsibility for diagnosis, treatment, and transfusion decisions.
 
 ## 14. Change log
+
+**v1.3**
+- Status: hackathon build delivered; §10 lists what was built, what was measured, and what is still missing.
+- On-device AI is no longer post-MVP: Gemma 4 E2B through LiteRT-LM on the website (WebGPU) and Android; Gemma 3n E2B by user file (AI-07 to AI-09).
+- Added Ask (§5.7), family health records (§5.8) and blood requests with donor consent (§5.9).
+- Mobile requirements updated: local database encryption and biometric unlock are still open (§6, §10).
 
 **v1.2**
 - Platforms changed to **Android app + offline-capable website** from one codebase; the separate Windows desktop application is removed (header, §4, §6, §10).

@@ -6,6 +6,22 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 
 > All medical content in `content/` is demo content and **has not been clinically reviewed**. Donors are synthetic.
 
+| Home | Ask in Hindi (Gemma 4 on the phone) | Emergency: AI skipped | Lab report explained | Patients | Blood donors |
+|---|---|---|---|---|---|
+| ![Home](docs/screenshots/home.png) | ![Ask in Hindi](docs/screenshots/ask-hindi.png) | ![Emergency answer](docs/screenshots/emergency-answer.png) | ![Report explained](docs/screenshots/report-explained.png) | ![Patients](docs/screenshots/patients.png) | ![Donors](docs/screenshots/donors.png) |
+
+*Real screenshots from the Android app on a Pixel 7 emulator in airplane mode.*
+
+## What it does
+- **Ask**: health questions by text or voice, in Hindi or English. Emergency rules run first (snake bite, not breathing: straight to Call 108, no model). Otherwise the answer comes from the guidance library, optionally reworded by Gemma 4 on the device, and always cites its source.
+- **MediScan**: photo or PDF of a lab report, read on the device; you check flagged values; each value is marked low, normal or high and explained in plain words, read aloud.
+- **ASHA Assist**: patients, append-only visits and follow-ups, saved on the phone first and synced later.
+- **BloodLink**: nearest potential donors of the same group, coarse locations only; a donor's number is shared only after they accept a request.
+- **Guidance and emergency**: offline first-aid library and one-tap 108 / 102 / 112.
+
+## Try the demo
+Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: patients, visits, sync) and **Ramesh Kumar** (citizen: reports, family, Ask). Switch under More. Turn on airplane mode to see that nothing needs the network.
+
 ## Layout
 | Path | What |
 |---|---|
@@ -13,14 +29,15 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 | `backend/` | FastAPI server for blood requests and worker sync API |
 | `contracts/` | OpenAPI spec exported from the backend |
 | `content/` | Bundled content: guidance library, emergency rules, lab tests, demo donors, places |
-| `docs/` | PRD, TRD, design system |
+| `docs/` | PRD, TRD, design system, screenshots |
 
 ## Run the Frontend
 ```bash
 cd frontend
 npm install
 npm run dev          # http://localhost:5173 (copies OCR and LiteRT runtimes into public/ automatically)
-npm test             # unit tests (vitest - 24 suites, 142 tests)
+npm test             # unit tests (vitest: 26 files, 165 tests)
+npx playwright test  # 22 end-to-end flows, phone and laptop sizes
 npm run build        # production PWA build in dist/, with offline service worker
 npm run preview      # preview production build locally
 ```
@@ -32,6 +49,7 @@ Navigate to More / Settings → **Offline AI model**. Without a model, the assis
 - **Gemma 3n E2B** (3.0 GB / 3.7 GB): gated by Google's Gemma license. Accept on [Hugging Face](https://huggingface.co/google/gemma-3n-E2B-it-litert-lm), download the file (`gemma-3n-E2B-it-int4-Web.litertlm` for web, `gemma-3n-E2B-it-int4.litertlm` for Android), and select it in the app.
 - **Web**: uses WebGPU in modern Chromium/Edge browsers. Runtime `@litert-lm/core` is pinned to **0.18.0**.
 - **Android**: native LiteRT-LM (`litertlm-android` 0.18.0) using the GPU with CPU fallback.
+- **Online (Gemini), optional prototype**: set `GEMINI_API_KEY` in `backend/.env` (model: `GEMINI_MODEL`, default `gemini-3.8-flash`), then choose **Online (Gemini)** under Offline AI model. The key stays on the server (`POST /api/v1/assist`, 30 calls per hour per address). The app sends only the question, its language and the ids of the matched library cards, and the server writes the prompt itself, never records or reports; without internet the app uses Gemma on the device or the library.
 - **Safety**: emergencies are detected and answered by deterministic rules before any model runs; every model answer is verified against grounded sources (citations, values, medication names) and falls back to verified library text if discrepancies are detected.
 
 ## Run the Backend (Blood Requests & Sync)
@@ -39,13 +57,14 @@ Navigate to More / Settings → **Offline AI model**. Without a model, the assis
 cd backend
 python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # macOS/Linux: .venv/bin/pip
-cp .env.example .env        # set MEDISAATHI_SECRET
+cp .env.example .env        # set MEDISAATHI_SECRET; DEMO_PASSWORD is required to seed the demo accounts
 .venv/Scripts/python -m uvicorn app.main:app --port 8000 --env-file .env
-.venv/Scripts/python -m pytest
+.venv/Scripts/python -m pytest   # 56 tests
 ```
 - API documentation: http://localhost:8000/docs. The frontend calls `VITE_API_URL` (default `http://localhost:8000`).
 - No user accounts required for blood requests. Each request and donor registration uses random local cryptographic tokens.
 - Privacy-first: A donor's contact is only revealed after explicit in-app confirmation.
+- Worker accounts: Argon2 passwords, 15-minute access tokens with rotating refresh tokens, login limits per account, user + address and address; sync is idempotent and scoped to the worker's assigned area. Admin panel (SQLAdmin) at `/admin`.
 
 ## Build the Android App
 Requires Android SDK and **JDK 17 or newer** (Android Studio's bundled JDK works). `android/build.gradle` compiles every module, Capacitor's included, for Java 17.

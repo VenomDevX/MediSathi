@@ -1,9 +1,9 @@
 # MediSaathi
 ## Technical Requirements Document (TRD)
 
-**Document version:** 1.2  
-**Status:** Proposed — implementation blueprint, revised for website + mobile app (see §19 change log)  
-**Related document:** MediSaathi PRD v1.1
+**Document version:** 1.3  
+**Status:** As built for Hack-o-Relay 2026 (October 2026). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
+**Related document:** MediSaathi PRD v1.2
 
 ---
 
@@ -21,43 +21,42 @@ Build an offline-first platform that provides:
 
 The architecture must allow individual capabilities to operate independently. If the AI model cannot load, local records, OCR, and approved guidance browsing should remain available.
 
-## 2. Proposed technology stack
+## 2. Technology stack
 
-| Layer | Proposed technology | Status |
+| Layer | Technology | Status |
 |---|---|---|
-| Client codebase | React + TypeScript + Vite, one codebase for website and Android app | Proposed |
-| Styling | Tailwind CSS | Proposed |
-| Website offline shell | Installable PWA with service worker (`vite-plugin-pwa`) | Proposed |
-| Mobile app shell | Capacitor (Android) wrapping the same web build | Proposed |
-| Website local database | SQLite WASM persisted to the Origin Private File System (OPFS), with FTS5 | Proposed; verify FTS5 + Hindi in Phase 0 |
-| Mobile local database | `@capacitor-community/sqlite` (SQLCipher-encrypted) with FTS5 | Proposed; verify FTS5 + Hindi in Phase 0 |
-| Data access | One TypeScript repository layer over a `Database` interface with two adapters (WASM, Capacitor) | Proposed |
-| Validation / contracts | Zod schemas generated from or checked against the OpenAPI spec | Proposed |
-| Website OCR | tesseract.js (WASM) with `eng` + `hin` traineddata cached for offline use | Proposed |
-| Mobile OCR | ML Kit text recognition via Capacitor plugin (Latin + Devanagari); tesseract.js fallback | Plugin Devanagari support must be verified |
-| PDF (both) | pdf.js: text extraction first, page rendering for OCR | Proposed |
-| Website local AI | WebLLM (WebGPU) with a WebLLM-compatible (MLC) small Gemma-family build | Optional; requires WebGPU (Chrome/Edge on laptops); verify model availability |
-| Mobile local AI | Post-hackathon: custom Capacitor plugin wrapping LiteRT-LM (Gemma 4 E2B or ~1B-class model) | Optional; MVP uses rule-based explanations only |
-| Text-to-speech | Web Speech API (website); `@capacitor-community/text-to-speech` (mobile, offline Hindi/English voices) | Proposed |
-| Location | Browser Geolocation API (website); `@capacitor/geolocation` (mobile); manual entry on both | Proposed |
-| API backend | FastAPI | Proposed |
-| Server database | PostgreSQL | Proposed |
-| Authentication | Backend-issued short-lived JWT access token + rotating refresh token; offline PIN/biometric unlock on device (§8.0) | Proposed |
-| Admin tools | SQLAdmin (or equivalent server-rendered admin) on the FastAPI app | Proposed; no separate SPA |
-| API format | HTTPS REST with versioned JSON contracts | Proposed |
-| Sync trigger | On app open, on `online` event, on app resume, and a periodic timer while open (both clients) | Proposed |
-| Website hosting | Static hosting (Vercel or Netlify) | Proposed |
-| API + database hosting | Railway or Render with managed PostgreSQL, backups, and monitoring | Proposed for hackathon; re-evaluate for production |
+| Client codebase | React 19 + TypeScript + Vite, HashRouter; one codebase for website, PWA and Android app (`frontend/`) | Built |
+| Styling | Tailwind CSS v4, Phosphor icons, Mukta font for Devanagari | Built |
+| Website offline shell | Installable PWA, service worker precaches the app, OCR data and the LiteRT-LM runtime (`vite-plugin-pwa`) | Built |
+| Mobile app shell | Capacitor 8 (Android) wrapping the same web build, `androidScheme: https` | Built |
+| Local database (both) | `@sqlite.org/sqlite-wasm` persisted to OPFS in a worker, with FTS5 for the guidance library. The Android WebView uses the same database code. | Built |
+| Data access | One TypeScript repository layer over a `Database` interface; schema migrations run in `sqlite.worker.ts` | Built |
+| OCR (both) | tesseract.js with `eng` + `hin` traineddata served by the app (no CDN); confidence per line flags unclear values | Built |
+| PDF (both) | pdf.js: text extraction first, page rendering for OCR | Built |
+| Website local AI | Gemma 4 E2B (web build, 2.0 GB) through `@litert-lm/core` 0.18.0 on WebGPU; Gemma 3n E2B by user-supplied file | Built; optional, needs WebGPU |
+| Mobile local AI | Gemma 4 E2B (2.6 GB) through native LiteRT-LM (`litertlm-android` 0.18.0) in `GemmaPlugin.kt`: GPU first, CPU fallback remembered per device | Built; optional |
+| Online AI (optional prototype) | Gemini (`gemini-3.8-flash`, low thinking) through `POST /api/v1/assist` on our FastAPI server (`app/assist.py`); key in `GEMINI_API_KEY`, 30 calls/hour per address. The client sends only the question, language and library card ids; the server builds the prompt from its own template and `content/guidance.json`, so the endpoint cannot run arbitrary prompts. Client: `src/assistant/online.ts`. Reports are never sent; the guard still checks every answer | Built; off unless chosen and the key is set |
+| Text-to-speech | Web Speech API (website); `@capacitor-community/text-to-speech` (Android) | Built |
+| Voice input | Web Speech recognition where the browser offers it | Built |
+| Location | Manual locality choice on both; browser geolocation where allowed | Built |
+| API backend | FastAPI (`backend/`) | Built |
+| Server database | PostgreSQL in production; SQLite for local development and tests | Built |
+| Authentication | Argon2 password hashes, 15-minute JWT access token, rotating hashed refresh token; offline PIN unlock on the device (§8.0) | Built |
+| Login abuse limits | Per account (20 / 15 min), per username + address (5), per address (30); IPv6 grouped by /64 | Built |
+| Admin tools | SQLAdmin on the FastAPI app, behind the same login limiter | Built |
+| API format | HTTPS REST with versioned JSON contracts; OpenAPI exported to `contracts/` | Built |
+| Sync trigger | On app open, on `online` event, on app resume, and a periodic timer while open | Built |
+| Tests | Vitest (165 unit tests), pytest (56), Playwright (22 flows on phone and laptop sizes) | Built |
+| Hosting | Static hosting for the PWA; any container host with managed PostgreSQL for the API | Proposed |
 
-**Important:** LiteRT-LM, GGUF, and WebLLM (MLC) model artifacts are different formats. Do not assume a model file can be loaded by any runtime. Select the exact model, artifact format, runtime version, license, and platform combination together.
+**Important:** a LiteRT-LM model is built for a target. The web build (`gemma-4-E2B-it-web.litertlm`) and the Android build (`gemma-4-E2B-it.litertlm`) are different files; the app's catalogue (`src/assistant/modelFiles.ts`) names the right one per platform.
 
 References:
 - Capacitor: https://capacitorjs.com/docs
 - SQLite WASM: https://sqlite.org/wasm
-- WebLLM: https://webllm.mlc.ai
+- LiteRT-LM for the web: https://www.npmjs.com/package/@litert-lm/core
 - tesseract.js: https://github.com/naptha/tesseract.js
 - LiteRT-LM: https://developers.google.com/edge/litert-lm
-- ML Kit text recognition: https://developers.google.com/ml-kit/vision/text-recognition/v2
 
 ## 3. Architecture
 
@@ -75,11 +74,11 @@ References:
   Interfaces: OcrEngine, HealthGuidanceEngine, Speech, LocationProvider
   ------------------------------------------------------------
         |                                     |
-  Website build (PWA)                 Android build (Capacitor)
-  Service worker, SQLite WASM/OPFS    @capacitor-community/sqlite
-  tesseract.js OCR, pdf.js            ML Kit OCR plugin, pdf.js
-  WebLLM (optional, WebGPU)           LiteRT-LM plugin (post-MVP)
-  Web Speech API, browser geolocation Capacitor TTS, geolocation
+  Website build (PWA)                 Android build (Capacitor 8)
+  Service worker, SQLite WASM/OPFS    same SQLite WASM/OPFS in the WebView
+  tesseract.js OCR, pdf.js            tesseract.js OCR, pdf.js
+  LiteRT-LM on WebGPU (optional)      native LiteRT-LM, GemmaPlugin.kt (optional)
+  Web Speech API                      Capacitor TTS, local notifications
         |                                     |
         +------------- HTTPS API -------------+
                            |
@@ -96,7 +95,7 @@ References:
              Admin / Clinical Content Tools
 ```
 
-The diagram represents the intended architecture, not an existing implementation.
+The diagram matches the implementation in `frontend/` and `backend/`.
 
 ### 3.2 Architectural rules
 
@@ -109,7 +108,7 @@ The diagram represents the intended architecture, not an existing implementation
 7. Clinical guidance must be versioned independently from the language model.
 8. The AI must not have unrestricted database or network access.
 9. Patient data and donor-directory data must have separate authorization and retention policies.
-10. Business rules live once, in the shared TypeScript code under `src/domain/`. Platform adapters (`src/platform/web/`, `src/platform/native/`) implement only the interfaces listed in §3.1, selected at runtime with `Capacitor.isNativePlatform()`.
+10. Business rules live once, in the shared TypeScript code under `src/domain/`. Platform differences are small adapters in `src/platform/` and `src/assistant/native.ts`, selected at runtime with `Capacitor.isNativePlatform()`.
 11. Clients write to the server only through `POST /api/v1/sync/push`. There are no separate client-facing create/update endpoints.
 12. Clinical events (visits) are append-only. Corrections are new amendment records, never in-place updates.
 
@@ -123,18 +122,18 @@ The published `.litertlm` bundle is approximately 2.58 GB. Runtime memory use is
 
 **Comparison candidate:** A smaller, supported local model if testing demonstrates that Gemma 4 E2B is unsuitable for the device tier. Gemma 3n E2B may be evaluated as a separate candidate, but runtime and artifact compatibility must be verified rather than assumed.
 
-**Device tiers:**
+**Device tiers (as built):**
 
 | Tier | Model | Notes |
 |---|---|---|
-| Website, WebGPU available | Small Gemma-family model in WebLLM (MLC) format | Runs in Chrome/Edge on capable laptops; size and quality measured in Phase 0 |
-| Mobile standard (post-MVP) | Gemma 4 E2B LiteRT-LM (~2.58 GB) via custom plugin | Thresholds set only after Phase 0 measurements |
-| Mobile low (post-MVP) | ~1B-class LiteRT-LM model (~0.5 GB) via custom plugin | Expect weak Hindi; used for rewording only |
-| None (MVP mobile default) | No model | Full app works; rule-based explanations (§4.6) |
+| Website, WebGPU available | Gemma 4 E2B web build (2.0 GB) via `@litert-lm/core` | Chrome or Edge on capable laptops |
+| Android | Gemma 4 E2B (2.6 GB) via native LiteRT-LM | GPU first; falls back to CPU and remembers it. Measured: a full grounded answer took 68 s on a Pixel 7 emulator CPU in airplane mode |
+| Either, optional | Gemma 3n E2B (3.0 GB web / 3.7 GB Android) | Gated licence: the user downloads the file and picks it in the app |
+| No model | None | Full app works; answers come straight from the library (§4.6) |
 
-Because the AI only rewords a rule-based explanation, a weak or missing model reduces fluency, not correctness.
+Because the AI only rewords library text and a guard checks every answer, a weak or missing model reduces fluency, not correctness.
 
-**Installation:** On the website, WebLLM downloads the model once into the browser cache (Cache Storage); the download must be explicit and show its size. On mobile (post-MVP), models may be downloaded or sideloaded from SD card, USB, or a local file share. The model manager verifies the SHA-256 checksum against a signed manifest before activation, whatever the source.
+**Installation:** the download is explicit and shows its size (More → Offline AI model). On the website the file is stored in OPFS (`models/`), written to a `.part` file and renamed when complete. On Android, `GemmaPlugin.save` downloads into app storage with resume (HTTP Range) and up to five retries, or copies a file the user picks. Only plain `.litertlm` names from the catalogue are accepted, and downloads only from `https://huggingface.co/`. *Proposed:* SHA-256 verification against a signed manifest.
 
 ### 4.2 Model selection procedure
 
@@ -180,7 +179,7 @@ HealthGuidanceEngine
 
 `rewordExplanation` receives the already-computed rule-based explanation, not raw report text. The output is rejected and the rule-based text is shown instead if any number, unit, or low/normal/high label in the output differs from the input.
 
-This is an interface specification, not ready-to-run code. The WebLLM adapter (website), the LiteRT-LM plugin adapter (mobile, post-MVP), and a `NoModel` adapter (always available) must implement equivalent behavior. All inference runs in a Web Worker or native background thread, never on the UI thread.
+As built: `src/assistant/litert.ts` (website, `@litert-lm/core` on WebGPU) and `src/assistant/native.ts` (Android, `GemmaPlugin.kt`) implement the same `ChatModel` interface; with no model installed, `respond.ts` answers from the library. Native inference runs on a background coroutine, one answer at a time, with a fresh conversation per answer.
 
 ### 4.5 Retrieval-augmented guidance
 
@@ -197,7 +196,7 @@ The local guidance pipeline must be:
 
 For the MVP, use a local keyword or full-text index. Embedding-based retrieval is optional and should be added only after the storage, runtime, and quality cost is measured.
 
-Use SQLite FTS5 on both clients (SQLite WASM on the website, `@capacitor-community/sqlite` on mobile). Confirm in Phase 0 that both builds include FTS5. Test the tokenizer with Hindi queries in Phase 0: confirm that Devanagari vowel signs (matras) are kept inside tokens and that `remove_diacritics` does not break Hindi matching. Each guidance item should also carry curated keyword and synonym lists in Hindi, Hinglish, and English, since users will not type the exact clinical term.
+Use SQLite FTS5 on both clients. Both run the same SQLite WASM build (in the browser and in the Android WebView), which includes FTS5. Test the tokenizer with Hindi queries in Phase 0: confirm that Devanagari vowel signs (matras) are kept inside tokens and that `remove_diacritics` does not break Hindi matching. Each guidance item should also carry curated keyword and synonym lists in Hindi, Hinglish, and English, since users will not type the exact clinical term.
 
 **Never rely on a system prompt alone as a clinical safety control.** The application must limit source material, enforce output constraints, and test unsafe and ambiguous prompts.
 
@@ -244,16 +243,12 @@ The AI should receive the smallest necessary data. Where possible, use a structu
 
 ## 5. OCR requirements
 
-### Mobile app (Android, Capacitor)
+### Both builds (as built)
 
-- Use an ML Kit text-recognition Capacitor plugin; verify in Phase 0 that it exposes the Devanagari recognizer. If it does not, write a thin custom plugin or fall back to tesseract.js.
-- Bundle the selected ML Kit OCR models so initial OCR does not depend on downloading a model through Google Play Services.
-- Include Latin and Devanagari recognition as required by the selected release.
-- Validate image rotation, blur, low light, shadows, handwriting, tables, and multi-page reports.
-- Keep the original image or PDF according to the user's retention settings.
-- Show OCR uncertainty and allow edits.
-
-ML Kit documentation: https://developers.google.com/ml-kit/vision/text-recognition/v2
+- tesseract.js with `eng` + `hin` traineddata, served from `public/ocr/` (copied by `scripts/copy-ocr-assets.mjs`) and precached; no CDN and no Google Play Services.
+- The Android WebView runs the same OCR code; the packager unzips `.gz` assets, so gzip is off on native.
+- Each value keeps its OCR confidence; uncertain values are flagged and must be checked before the explanation is shown.
+- Still to validate: rotation, blur, low light, handwriting and multi-page reports on the target report population.
 
 ### Website (PWA)
 
@@ -460,9 +455,9 @@ A cached donor directory cannot establish current donor availability while fully
 ### 8.0 Authentication and offline unlock
 
 1. First sign-in requires network: the server returns an access token (short-lived, e.g. 15 minutes), a refresh token, the user's role, and assigned scope.
-2. The user sets a local PIN (or enables device biometric). The refresh token and the database key are wrapped by a key derived from the PIN (PBKDF2 or Argon2 via WebCrypto/WASM). On mobile, the wrapped key is additionally protected by Android Keystore through a secure-storage plugin, and biometric unlock is available. On the website, the wrapped key is stored in IndexedDB as a non-extractable WebCrypto key; biometric unlock may use WebAuthn where supported.
-3. Offline, the app unlocks with the PIN or biometric. No server call is needed for local reads and writes.
-4. Offline access expires after `max_offline_days` (default 7) since `last_server_contact_at`. After that, local data stays encrypted and an online sign-in is required.
+2. The user sets a local PIN (4 to 6 digits). One PBKDF2-SHA256 run (310,000 iterations, random 16-byte salt) gives a verifier and an AES-GCM key; the refresh token is stored only encrypted with that key (`src/auth/pin.ts`). The PIN itself is never stored. *Proposed:* encrypting the whole local database, Android Keystore protection and biometric unlock.
+3. Offline, the app unlocks with the PIN. No server call is needed for local reads and writes. Android cloud backup and device transfer are disabled (`data_extraction_rules.xml`), so the local database does not leave the phone that way.
+4. Offline access expires after `max_offline_days` (default 7) since `last_server_contact_at`. After that, an online sign-in is required.
 5. Repeated wrong PINs (e.g. 5) lock the session and require online sign-in.
 6. On every sync, the server can return `revoked` for the user or device; the client then wipes that user's session keys.
 7. Multiple workers on one device each have their own PIN, session, and scope.
@@ -752,55 +747,38 @@ Test on actual target devices; emulator results alone are insufficient.
 
 ```text
 medisaathi/
-├── app/                         # React + TypeScript + Vite (website + mobile)
+├── frontend/                    # React + TypeScript + Vite (website, PWA, Android)
 │   ├── src/
-│   │   ├── ui/                  # screens and components
-│   │   ├── domain/              # rules: range check, donor search, emergency rules
+│   │   ├── ui/                  # AppShell, LockGate, screens/
+│   │   ├── domain/              # range check, donor search, labs
 │   │   ├── data/                # repositories
-│   │   ├── database/            # schema, migrations, FTS5, Database interface
+│   │   ├── database/            # schema, migrations, seed, Database interface
+│   │   ├── workers/             # sqlite.worker.ts (OPFS)
+│   │   ├── assistant/           # respond, guard, answer, litert (web), native (Android), modelFiles
+│   │   ├── auth/                # PIN unlock, token wrapping
 │   │   ├── sync/                # queue + API client
-│   │   ├── platform/
-│   │   │   ├── types.ts         # OcrEngine, HealthGuidanceEngine, Speech, Location interfaces
-│   │   │   ├── web/             # SQLite WASM, tesseract.js, WebLLM, Web Speech
-│   │   │   └── native/          # Capacitor SQLite, ML Kit, TTS, geolocation
-│   │   └── workers/             # OCR and AI Web Workers
-│   ├── public/                  # PWA manifest, icons, OCR traineddata
-│   ├── android/                 # generated by Capacitor
-│   ├── capacitor.config.ts
+│   │   ├── platform/            # OCR, speech, voice input, network, notifications
+│   │   └── emergencyRules.ts
+│   ├── e2e/                     # Playwright specs (phone + laptop projects)
+│   ├── android/                 # Capacitor project, GemmaPlugin.kt
 │   └── vite.config.ts
 ├── backend/
-│   ├── api/
-│   ├── auth/
-│   ├── patients/
-│   ├── donors/
-│   ├── guidance/
-│   ├── sync/
-│   ├── audit/
-│   ├── admin/                   # SQLAdmin views
+│   ├── app/                     # main, auth, sync, blood, admin, db
 │   └── tests/
-├── contracts/                   # OpenAPI spec + JSON schemas (source for both TypeScript and FastAPI models)
-├── content/                     # reviewed guidance, lab test catalogue, emergency rules
-├── docs/
-│   ├── PRD.md
-│   ├── TRD.md
-│   ├── SECURITY.md
-│   ├── API.md
-│   ├── DATA_DICTIONARY.md
-│   └── TEST_PLAN.md
+├── contracts/                   # OpenAPI spec exported from the backend
+├── content/                     # demo guidance, lab catalogue, emergency rules, donors, places, sample report
+├── docs/                        # prd.md, trd.md, design.md
 └── README.md
 ```
-
-This is the proposed structure; adjust it to the actual repository.
 
 ## 16. Implementation phases
 
 ### Phase 0 — feasibility
 - Select representative Android phones and laptops (with Chrome/Edge).
-- Verify FTS5 with Hindi queries in both SQLite WASM and `@capacitor-community/sqlite`.
+- Verify FTS5 with Hindi queries in SQLite WASM (done; same engine on Android).
 - Verify SQLite WASM persistence in OPFS survives browser restarts.
-- Verify the ML Kit Capacitor plugin supports Devanagari.
 - Measure tesseract.js speed and accuracy on sample reports.
-- Test a WebLLM model on target laptops: download size, memory, latency, Hindi quality.
+- Test Gemma 4 E2B on target laptops and phones: download size, memory, latency, Hindi quality (emulator CPU done: 68 s per answer; real phone GPUs still to measure).
 - Confirm model license and redistribution rights.
 
 ### Phase 1 — offline core
@@ -832,17 +810,17 @@ This is the proposed structure; adjust it to the actual repository.
 - Add only after the MVP passes its release gates.
 
 ### Hackathon build order (Hack-o-Relay 2026)
-Build vertical slices so there is always a demo-able app:
+Build vertical slices so there is always a demo-able app. All eight steps are done:
 1. Vite + React + TypeScript + Tailwind skeleton with PWA plugin; SQLite WASM schema; seed data (patients, donors, guidance, lab catalogue) loaded from `content/`.
 2. Patients + append-only visits + follow-up list + PIN unlock (website first).
 3. MediScan: tesseract.js OCR → review screen → range check → explanation → TTS.
 4. Guidance search (FTS5) + emergency rules + 108/102/112 screen.
 5. BloodLink: blood group filter, Haversine sort, freshness labels, manual location.
 6. FastAPI: login, `sync/push` with operation-ID idempotency, `sync/pull` by scope.
-7. Add Capacitor: build the Android app, switch to the Capacitor SQLite adapter, then ML Kit OCR and native TTS.
-8. If time remains: WebLLM rewording on the website.
+7. Add Capacitor: build the Android app with the same SQLite WASM and tesseract.js code, plus native TTS and notifications.
+8. On-device Gemma 4 E2B with LiteRT-LM: WebGPU on the website, native plugin on Android, behind the guard.
 
-Skip for the hackathon: mesh, embeddings, admin UI (seed by script), conflict-resolution UI beyond the `needs_review` flag.
+Skipped for the hackathon: mesh, embeddings, conflict-resolution UI beyond the `needs_review` flag. The admin UI is SQLAdmin, not a separate app.
 
 ## 17. Technical definition of done
 
@@ -865,14 +843,15 @@ The implementation is acceptable when:
 - Service workers and installable PWAs support offline web applications.
 - SQLite WASM supports persistent storage through OPFS in modern browsers.
 - Capacitor packages a web app as an Android app with native plugins.
-- WebLLM runs language models in the browser using WebGPU.
+- `@litert-lm/core` runs LiteRT-LM models in the browser using WebGPU (verified with Gemma 4 E2B).
 - LiteRT-LM documents local model inference on Android, and compatible Gemma 4 E2B LiteRT-LM artifacts are published.
-- ML Kit provides on-device text recognition options.
+- tesseract.js reads Hindi and English lab reports on the device, offline (verified with the sample report on Android).
 
-**Still requiring implementation and validation**
-- The complete MediSaathi website and Android app.
-- Devanagari support in the chosen ML Kit Capacitor plugin.
-- Availability and Hindi quality of a WebLLM-compatible Gemma build.
+**Built and tested in this repository**
+- The website, PWA and Android app; FastAPI backend with idempotent, scoped sync; PIN unlock; BloodLink consent flow.
+- Gemma 4 E2B answers in Hindi and English on the device, checked by the guard (citations, numbers, medicine names).
+
+**Still requiring validation**
 - A production-ready medical guidance corpus and safe retrieval pipeline.
 - Accuracy of report extraction on the target report population.
 - Model performance and safety on actual target devices.
@@ -881,9 +860,18 @@ The implementation is acceptable when:
 - Regulatory and clinical approval for the intended deployment.
 - Bluetooth/Wi-Fi Direct mesh communication.
 
-**Final technical decision:** Start with a small offline proof of concept, measure it on real hardware, and only then lock the model, runtime, supported device tiers, and release scope. Treat the architecture and code contracts in this document as specifications to implement and test, not as proof that those features already exist.
+**Final technical decision:** The hackathon build proves the architecture end to end. Before any pilot, measure the model on real low-cost phones, have the guidance and report text clinically reviewed, and only then lock supported device tiers and release scope.
 
 ## 19. Change log
+
+**v1.3 (as built, October 2026)**
+- Added an optional online model: Gemini through the backend, chosen per device, behind the same guard; reports never sent (§2).
+- Status changed from proposal to as built; the stack table now records what is implemented (§2).
+- AI: Gemma 4 E2B through LiteRT-LM on both platforms (WebGPU on the website, native plugin on Android); Gemma 3n E2B by user-supplied file. WebLLM and Ollama dropped (§2, §4.1).
+- Android uses the same SQLite WASM and tesseract.js code as the website; `@capacitor-community/sqlite` and ML Kit dropped (§2, §3.1, §5).
+- Offline unlock: PBKDF2 PIN with an AES-GCM-wrapped refresh token; database encryption, Keystore and biometrics stay proposed (§8.0).
+- Security hardening: login limiter, operation ids bound to their user, admin behind the same limiter, `DEMO_PASSWORD` required, Android backups off.
+- Repository layout and build order updated to the real tree (§15, §16).
 
 **v1.2**
 - Platform target changed to **website + Android app only**; no separate desktop app (laptops use the website).
