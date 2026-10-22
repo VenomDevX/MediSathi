@@ -54,12 +54,12 @@ export async function planReply(db: Database, rules: EmergencyRule[], message: s
   return sources.length ? { kind: 'grounded', sources } : { kind: 'unknown' }
 }
 
-const seeAlso = { hi: 'यह भी देखें', en: 'See also' }
+const seeAlso: Record<string, string> = { hi: 'यह भी देखें', en: 'See also', ta: 'இதையும் பாருங்கள்', te: 'ఇవి కూడా చూడండి', bn: 'আরও দেখুন', mr: 'हे देखील पहा', gu: 'આ પણ જુઓ', kn: 'ಇದನ್ನೂ ನೋಡಿ', ml: 'ഇതും കാണുക', pa: 'ਇਹ ਵੀ ਵੇਖੋ', or: 'ଏହା ମଧ୍ୟ ଦେଖନ୍ତୁ', as: 'এইটোও চাওক', ur: 'یہ بھی دیکھیں' }
 
 /** The answer when no model is available: the top item's own words, its limits, and related items. */
 export function composeAnswer(sources: Guidance[], lang: Lang): string {
   const [top, ...rest] = sources
   const parts = [top.summary, top.content, top.limitations].filter(Boolean)
-  if (rest.length) parts.push(`${seeAlso[lang]}: ${rest.map((s) => s.title).join(', ')}`)
+  if (rest.length) parts.push(`${seeAlso[lang] ?? seeAlso['en']}: ${rest.map((s) => s.title).join(', ')}`)
   return parts.join('\n\n')
 }

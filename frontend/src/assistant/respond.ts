@@ -1,7 +1,7 @@
 import type { MessageKind, Source } from '../data/chats'
 import type { Guidance } from '../data/guidance'
 import type { Database } from '../database/types'
-import type { EmergencyRule } from '../domain/emergency'
+import { ruleText, type EmergencyRule } from '../domain/emergency'
 import type { Lang } from '../i18n'
 import { composeAnswer, planReply } from './answer'
 import { checkAnswer } from './guard'
@@ -26,7 +26,7 @@ export async function respond(o: {
   signal?: AbortSignal
 }): Promise<Reply> {
   const plan = await planReply(o.db, o.rules, o.question, o.lang)
-  if (plan.kind === 'emergency') return { kind: 'emergency', content: plan.rule.instruction[o.lang], sources: [{ id: plan.rule.id, title: plan.rule.title[o.lang] }] }
+  if (plan.kind === 'emergency') return { kind: 'emergency', content: ruleText(plan.rule.instruction, o.lang), sources: [{ id: plan.rule.id, title: ruleText(plan.rule.title, o.lang) }] }
   const items = [...(o.extra ?? []), ...(plan.kind === 'grounded' ? plan.sources : [])].slice(0, 3)
   if (!items.length) return { kind: 'unknown', content: '', sources: [] }
 
@@ -35,7 +35,7 @@ export async function respond(o: {
   const texts = items.map(sourceText)
   try {
     const model = await o.model
-    if (!model) return composed
+    if (!model || (model.online && o.extra?.length)) return composed // a person's report never leaves the device
     let rejected = false
     const text = await model.stream(
       groundedPrompt(items, o.question, o.lang),
@@ -44,9 +44,10 @@ export async function respond(o: {
         o.onPartial?.(soFar)
       },
       o.signal,
+      { question: o.question, lang: o.lang, sourceIds: items.map((s) => s.id) },
     )
     if (rejected || !checkAnswer(text, texts).ok) return composed
-    return { kind: 'answer', content: text.trim(), sources }
+    return { kind: model.online ? 'online' : 'answer', content: text.trim(), sources }
   } catch (e) {
     console.warn('Model answer failed; answering from the library.', e)
     return composed

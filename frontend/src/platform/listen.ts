@@ -1,5 +1,7 @@
 // Voice input via the browser's speech recognition (Chrome, Edge, Safari). In Chrome this needs internet;
 // typing always works. The Android app gets on-device recognition in the Android phase.
+import { LANG_META, type Lang } from '../i18n'
+
 type Recognition = {
   lang: string
   interimResults: boolean
@@ -16,14 +18,14 @@ const Ctor = () =>
 export const canListen = () => !!Ctor()
 
 /** Starts listening; calls onText with the running transcript. Returns stop(). */
-export function listen(lang: 'hi' | 'en', onText: (text: string) => void, onEnd: () => void): () => void {
+export function listen(lang: Lang, onText: (text: string) => void, onEnd: () => void): () => void {
   const R = Ctor()
   if (!R) {
     onEnd()
     return () => {}
   }
   const r = new R()
-  r.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'
+  r.lang = LANG_META[lang].locale
   r.interimResults = true
   r.onresult = (e) => onText(Array.from(e.results, (res) => res[0].transcript).join(''))
   r.onend = onEnd
@@ -31,3 +33,4 @@ export function listen(lang: 'hi' | 'en', onText: (text: string) => void, onEnd:
   r.start()
   return () => r.stop()
 }
+

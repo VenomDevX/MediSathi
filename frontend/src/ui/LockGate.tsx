@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { LockKey, SignIn as SignInIcon, Translate, Warning } from '@phosphor-icons/react'
 import { useBoot } from '../app-context'
 import { hasPin, setPin, unlock } from '../auth/pin'
-import { useLang, useT } from '../i18n'
+import { ALL_LANGS, LANG_META, useLang, useT } from '../i18n'
 import { login, type LoginResult } from '../sync/api'
 import { AuthError, NetworkError } from '../sync/engine'
 import { SyncProvider } from '../sync/SyncProvider'
@@ -128,14 +128,22 @@ async function saveServerUser(db: ReturnType<typeof useBoot>['db'], r: LoginResu
 function Shell({ children }: { children: ReactNode }) {
   const t = useT()
   const { lang, setLang } = useLang()
-  const other = lang === 'hi' ? 'en' : 'hi'
   return (
     <main className="relative mx-auto flex min-h-[100dvh] max-w-sm flex-col justify-center gap-8 px-4 pt-[calc(4rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))]">
-      {/* Before sign-in too: the first screen must be readable for someone who reads only Hindi. */}
-      <button type="button" lang={other} onClick={() => setLang(other)} className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-medium text-muted hover:text-ink">
-        <Translate size={18} aria-hidden />
-        {t('language')}
-      </button>
+      {/* Before sign-in too: the first screen must be readable for someone who reads only their language. */}
+      <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 flex items-center gap-1.5">
+        <Translate size={18} aria-hidden className="text-muted" />
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value as typeof lang)}
+          className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2 font-medium text-muted"
+          aria-label={t('language')}
+        >
+          {ALL_LANGS.map((l) => (
+            <option key={l} value={l}>{LANG_META[l].label}</option>
+          ))}
+        </select>
+      </div>
       {children}
       <Link to="/emergency" className="flex min-h-12 items-center justify-center gap-2 font-semibold text-danger">
         <Warning size={20} weight="bold" aria-hidden />

@@ -20,7 +20,7 @@ import { followUpsDue } from '../data/records'
 import { reminderSchedule } from '../domain/reminders'
 import { scheduleReminders } from '../platform/notify'
 import { useSync } from '../sync/useSync'
-import { useLang, useT } from '../i18n'
+import { ALL_LANGS, LANG_META, useLang, useT } from '../i18n'
 import type { StringKey } from '../strings'
 import { Banner } from './components'
 
@@ -146,14 +146,21 @@ export function AppShell() {
               <Warning size={17} weight="bold" aria-hidden />
               {t('emergency')}
             </NavLink>
-            <button
-              type="button"
-              onClick={() => setLang(lang === 'hi' ? 'en' : 'hi')}
-              className="flex min-h-9 items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 text-xs font-medium text-muted hover:text-ink"
-            >
-              <Translate size={17} aria-hidden />
-              {t('language')}
-            </button>
+            <div className="flex items-center gap-1">
+              <Translate size={16} aria-hidden className="text-muted" />
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as typeof lang)}
+                aria-label={t('language')}
+                className="h-8 max-w-[5.5rem] truncate rounded-[var(--radius-control)] border border-line bg-surface px-1.5 text-xs font-medium text-ink focus:border-neem cursor-pointer sm:max-w-none"
+              >
+                {ALL_LANGS.map((l) => (
+                  <option key={l} value={l}>
+                    {LANG_META[l].label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <NavLink to="/sync" aria-label={pending ? `${t('navSync')}: ${t('pendingCount', { n: pending })}` : t('navSync')} className="relative flex min-h-9 min-w-9 items-center justify-center text-muted lg:hidden">
               <CloudArrowUp size={20} aria-hidden />
               {badge}

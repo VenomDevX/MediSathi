@@ -192,6 +192,7 @@ export function Chat() {
                 {m.sources.length > 0 && <Sources sources={m.sources} />}
                 {m.kind === 'composed' && <p className="text-sm text-muted">{t('chatComposedNote')}</p>}
                 {m.kind === 'answer' && <p className="text-sm text-muted">{t('chatModelNote')}</p>}
+                {m.kind === 'online' && <p className="text-sm text-muted">{t('chatOnlineNote')}</p>}
                 {can.speak && (
                   <button type="button" onClick={() => toggleSpeak(m)} aria-pressed={speakingId === m.id} className="flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
                     {speakingId === m.id ? <Stop size={18} aria-hidden /> : <SpeakerHigh size={18} aria-hidden />}

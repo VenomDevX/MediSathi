@@ -1,14 +1,21 @@
-// A local language model the assistant can use to explain library items in its own words.
-// Two runtimes: Ollama on a laptop/desktop (ollama.ts) and Gemma on Android (native plugin, Android phase).
+// A language model the assistant can use to explain library items in its own words.
+// Gemma on the device (litert.ts in the browser, native.ts on Android), or Gemini online through our server (online.ts).
 import type { Guidance } from '../data/guidance'
-import type { Lang } from '../i18n'
+import { LANG_META, type Lang } from '../i18n'
+
+export type Grounding = { question: string; lang: Lang; sourceIds: string[] }
 
 export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 
 export interface ChatModel {
   name: string
-  /** Streams the reply; onText gets the whole text so far and may return false to stop early. Resolves with the final text. */
-  stream(messages: ChatMessage[], onText: (soFar: string) => boolean | void, signal?: AbortSignal): Promise<string>
+  /** True when the question leaves the device (online.ts); the chat then says the answer was explained online. */
+  online?: boolean
+  /**
+   * Streams the reply; onText gets the whole text so far and may return false to stop early. Resolves with the final text.
+   * `grounding` is what the prompt was built from; the online model sends only that, and its server rebuilds the prompt.
+   */
+  stream(messages: ChatMessage[], onText: (soFar: string) => boolean | void, signal?: AbortSignal, grounding?: Grounding): Promise<string>
 }
 
 export const sourceText = (g: Guidance) => [g.title, g.summary, g.content, g.limitations].filter(Boolean).join('\n')
@@ -17,7 +24,7 @@ const system = (lang: Lang) => `You are MediSaathi, a friendly helper that expla
 Rules:
 1. Use ONLY the numbered sources. Do not add facts, medicines, numbers or advice that are not in them.
 2. Never say what illness the person has. Never name a medicine or a dose.
-3. Reply in ${lang === 'hi' ? 'Hindi (Devanagari script)' : 'English'}, in simple everyday words: 3 to 6 short bullet points.
+3. Reply in ${LANG_META[lang].script}, in simple everyday words: 3 to 6 short bullet points.
 4. After each point, write the source number, like [1].
 5. Finish with when to see a doctor, taken from the sources.
 6. If the sources do not answer the question, reply with exactly: NO_ANSWER`
@@ -30,3 +37,4 @@ export function groundedPrompt(sources: Guidance[], question: string, lang: Lang
     { role: 'user', content: `Sources:\n${numbered}\n\nQuestion: ${question}` },
   ]
 }
+

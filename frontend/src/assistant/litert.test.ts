@@ -71,6 +71,10 @@ describe('chooseModel', () => {
   it('uses the chosen model when it is on this device', () => expect(chooseModel('gemma-3n-e2b', ['gemma-4-e2b', 'gemma-3n-e2b'])).toBe('gemma-3n-e2b'))
   it('on auto, prefers Gemma 4 E2B', () => expect(chooseModel('auto', ['gemma-3n-e2b', 'gemma-4-e2b'])).toBe('gemma-4-e2b'))
   it('falls back to whichever model is on this device', () => expect(chooseModel('gemma-4-e2b', ['gemma-3n-e2b'])).toBe('gemma-3n-e2b'))
+  it('when online is chosen but there is no connection, uses Gemma on this device if it is there', () => {
+    expect(chooseModel('online', ['gemma-4-e2b'])).toBe('gemma-4-e2b')
+    expect(chooseModel('online', [])).toBeUndefined()
+  })
   it('uses no model when turned off or none is downloaded', () => {
     expect(chooseModel('off', ['gemma-4-e2b'])).toBeUndefined()
     expect(chooseModel('auto', [])).toBeUndefined()

@@ -5,6 +5,7 @@ import type { ConversationConfig, Message } from '@litert-lm/core'
 import type { ChatModel } from './models'
 import { installedModels, MODELS, openModel, type ModelId } from './modelFiles'
 import { Gemma, nativeModel } from './native'
+import { onlineModel } from './online'
 
 const native = Capacitor.isNativePlatform()
 
@@ -53,8 +54,11 @@ export function litertModel(name: string, engine: () => Promise<EngineLike>): Ch
   }
 }
 
-/** 'auto' uses the best model on this device; 'off' always answers from the library alone. Saved on this device. */
-export type ModelChoice = 'auto' | 'off' | ModelId
+/**
+ * 'auto' uses the best model on this device; 'online' asks Gemini through our server when there is a connection;
+ * 'off' always answers from the library alone. Saved on this device.
+ */
+export type ModelChoice = 'auto' | 'online' | 'off' | ModelId
 const CHOICE_KEY = 'medisaathi.model'
 
 export function getModelChoice(): ModelChoice {
@@ -117,6 +121,7 @@ export async function unloadModel(id: ModelId) {
 export async function pickModel(): Promise<ChatModel | undefined> {
   const choice = getModelChoice()
   if (choice === 'off') return undefined
+  if (choice === 'online' && navigator.onLine) return onlineModel() // offline: Gemma on this device, if it is there
   const id = chooseModel(choice, await installedModels())
   if (!id || !(await canRunModels())) return undefined
   if (native) return nativeModel(Gemma, MODELS[id].file) // the plugin keeps one model loaded and swaps on demand

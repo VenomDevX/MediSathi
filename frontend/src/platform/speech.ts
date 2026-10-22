@@ -2,13 +2,14 @@
 // because the Android WebView has no speechSynthesis.
 import { Capacitor } from '@capacitor/core'
 import { TextToSpeech } from '@capacitor-community/text-to-speech'
+import { LANG_META, type Lang } from '../i18n'
 
 const native = Capacitor.isNativePlatform()
 
 export const canSpeak = () => native || typeof speechSynthesis !== 'undefined'
 
-export function speak(text: string, lang: 'hi' | 'en', onEnd?: () => void) {
-  const locale = lang === 'hi' ? 'hi-IN' : 'en-IN'
+export function speak(text: string, lang: Lang, onEnd?: () => void) {
+  const locale = LANG_META[lang].locale
   if (native) {
     TextToSpeech.speak({ text, lang: locale, rate: 0.9 }).finally(() => onEnd?.())
     return
@@ -29,3 +30,4 @@ export function stopSpeaking() {
   if (native) void TextToSpeech.stop()
   else if (canSpeak()) speechSynthesis.cancel()
 }
+

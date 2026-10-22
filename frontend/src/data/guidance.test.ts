@@ -42,4 +42,11 @@ describe('searchGuidance', () => {
     const g = await getGuidance(db, 'burns-en')
     expect(g).toMatchObject({ title: 'Burns', source_name: expect.stringContaining('not clinically reviewed'), reviewed: 0, version: '1' })
   })
+
+  it('falls back to English guidance for other Indian languages without breaking', async () => {
+    const db = await setup()
+    const ta = await searchGuidance(db, '', 'ta')
+    expect(ta).toHaveLength(10)
+    expect(ta.every((g) => g.language === 'en')).toBe(true)
+  })
 })

@@ -2,7 +2,7 @@
 import type { Database } from '../database/types'
 
 export type Chat = { id: string; title: string; report_id: string | null; created_at: string }
-export type MessageKind = 'answer' | 'composed' | 'emergency' | 'unknown'
+export type MessageKind = 'answer' | 'online' | 'composed' | 'emergency' | 'unknown'
 /** A library item an answer is based on (or, for an emergency reply, the rule that matched). */
 export type Source = { id: string; title: string }
 export type Message = { id: string; role: 'user' | 'assistant'; content: string; kind: MessageKind; sources: Source[]; created_at: string }

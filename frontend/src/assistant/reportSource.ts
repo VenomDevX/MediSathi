@@ -20,7 +20,7 @@ const words = {
 }
 
 export function reportSource(report: Report, lang: Lang): Guidance {
-  const w = words[lang]
+  const w = (words as Record<string, typeof words.en>)[lang] ?? (lang === 'hi' ? words.hi : words.en)
   const sex = report.profile_sex ?? null
   const lines = readResults(report.fields, sex, lang).map(({ field: f, name, result: r, explanation }) => {
     const value = `${name}: ${f.value}${f.unit ? ` ${f.unit}` : ''}`
@@ -35,7 +35,7 @@ export function reportSource(report: Report, lang: Lang): Guidance {
   return {
     id: `report:${report.id}`,
     title: `${w.title}: ${report.file_name}`,
-    language: lang,
+    language: (lang === 'hi' ? 'hi' : 'en') as 'hi' | 'en',
     topic: `report:${report.id}`,
     category: 'report',
     summary: w.summary,

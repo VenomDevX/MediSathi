@@ -23,17 +23,18 @@ const cols = 'g.id, g.title, g.language, g.topic, g.category, g.summary, g.conte
  * Offline full-text search (TRD §4.5). Each word becomes a quoted prefix term, so user input
  * can never be read as FTS syntax. Items in the reader's language come first.
  */
-export async function searchGuidance(db: Database, query: string, lang: 'hi' | 'en'): Promise<Guidance[]> {
+export async function searchGuidance(db: Database, query: string, lang: string): Promise<Guidance[]> {
+  const docLang = lang === 'hi' ? 'hi' : 'en'
   const words = query.match(/[\p{L}\p{N}\p{M}]+/gu) ?? []
   if (!words.length) {
-    return db.query<Guidance>(`SELECT ${cols} FROM guidance_documents g WHERE g.status = 'active' AND g.language = ? ORDER BY g.category, g.title`, [lang])
+    return db.query<Guidance>(`SELECT ${cols} FROM guidance_documents g WHERE g.status = 'active' AND g.language = ? ORDER BY g.category, g.title`, [docLang])
   }
   const match = words.map((w) => `"${w}"*`).join(' ')
   return db.query<Guidance>(
     `SELECT ${cols} FROM guidance_fts f JOIN guidance_documents g ON g.id = f.id
      WHERE guidance_fts MATCH ? AND g.status = 'active'
      ORDER BY (g.language = ?) DESC, bm25(guidance_fts, 0, 10.0, 1.0, 5.0)`,
-    [match, lang],
+    [match, docLang],
   )
 }
 

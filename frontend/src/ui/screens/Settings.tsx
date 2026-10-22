@@ -4,7 +4,7 @@ import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, Loc
 import { canRunModels, getModelChoice, setModelChoice, unloadModel, type ModelChoice } from '../../assistant/litert'
 import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelId } from '../../assistant/modelFiles'
 import { useBoot } from '../../app-context'
-import { useLang, useT } from '../../i18n'
+import { ALL_LANGS, LANG_META, useLang, useT } from '../../i18n'
 import { useSync } from '../../sync/useSync'
 import type { StringKey } from '../../strings'
 import { Banner, Button, Card, Field, PageHeader, inputClass } from '../components'
@@ -25,8 +25,8 @@ export function Settings() {
             <Translate size={22} className="text-neem" aria-hidden />
             {t('moreLanguage')}
           </h2>
-          <div role="radiogroup" aria-label={t('moreLanguage')} className="grid grid-cols-2 gap-2">
-            {(['hi', 'en'] as const).map((l) => (
+          <div role="radiogroup" aria-label={t('moreLanguage')} className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {ALL_LANGS.map((l) => (
               <button
                 key={l}
                 type="button"
@@ -34,9 +34,9 @@ export function Settings() {
                 aria-checked={lang === l}
                 lang={l}
                 onClick={() => setLang(l)}
-                className={cx('min-h-12 rounded-[var(--radius-control)] border font-semibold', lang === l ? 'border-neem bg-neem-soft text-neem' : 'border-line')}
+                className={cx('min-h-12 rounded-[var(--radius-control)] border px-2 font-semibold text-sm', lang === l ? 'border-neem bg-neem-soft text-neem' : 'border-line')}
               >
-                {l === 'hi' ? 'हिंदी' : 'English'}
+                {LANG_META[l].label}
               </button>
             ))}
           </div>
@@ -128,7 +128,7 @@ function AccountCard() {
   )
 }
 
-const choices: ModelChoice[] = ['auto', ...MODEL_IDS, 'off']
+const choices: ModelChoice[] = ['auto', ...MODEL_IDS, 'online', 'off']
 type Saving = { id: ModelId; fraction: number; stop: AbortController }
 
 function ModelCard() {
@@ -165,7 +165,7 @@ function ModelCard() {
     refresh()
   }
 
-  const label = (c: ModelChoice) => (c === 'auto' ? t('aiAuto') : c === 'off' ? t('aiOff') : MODELS[c].name.replace(' E2B', ''))
+  const label = (c: ModelChoice) => (c === 'auto' ? t('aiAuto') : c === 'off' ? t('aiOff') : c === 'online' ? t('aiOnline') : MODELS[c].name.replace(' E2B', ''))
 
   return (
     <Card className="flex flex-col gap-4 p-5">
@@ -277,6 +277,7 @@ function ModelCard() {
             </button>
           ))}
         </div>
+        {choice === 'online' && <p className="text-sm text-muted">{t('aiOnlineNote')}</p>}
       </div>
     </Card>
   )

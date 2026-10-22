@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import auth, blood, sync
+from . import assist, auth, blood, sync
 from .auth import current_user, hasher, session
 from .db import Base, Change, Donor, DonorToken, Patient, PatientVersion, User, make_engine, make_sessionmaker, utcnow
 
@@ -62,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(sync.router)
     app.include_router(blood.router)
+    app.include_router(assist.router)
 
     @app.get("/api/v1/health")
     def health():

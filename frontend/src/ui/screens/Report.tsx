@@ -13,7 +13,7 @@ import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import { Banner, Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, inputClass, type Tone } from '../components'
 import { useAsync } from '../useAsync'
 
-const testName = (f: ReportField, lang: 'hi' | 'en') => {
+const testName = (f: ReportField, lang: string) => {
   const test = labTest(f.test_id)
   return test ? (lang === 'hi' ? test.name_hi : test.canonical_name) : f.name
 }
@@ -230,10 +230,11 @@ export function ReportResults() {
   const rows = report.fields.map((f) => {
     const test = labTest(f.test_id)
     const result: RangeResult = test ? checkRange(test, f, sex) : { status: 'unknown', reason: 'unit' }
+    const textLang = lang === 'hi' ? 'hi' : 'en'
     const explanation =
       !test ? t('unknownTest')
       : result.status === 'unknown' ? t(result.reason === 'value' ? 'unknownValue' : 'unknownUnit')
-      : test.explain[result.status][lang]
+      : test.explain[result.status][textLang]
     return { f, test, result, explanation }
   })
   const outside = rows.filter((r) => r.result.status === 'low' || r.result.status === 'high').length

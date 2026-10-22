@@ -95,14 +95,15 @@ export type ResultRow = { field: ReportField; name: string; result: RangeResult;
 
 /** Each checked value against its range, with the library's plain-words explanation. Null explanation: nothing reliable to say. */
 export function readResults(fields: ReportField[], sex: string | null = null, lang: Lang = 'hi'): ResultRow[] {
+  const textLang = lang === 'hi' ? 'hi' : 'en' // lab catalogue only has hi/en; other languages fall back to English
   return fields.map((field) => {
     const test = labTest(field.test_id)
     const result: RangeResult = test ? checkRange(test, field, sex) : { status: 'unknown', reason: 'unit' }
     return {
       field,
-      name: test ? (lang === 'hi' ? test.name_hi : test.canonical_name) : field.name,
+      name: test ? (textLang === 'hi' ? test.name_hi : test.canonical_name) : field.name,
       result,
-      explanation: test && result.status !== 'unknown' ? test.explain[result.status][lang] : null,
+      explanation: test && result.status !== 'unknown' ? test.explain[result.status][textLang] : null,
     }
   })
 }

@@ -25,4 +25,10 @@ describe('reportSource', () => {
     expect(s.title).toBe('आपकी रिपोर्ट: cbc.png')
     expect(s.content).toContain('हीमोग्लोबिन: 9.8 g/dL, कम')
   })
+
+  it('in other Indian languages falls back safely to English text', () => {
+    const s = reportSource(report, 'ta')
+    expect(s.title).toBe('Your report: cbc.png')
+    expect(s.content).toContain('Haemoglobin: 9.8 g/dL, low')
+  })
 })

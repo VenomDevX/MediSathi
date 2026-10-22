@@ -1,13 +1,16 @@
 // Deterministic red-flag detection (PRD HG-06, TRD §11). Runs before any search result or model call.
 
-type Bilingual = { en: string; hi: string }
-
 export type EmergencyRule = {
   id: string
   /** Every group must match; within a group any one term is enough. */
   all: string[][]
-  title: Bilingual
-  instruction: Bilingual
+  title: Record<string, string>
+  instruction: Record<string, string>
+}
+
+/** Returns the text in the requested language, falling back to en or hi when not translated. */
+export function ruleText(text: Record<string, string>, lang: string): string {
+  return text[lang] ?? (lang === 'hi' ? text.hi : text.en) ?? text.en ?? text.hi ?? ''
 }
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

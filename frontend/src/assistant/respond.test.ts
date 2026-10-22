@@ -49,6 +49,13 @@ describe('respond with a report', () => {
     expect(r).toMatchObject({ kind: 'answer', content: '* Your haemoglobin is 9.8, below 12.0 [1].' })
   })
 
+  it('never sends a report to the online model', async () => {
+    const online = { ...fake('* Your haemoglobin is 9.8 [1].'), online: true }
+    const r = await respond({ ...base, db, question: 'what does low haemoglobin mean', extra: [reportItem], model: online })
+    expect(online.calls).toBe(0)
+    expect(r.kind).toBe('composed')
+  })
+
   it('still puts emergencies first', async () => {
     const r = await respond({ ...base, db, question: 'snake bite', extra: [reportItem] })
     expect(r.kind).toBe('emergency')
@@ -79,6 +86,22 @@ describe('respond', () => {
     expect(r).toMatchObject({ kind: 'answer', content: '* Rest and drink plenty of water. [1]' })
     expect(r.sources[0].id).toBe('fever-en')
     expect(onPartial).toHaveBeenCalled()
+  })
+
+  it('marks an answer from the online model, so the chat can say it was explained online', async () => {
+    const answer = '* Rest and drink plenty of water. [1]'
+    const online: ChatModel & { grounding?: unknown } = {
+      name: 'online',
+      online: true,
+      async stream(_m, onText, _s, grounding) {
+        this.grounding = grounding // what the online model may send: the question, language and card ids, nothing else
+        onText(answer)
+        return answer
+      },
+    }
+    const r = await respond({ ...base, db, question: 'child has fever', model: online })
+    expect(r.kind).toBe('online')
+    expect(online.grounding).toEqual({ question: 'child has fever', lang: 'en', sourceIds: r.sources.map((s) => s.id) })
   })
 
   it('stops a stream that invents a dose and uses the library words instead', async () => {

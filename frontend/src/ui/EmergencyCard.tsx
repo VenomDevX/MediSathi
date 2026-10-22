@@ -1,5 +1,5 @@
 import { Phone, Warning } from '@phosphor-icons/react'
-import type { EmergencyRule } from '../domain/emergency'
+import { ruleText, type EmergencyRule } from '../domain/emergency'
 import { useLang, useT } from '../i18n'
 import { LinkButton } from './components'
 import { cx } from './styles'
@@ -12,9 +12,9 @@ export function EmergencyCard({ rule, className }: { rule: EmergencyRule; classN
     <section role="alert" className={cx('flex flex-col gap-3 rounded-[var(--radius-card)] border-2 border-danger bg-danger-bg p-4', className)}>
       <p className="flex items-center gap-2 text-lg font-bold text-danger">
         <Warning size={24} weight="bold" aria-hidden />
-        {t('emergencyDetected')}: {rule.title[lang]}
+        {t('emergencyDetected')}: {ruleText(rule.title, lang)}
       </p>
-      <p>{rule.instruction[lang]}</p>
+      <p>{ruleText(rule.instruction, lang)}</p>
       <div className="flex flex-wrap gap-3">
         <a href="tel:108" className="inline-flex min-h-12 items-center gap-2 rounded-[var(--radius-control)] bg-danger px-5 font-semibold text-surface hover:opacity-90">
           <Phone size={20} weight="fill" aria-hidden />

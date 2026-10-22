@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { CaretRight, FirstAidKit, MagnifyingGlass, Phone, SpeakerHigh, Stop, Warning } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { getGuidance, searchGuidance } from '../../data/guidance'
-import { matchEmergency } from '../../domain/emergency'
+import { matchEmergency, ruleText } from '../../domain/emergency'
 import { emergencyRules } from '../../emergencyRules'
 import { useFormatDate, useLang, useT } from '../../i18n'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
@@ -40,9 +40,9 @@ export function GuidanceList() {
         <section role="alert" className="mb-4 flex flex-col gap-3 rounded-[var(--radius-card)] border-2 border-danger bg-danger-bg p-4 text-danger">
           <p className="flex items-center gap-2 text-lg font-bold">
             <Warning size={24} weight="bold" aria-hidden />
-            {t('emergencyDetected')}: {emergency.title[lang]}
+            {t('emergencyDetected')}: {ruleText(emergency.title, lang)}
           </p>
-          <p className="text-ink">{emergency.instruction[lang]}</p>
+          <p className="text-ink">{ruleText(emergency.instruction, lang)}</p>
           <div className="flex flex-wrap gap-3">
             <a href="tel:108" className="inline-flex min-h-12 items-center gap-2 rounded-[var(--radius-control)] bg-danger px-5 font-semibold text-surface hover:opacity-90">
               <Phone size={20} weight="fill" aria-hidden />

@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { Phone, Warning } from '@phosphor-icons/react'
 import { emergencyRules } from '../../emergencyRules'
+import { ruleText } from '../../domain/emergency'
 import { useLang, useT } from '../../i18n'
 import type { StringKey } from '../../strings'
 import { PageHeader } from '../components'
@@ -28,9 +29,9 @@ export function Emergency() {
           <section role="alert" className="flex flex-col gap-2 rounded-[var(--radius-card)] border-2 border-danger bg-danger-bg p-4">
             <p className="flex items-center gap-2 text-lg font-bold text-danger">
               <Warning size={24} weight="bold" aria-hidden />
-              {rule.title[lang]}
+              {ruleText(rule.title, lang)}
             </p>
-            <p>{rule.instruction[lang]}</p>
+            <p>{ruleText(rule.instruction, lang)}</p>
           </section>
         )}
 
@@ -56,8 +57,8 @@ export function Emergency() {
           <div className="flex flex-col divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface">
             {emergencyRules.map((r) => (
               <details key={r.id} open={r.id === rule?.id} className="group">
-                <summary className="flex min-h-14 cursor-pointer items-center px-4 font-semibold">{r.title[lang]}</summary>
-                <p className="px-4 pb-4">{r.instruction[lang]}</p>
+                <summary className="flex min-h-14 cursor-pointer items-center px-4 font-semibold">{ruleText(r.title, lang)}</summary>
+                <p className="px-4 pb-4">{ruleText(r.instruction, lang)}</p>
               </details>
             ))}
           </div>
