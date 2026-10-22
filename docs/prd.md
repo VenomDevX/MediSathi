@@ -1,7 +1,7 @@
 # MediSaathi
 ## Product Requirements Document (PRD)
 
-**Document version:** 1.4  
+**Document version:** 1.5  
 **Status:** Hackathon build delivered (October 2026); requirements not yet met are listed in §10 (see §14 change log)  
 **Product category:** Offline-first AI healthcare support platform  
 **Primary platforms:** Android app and offline-capable website (used on laptops and desktops)  
@@ -271,7 +271,7 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 
 ### 5.7 Ask: health questions in plain words
 
-**AQ-01:** Anyone can ask a health question by text or voice, in Hindi or English, with no internet.
+**AQ-01:** Anyone can ask a health question by text or voice, in any of the app's languages or in Hinglish, with no internet. Voice input runs on the device wherever the phone or browser supports it. When it cannot work (no on-device language pack and no internet, or the microphone is blocked), the app says so in the user's language, and typing always works.
 
 **AQ-02:** Emergency rules run before anything else. A red-flag question (for example snake bite, not breathing, heavy bleeding) shows the emergency card with one-tap calling, and the model is not asked.
 
@@ -283,16 +283,21 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 
 **AQ-05:** Answers can be read aloud. Conversations are kept on the device and can be deleted.
 
+**AQ-07:** Hinglish questions are understood whatever the spelling (bukhar / bukhaar, saanp / saamp, nahi / nahin), and so are English words written in Hindi script, as Hindi voice input produces them (फीवर, स्नेक बाइट). This applies to emergency rules, Ask and guidance search alike.
+
 **Acceptance criteria**
 - "Someone was bitten by a snake" shows the emergency card and never calls the model.
 - A fever question in Hindi gets a Hindi answer that cites the fever card.
 - "How much paracetamol" never returns a dose.
+- "saamp ne kaata" shows the snake-bite emergency card; "bacche ko bukhaar hai" finds the fever card.
 
 ### 5.8 Family health records
 
 **FR-01:** A personal user can keep health records for themselves and family members on the device, without a worker account.
 
 **FR-02:** Saved reports can be linked to a family member so their ranges and history are used.
+
+**FR-03:** Several family members can use one phone. Each signs in with their own account and PIN, switches account in one tap, and sees only their own records.
 
 ### 5.9 Blood requests
 
@@ -433,13 +438,13 @@ These are project acceptance targets, not claims of achieved performance.
 The hackathon build delivers a working vertical slice on the website, as a PWA and as an Android app from the same code:
 1. Local database, patients, append-only visits, follow-up reminders, and offline PIN unlock. Two demo accounts (ASHA worker and citizen).
 2. MediScan: OCR on the device → review screen with flagged values → range check → reviewed explanation + read-aloud.
-3. Ask (§5.7): emergency rules, library search and on-device Gemma 4 E2B in Hindi and English, behind the answer guard.
+3. Ask (§5.7): emergency rules, library search and on-device Gemma 4 E2B in Hindi and English, behind the answer guard; on-device voice input and Hinglish spelling matching (AQ-01, AQ-07).
 4. Guidance library with offline search, deterministic emergency rules and the 108/102/112 screen.
 5. BloodLink with seeded donors, approximate distance, freshness labels, manual location, and blood requests with donor consent (§5.9).
 6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
 7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 168 unit, 82 backend, 23 end-to-end flows on phone and laptop sizes.
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 179 unit, 82 backend, 23 end-to-end flows on phone and laptop sizes (46 tests).
 
 Not delivered yet: mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
@@ -484,6 +489,12 @@ A feature is complete only when its implementation, tests, failure handling, doc
 **Product decision:** MediSaathi is a decision-support and health-information tool, not an autonomous clinical system. Human healthcare professionals retain responsibility for diagnosis, treatment, and transfusion decisions.
 
 ## 14. Change log
+
+**v1.5**
+- Voice input works on the device where supported and explains when it cannot (AQ-01).
+- Hinglish spelling variants and English words in Hindi script are understood (AQ-07).
+- Several family members on one phone, each with their own account and PIN (FR-03).
+- Delivered scope and test counts updated (§10).
 
 **v1.4**
 - Added accounts (§5.10): citizen self sign-up and Google sign-in on the website and Android; worker accounts stay admin-created (AC-01 to AC-04).

@@ -1,9 +1,9 @@
 # MediSaathi
 ## Technical Requirements Document (TRD)
 
-**Document version:** 1.4  
+**Document version:** 1.5  
 **Status:** As built for Hack-o-Relay 2026 (October 2026). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
-**Related document:** MediSaathi PRD v1.4
+**Related document:** MediSaathi PRD v1.5
 
 ---
 
@@ -37,7 +37,7 @@ The architecture must allow individual capabilities to operate independently. If
 | Mobile local AI | Gemma 4 E2B (2.6 GB) through native LiteRT-LM (`litertlm-android` 0.18.0) in `GemmaPlugin.kt`: GPU first, CPU fallback remembered per device | Built; optional |
 | Online AI (optional prototype) | Gemini (`gemini-3.8-flash`, low thinking) through `POST /api/v1/assist` on our FastAPI server (`app/assist.py`); key in `GEMINI_API_KEY`, 30 calls/hour per address. The client sends only the question, language and library card ids; the server builds the prompt from its own template and `content/guidance.json`, so the endpoint cannot run arbitrary prompts. Client: `src/assistant/online.ts`. Reports are never sent; the guard still checks every answer | Built; off unless chosen and the key is set |
 | Text-to-speech | Web Speech API (website); `@capacitor-community/text-to-speech` (Android) | Built |
-| Voice input | Web Speech recognition where the browser offers it | Built |
+| Voice input | Android: native `SpeechRecognizer` in `SpeechPlugin.kt` (the WebView's own recognition does not work), on-device recognizer on Android 12+, otherwise the system recognizer with `EXTRA_PREFER_OFFLINE`; `RECORD_AUDIO` asked on first use. Website: Web Speech API with `processLocally` when `SpeechRecognition.available()` reports the language pack installed, background `install()` otherwise, the browser's online service meanwhile. Errors map to no-speech / offline / denied / unavailable messages (`src/platform/listen.ts`) | Built |
 | Location | Manual locality choice on both; browser geolocation where allowed | Built |
 | API backend | FastAPI (`backend/`) | Built |
 | Server database | PostgreSQL in production; SQLite for local development and tests | Built |
@@ -47,7 +47,7 @@ The architecture must allow individual capabilities to operate independently. If
 | Admin tools | SQLAdmin on the FastAPI app, behind the same login limiter | Built |
 | API format | HTTPS REST with versioned JSON contracts; OpenAPI exported to `contracts/` | Built |
 | Sync trigger | On app open, on `online` event, on app resume, and a periodic timer while open | Built |
-| Tests | Vitest (168 unit tests), pytest (82), Playwright (23 flows on phone and laptop sizes) | Built |
+| Tests | Vitest (179 unit tests), pytest (82), Playwright (23 flows on phone and laptop sizes, 46 tests) | Built |
 | Hosting | Static hosting for the PWA; any container host with managed PostgreSQL for the API | Proposed |
 
 **Important:** a LiteRT-LM model is built for a target. The web build (`gemma-4-E2B-it-web.litertlm`) and the Android build (`gemma-4-E2B-it.litertlm`) are different files; the app's catalogue (`src/assistant/modelFiles.ts`) names the right one per platform.
@@ -79,7 +79,7 @@ References:
   Service worker, SQLite WASM/OPFS    same SQLite WASM/OPFS in the WebView
   tesseract.js OCR, pdf.js            tesseract.js OCR, pdf.js
   LiteRT-LM on WebGPU (optional)      native LiteRT-LM, GemmaPlugin.kt (optional)
-  Web Speech API                      Capacitor TTS, local notifications
+  Web Speech API (speak, listen)      Capacitor TTS, SpeechPlugin.kt, notifications
         |                                     |
         +------------- HTTPS API -------------+
                            |
@@ -198,6 +198,8 @@ The local guidance pipeline must be:
 For the MVP, use a local keyword or full-text index. Embedding-based retrieval is optional and should be added only after the storage, runtime, and quality cost is measured.
 
 Use SQLite FTS5 on both clients. Both run the same SQLite WASM build (in the browser and in the Android WebView), which includes FTS5. Test the tokenizer with Hindi queries in Phase 0: confirm that Devanagari vowel signs (matras) are kept inside tokens and that `remove_diacritics` does not break Hindi matching. Each guidance item should also carry curated keyword and synonym lists in Hindi, Hinglish, and English, since users will not type the exact clinical term.
+
+As built, `src/domain/hinglish.ts` folds Roman spelling variants to one key (aa/a, ee/i, oo/u, aspirated consonants, nasal n/m before a consonant or at the end, doubled letters, z/j, w/v) and Devanagari nukta and chandrabindu. Questions are folded before search, and keywords are stored with their folded forms when content is seeded, so `bukhaar`, `bukhar` and `bukar` meet. Keywords also include English words in Hindi script (फीवर, ब्लीडिंग) because Hindi voice input writes them that way. These are hand rules for common swaps, not a transliterator.
 
 **Never rely on a system prompt alone as a clinical safety control.** The application must limit source material, enforce output constraints, and test unsafe and ambiguous prompts.
 
@@ -634,7 +636,7 @@ Required controls:
 - Require user review of extracted medical values.
 - Avoid unsupported diagnosis, prescribing, and dosing behavior.
 - Use approved emergency escalation text that remains available without the model. Escalation screens show 108 (ambulance), 102 (maternal/child transport), 112 (national emergency) and configured local facilities, with one-tap dialing.
-- Emergency red-flag rules are a reviewed, versioned rule table (keywords/symptom combinations → escalation level) evaluated in shared `src/domain/` code before any model call.
+- Emergency red-flag rules are a reviewed, versioned rule table (keywords/symptom combinations → escalation level) evaluated in shared `src/domain/` code before any model call. Rule terms and the question are both spelling-folded (`hinglish.ts`) before whole-word matching.
 - Record model and guidance versions for evaluation and incident investigation.
 - Provide a safe fallback when the model is unavailable or evidence is insufficient.
 
@@ -866,6 +868,11 @@ The implementation is acceptable when:
 **Final technical decision:** The hackathon build proves the architecture end to end. Before any pilot, measure the model on real low-cost phones, have the guidance and report text clinically reviewed, and only then lock supported device tiers and release scope.
 
 ## 19. Change log
+
+**v1.5**
+- Voice input: native Android `SpeechPlugin.kt` and on-device Web Speech (`processLocally`), with clear failure messages (§2, §3.1).
+- Hinglish spelling folding for emergency rules, Ask and guidance search; content version bumped so installed apps rebuild the index (§4.5, §11).
+- Test counts updated (§2).
 
 **v1.4**
 - Added citizen sign-up and Google sign-in (website and Android) with their API contracts; worker accounts stay admin-created (§2, §8.0, §8.2).
