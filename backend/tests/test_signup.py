@@ -98,3 +98,12 @@ def test_bad_google_tokens_are_limited_per_address_but_good_ones_are_not(client,
     google["aud"] = "someone-else"
     codes = [client.post("/api/v1/auth/google", json={"id_token": "tok"}).status_code for _ in range(auth.LoginFailures.PER_ADDRESS + 1)]
     assert codes[-1] == 429 and codes[:-1] == [401] * auth.LoginFailures.PER_ADDRESS
+
+
+def test_google_sign_ins_never_refund_a_password_account_named_google(client, google):
+    client.post("/api/v1/auth/signup", json={**NEW, "username": "google"})
+    for _ in range(3):
+        client.post("/api/v1/auth/login", json={"username": "google", "password": "wrong-guess"})
+    before = len(client.app.state.login_failures.names["google"])
+    assert client.post("/api/v1/auth/google", json={"id_token": "tok"}).status_code == 200
+    assert len(client.app.state.login_failures.names["google"]) == before

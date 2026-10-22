@@ -219,7 +219,7 @@ def _citizen(db: Session, username: str, display_name: str, password: str) -> Us
 def signup(body: SignUp, request: Request, db: Session = Depends(session)):
     """Citizens only: ASHA workers and coordinators carry a village scope, so an admin creates them."""
     # Every sign-up counts against the address's login limit (never refunded), so one address cannot mass-create accounts.
-    if not request.app.state.login_failures.attempt("signup", request.client.host if request.client else "", exists=False):
+    if not request.app.state.login_failures.attempt("signup:", request.client.host if request.client else "", exists=False):
         raise HTTPException(429, "too_many_attempts")
     name = body.username.lower()
     if db.scalar(select(User).where(User.username == name)):
@@ -247,14 +247,15 @@ def google(body: GoogleToken, request: Request, db: Session = Depends(session)):
     client_id = os.environ.get("GOOGLE_CLIENT_ID")
     if not client_id:
         raise HTTPException(503, "google_sign_in_off")
-    # Each bad token costs a call to Google, so failures count against the address like wrong passwords.
+    # Each bad token costs a call to Google, so failures count against the address like wrong passwords. Keys end in ":",
+    # which sign-up names cannot contain, so they never touch a real account's counters.
     address, failures = request.client.host if request.client else "", request.app.state.login_failures
-    if not failures.attempt("google", address, exists=False):
+    if not failures.attempt("google:", address, exists=False):
         raise HTTPException(429, "too_many_attempts")
     claims = _google_claims(body.id_token, client_id)
     if not claims:
         raise HTTPException(401, "invalid_google_token")
-    failures.succeeded("google", address)
+    failures.succeeded("google:", address)
     name = f"google:{claims['sub']}"  # sign-up names cannot contain ":", so this never meets a password account
     user = db.scalar(select(User).where(User.username == name))
     if not user:

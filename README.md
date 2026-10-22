@@ -59,7 +59,7 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # macOS/Linux: .venv/bin/pip
 cp .env.example .env        # set MEDISAATHI_SECRET; DEMO_PASSWORD is required to seed the demo accounts
 .venv/Scripts/python -m uvicorn app.main:app --port 8000 --env-file .env
-.venv/Scripts/python -m pytest   # 81 tests
+.venv/Scripts/python -m pytest   # 82 tests
 ```
 - API documentation: http://localhost:8000/docs. The frontend calls `VITE_API_URL` (default `http://localhost:8000`).
 - No user accounts required for blood requests. Each request and donor registration uses random local cryptographic tokens.

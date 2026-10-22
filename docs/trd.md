@@ -47,7 +47,7 @@ The architecture must allow individual capabilities to operate independently. If
 | Admin tools | SQLAdmin on the FastAPI app, behind the same login limiter | Built |
 | API format | HTTPS REST with versioned JSON contracts; OpenAPI exported to `contracts/` | Built |
 | Sync trigger | On app open, on `online` event, on app resume, and a periodic timer while open | Built |
-| Tests | Vitest (168 unit tests), pytest (81), Playwright (23 flows on phone and laptop sizes) | Built |
+| Tests | Vitest (168 unit tests), pytest (82), Playwright (23 flows on phone and laptop sizes) | Built |
 | Hosting | Static hosting for the PWA; any container host with managed PostgreSQL for the API | Proposed |
 
 **Important:** a LiteRT-LM model is built for a target. The web build (`gemma-4-E2B-it-web.litertlm`) and the Android build (`gemma-4-E2B-it.litertlm`) are different files; the app's catalogue (`src/assistant/modelFiles.ts`) names the right one per platform.

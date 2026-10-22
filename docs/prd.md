@@ -439,7 +439,7 @@ The hackathon build delivers a working vertical slice on the website, as a PWA a
 6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
 7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 168 unit, 81 backend, 23 end-to-end flows on phone and laptop sizes.
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 168 unit, 82 backend, 23 end-to-end flows on phone and laptop sizes.
 
 Not delivered yet: mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
