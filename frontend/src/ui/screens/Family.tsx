@@ -12,6 +12,8 @@ import { Button, Card, EmptyState, Field, LinkButton, PageHeader, inputClass } f
 import { cx } from '../styles'
 import { PregnancyCard, VaccineCard } from '../ScheduleCards'
 import { formatAbha, parseAbha } from '../../domain/abha'
+import { ExportRecord } from '../ExportRecord'
+import { profileRecord } from '../../data/export'
 import { useAsync } from '../useAsync'
 
 const relations: Record<string, StringKey> = {
@@ -250,6 +252,7 @@ export function FamilyDetail() {
     ['bloodGroup', person.blood_group],
     ['conditions', person.conditions],
     ['allergies', person.allergies],
+    ['abhaLabel', person.abha_id ? formatAbha(person.abha_id) : ''],
   ]
 
   return (
@@ -269,7 +272,7 @@ export function FamilyDetail() {
           <p className="text-muted">
             {[t(relations[person.relation] ?? 'relOther'), age !== null && t('ageYears', { n: age }), person.sex && t(person.sex === 'F' ? 'sexF' : 'sexM')].filter(Boolean).join(', ')}
           </p>
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
             {details.map(([k, v]) => (
               <div key={k}>
                 <dt className="text-sm text-muted">{t(k)}</dt>
@@ -279,6 +282,7 @@ export function FamilyDetail() {
           </dl>
         </Card>
 
+        <ExportRecord load={() => profileRecord(db, user, id)} hasAbha={!!person.abha_id} />
         <VaccineCard dob={person.date_of_birth} given={given} onGive={record('vaccines')} />
         <PregnancyCard lmp={person.lmp_date} done={given} onGive={record('anc')} />
 

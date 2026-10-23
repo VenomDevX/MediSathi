@@ -11,6 +11,9 @@ import { askReminderPermission } from '../../platform/notify'
 import { useAsync } from '../useAsync'
 import { cx } from '../styles'
 import { PregnancyCard, VaccineCard } from '../ScheduleCards'
+import { ExportRecord } from '../ExportRecord'
+import { patientRecord } from '../../data/export'
+import { formatAbha } from '../../domain/abha'
 import { SYMPTOM_LABEL, SYMPTOMS, type Symptom } from '../../domain/outbreak'
 
 type Obs = { bp?: string; weight?: string; temp?: string; symptoms?: string[]; vaccines?: string[]; anc?: string[]; lmp?: string }
@@ -42,6 +45,10 @@ export function PatientDetail() {
           .join(', ')}
         {p.sync_status !== 'synced' && <SyncChip status={p.sync_status} label={t} />}
       </p>
+      {p.abha_id && <p className="-mt-4 mb-6 text-sm text-muted">ABHA {formatAbha(p.abha_id)}</p>}
+      <div className="mb-6">
+        <ExportRecord load={() => patientRecord(db, user, p.id)} hasAbha={!!p.abha_id} />
+      </div>
 
       <div className="mb-6 flex flex-col gap-4 empty:hidden">
         <VaccineCard dob={p.date_of_birth} given={given} onGive={record('vaccines')} />

@@ -468,6 +468,12 @@ export const strings = {
   "shareRequest": { hi: "SMS से भेजें", en: "Share by SMS" },
   "shareWhatsApp": { hi: "व्हाट्सऐप पर भेजें", en: "Share on WhatsApp" },
   "shareRequestText": { hi: "ज़रूरी: {place} के पास {group} खून चाहिए। {note}अगर आप दे सकते हैं तो इस संदेश को भेजने वाले से संपर्क करें।", en: "Urgent: {group} blood needed near {place}. {note}If you can donate, please contact the person who sent this message." },
+  // ABHA / FHIR export
+  "abhaLabel": { hi: "आभा नंबर", en: "ABHA number" },
+  "exportRecord": { hi: "स्वास्थ्य रिकॉर्ड निकालें (ABDM FHIR)", en: "Export health record (ABDM FHIR)" },
+  "exportHint": { hi: "एक मानक फ़ाइल (FHIR) जो अस्पताल को दे सकते हैं या आभा (ABHA) हेल्थ लॉकर में जोड़ सकते हैं। आप शेयर करें तब तक यह इसी फ़ोन पर रहती है।", en: "A standard file (FHIR) you can give to a hospital or add to an ABHA health locker. It stays on this phone until you share it." },
+  "exportFailed": { hi: "फ़ाइल नहीं बन सकी। दोबारा कोशिश करें।", en: "Could not make the file. Try again." },
+  "exportNoAbha": { hi: "आभा नंबर नहीं जुड़ा है। अस्पताल में पहचान के लिए इसे जोड़ना अच्छा है।", en: "No ABHA number added. Adding it helps a hospital match the record." },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings
