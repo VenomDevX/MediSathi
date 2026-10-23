@@ -49,3 +49,28 @@ export function resolveChains(rows: VisitRow[]): VisitChain[] {
     })
     .sort((a, b) => b.current.visit_time.localeCompare(a.current.visit_time))
 }
+
+export type Observations = { bp?: string; weight?: string; temp?: string; symptoms: string[]; vaccines: string[]; anc: string[]; lmp?: string }
+
+/** A visit's observations as synced from any device in the scope: bad JSON or wrong types are dropped, never thrown. */
+export function readObservations(json: string): Observations {
+  let o: unknown
+  try {
+    o = JSON.parse(json)
+  } catch {
+    o = null
+  }
+  const r = (o && typeof o === 'object' && !Array.isArray(o) ? o : {}) as Record<string, unknown>
+  const text = (k: string) => (typeof r[k] === 'string' ? (r[k] as string) : undefined)
+  const list = (k: string) => (Array.isArray(r[k]) ? (r[k] as unknown[]).filter((x): x is string => typeof x === 'string') : [])
+  const lmp = text('lmp')
+  return {
+    bp: text('bp'),
+    weight: text('weight'),
+    temp: text('temp'),
+    symptoms: list('symptoms'),
+    vaccines: list('vaccines'),
+    anc: list('anc'),
+    lmp: lmp && /^\d{4}-\d{2}-\d{2}$/.test(lmp) ? lmp : undefined,
+  }
+}

@@ -1,7 +1,7 @@
 // Vaccine doses and pregnancy checkups due now, for the people this account looks after (Today screen).
 import type { Database } from '../database/types'
 import { childSchedule, pregnancySchedule, type Planned } from '../domain/schedule'
-import { resolveChains, type VisitRow } from '../domain/visits'
+import { readObservations, resolveChains, type VisitRow } from '../domain/visits'
 import { CHILD, PREGNANCY } from '../schedules'
 import { givenIds, listProfiles } from './family'
 import { inScope, type Worker } from './records'
@@ -31,9 +31,9 @@ export async function dueSchedules(db: Database, w: Worker, isWorker: boolean, t
   const byPatient = new Map<string, { done: Set<string>; lmp: string | null; lmpAt: string }>()
   for (const { current: v, voided } of resolveChains(visits)) {
     if (voided) continue
-    const o = JSON.parse(v.observations_json)
+    const o = readObservations(v.observations_json)
     const e = byPatient.get(v.patient_id) ?? { done: new Set<string>(), lmp: null, lmpAt: '' }
-    for (const id of [...(o.vaccines ?? []), ...(o.anc ?? [])]) e.done.add(id)
+    for (const id of [...o.vaccines, ...o.anc]) e.done.add(id)
     if (o.lmp && v.visit_time > e.lmpAt) Object.assign(e, { lmp: o.lmp, lmpAt: v.visit_time }) // the latest recorded period counts
     byPatient.set(v.patient_id, e)
   }

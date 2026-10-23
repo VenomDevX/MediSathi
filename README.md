@@ -47,7 +47,7 @@ Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: 
 cd frontend
 npm install
 npm run dev          # http://localhost:5173 (copies OCR and LiteRT runtimes into public/ automatically)
-npm test             # unit tests (vitest: 36 files, 210 tests)
+npm test             # unit tests (vitest: 36 files, 211 tests)
 npx playwright test  # 34 end-to-end flows on phone and laptop sizes (68 tests)
 npm run build        # production PWA build in dist/, with offline service worker
 npm run preview      # preview production build locally
@@ -76,7 +76,7 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # macOS/Linux: .venv/bin/pip
 cp .env.example .env        # set MEDISAATHI_SECRET; DEMO_PASSWORD is required to seed the demo accounts
 .venv/Scripts/python -m uvicorn app.main:app --port 8000 --env-file .env
-.venv/Scripts/python -m pytest   # 83 tests
+.venv/Scripts/python -m pytest   # 84 tests
 ```
 - API documentation: http://localhost:8000/docs. The frontend calls `VITE_API_URL` (default `http://localhost:8000`).
 - No user accounts required for blood requests. Each request and donor registration uses random local cryptographic tokens.

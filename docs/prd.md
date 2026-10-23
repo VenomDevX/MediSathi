@@ -463,7 +463,7 @@ The hackathon build delivers a working vertical slice on the website, as a PWA a
 7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
 8. Field tools (§5.11): hands-free Saathi, medicine strip scan, outbreak early warning, vaccine and pregnancy tracker, nearest health centre, SMS to donors, ABHA / FHIR export, ABHA check with DigiLocker (demo).
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 210 unit, 83 backend, 34 end-to-end flows on phone and laptop sizes (68 tests).
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 211 unit, 84 backend, 34 end-to-end flows on phone and laptop sizes (68 tests).
 
 Not delivered yet: ABDM linking (HIP, consent manager), real DigiLocker verification, mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 

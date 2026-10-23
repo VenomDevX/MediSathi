@@ -1,7 +1,7 @@
 // Gathers one person's record (a family member or a health worker's patient) for the FHIR export.
 import type { Database } from '../database/types'
 import type { FhirDose, FhirLab, FhirPerson, FhirVisit } from '../domain/fhir'
-import { resolveChains, type VisitRow } from '../domain/visits'
+import { readObservations, resolveChains, type VisitRow } from '../domain/visits'
 import { CHILD, PREGNANCY } from '../schedules'
 import { getProfile } from './family'
 import { getPatient, type Worker } from './records'
@@ -60,8 +60,8 @@ export async function patientRecord(db: Database, w: Worker, patientId: string):
     person: { id: p.id, name: p.display_name, sex: p.sex, birthDate: p.date_of_birth, birthYear: null, abha: p.abha_id },
     labs: labs((await listReports(db, w)).filter((r) => r.patient_id === patientId), p.sex),
     doses: visits.flatMap((v) => {
-      const o = JSON.parse(v.observations_json)
-      return doses([...(o.vaccines ?? []), ...(o.anc ?? [])], v.visit_time)
+      const o = readObservations(v.observations_json)
+      return doses([...o.vaccines, ...o.anc], v.visit_time)
     }),
     visits: visits.map((v) => ({ id: v.id, date: v.visit_time, text: v.notes })),
   }

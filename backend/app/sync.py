@@ -1,9 +1,9 @@
 """The only client write path (TRD §3.2 rule 11): idempotent push, scoped incremental pull."""
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -20,6 +20,18 @@ class Strict(BaseModel):
 
 DATE = r"^\d{4}-\d{2}-\d{2}$"
 ABHA = r"^\d{14}$"  # ABHA number, digits only
+Short = Annotated[str, StringConstraints(max_length=40)]
+
+
+class Observations(Strict):
+    """What a visit records; other devices in the scope read it, so its shape is enforced here."""
+    bp: Short | None = None
+    weight: Short | None = None
+    temp: Short | None = None
+    symptoms: list[Short] = Field(default_factory=list, max_length=20)
+    vaccines: list[Short] = Field(default_factory=list, max_length=50)
+    anc: list[Short] = Field(default_factory=list, max_length=20)
+    lmp: str | None = Field(None, pattern=DATE)
 
 
 class PatientIn(Strict):
@@ -61,6 +73,12 @@ class VisitIn(Strict):
     follow_up_at: str | None = None
     created_at: str
     voided_at: str | None = None
+
+    @field_validator("observations_json")
+    @classmethod
+    def _observations(cls, v: str) -> str:
+        Observations.model_validate_json(v)
+        return v
 
 
 class ReportIn(Strict):

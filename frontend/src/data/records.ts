@@ -1,6 +1,6 @@
 import type { Database } from '../database/types'
 import type { SymptomVisit } from '../domain/outbreak'
-import { resolveChains, type VisitChain, type VisitRow } from '../domain/visits'
+import { readObservations, resolveChains, type VisitChain, type VisitRow } from '../domain/visits'
 import { syncOp } from './syncOps'
 
 export type Worker = { id: string; assigned_scope: string[] }
@@ -200,5 +200,5 @@ export async function recentSymptoms(db: Database, w: Worker, since: string): Pr
   const village = new Map(rows.map((r) => [r.patient_id, r.village]))
   return resolveChains(rows)
     .filter((c) => !c.voided && c.current.visit_time >= since)
-    .map(({ current: v }) => ({ patient_id: v.patient_id, village: village.get(v.patient_id) ?? null, visit_time: v.visit_time, symptoms: JSON.parse(v.observations_json).symptoms ?? [] }))
+    .map(({ current: v }) => ({ patient_id: v.patient_id, village: village.get(v.patient_id) ?? null, visit_time: v.visit_time, symptoms: readObservations(v.observations_json).symptoms }))
 }

@@ -4,7 +4,7 @@ import { CalendarPlus, ClipboardText, PencilSimple, UserCircle } from '@phosphor
 import { useApp } from '../../app-context'
 import { addVisit, amendVisit, getPatient, listVisits } from '../../data/records'
 import { todayLocal } from '../../domain/dates'
-import type { VisitChain, VisitRow } from '../../domain/visits'
+import { readObservations, type VisitChain, type VisitRow } from '../../domain/visits'
 import { useFormatDate, useT } from '../../i18n'
 import { Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
 import { askReminderPermission } from '../../platform/notify'
@@ -17,7 +17,6 @@ import { patientRecord } from '../../data/export'
 import { formatAbha } from '../../domain/abha'
 import { SYMPTOM_LABEL, SYMPTOMS, type Symptom } from '../../domain/outbreak'
 
-type Obs = { bp?: string; weight?: string; temp?: string; symptoms?: string[]; vaccines?: string[]; anc?: string[]; lmp?: string }
 
 export function PatientDetail() {
   const t = useT()
@@ -29,7 +28,7 @@ export function PatientDetail() {
   if (!data?.patient) return <EmptyState icon={<UserCircle size={32} />} title={t('patientNotFound')} action={<LinkButton to="/patients" variant="secondary">{t('back')}</LinkButton>} />
   const p = data.patient
   // Doses and checkups are recorded as visits, so they sync like any other visit.
-  const current = data.visits.filter((c) => !c.voided).map((c) => ({ ...c.current, obs: JSON.parse(c.current.observations_json) as Obs }))
+  const current = data.visits.filter((c) => !c.voided).map((c) => ({ ...c.current, obs: readObservations(c.current.observations_json) }))
   const given = new Set(current.flatMap((v) => [...(v.obs.vaccines ?? []), ...(v.obs.anc ?? [])]))
   const lmp = current.find((v) => v.obs.lmp)?.obs.lmp ?? null // chains are newest first
   const record = (field: 'vaccines' | 'anc') => async (itemId: string, label: string) => {
@@ -82,7 +81,7 @@ function VisitCard({ chain, patientId }: { chain: VisitChain; patientId: string 
   const t = useT()
   const fmt = useFormatDate()
   const v = chain.current
-  const obs: Obs = JSON.parse(v.observations_json)
+  const obs = readObservations(v.observations_json)
   const obsText = [obs.bp && `${t('bp')} ${obs.bp}`, obs.weight && `${obs.weight} kg`, obs.temp && `${obs.temp} °F`].filter(Boolean)
 
   return (
@@ -136,7 +135,7 @@ export function VisitForm() {
 function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId: string; onDone: () => void }) {
   const t = useT()
   const { db, user } = useApp()
-  const prevObs: Obs = prev ? JSON.parse(prev.observations_json) : {}
+  const prevObs = readObservations(prev?.observations_json ?? '{}')
   const [form, setForm] = useState({
     date: prev ? todayLocal(new Date(prev.visit_time)) : todayLocal(),
     notes: prev?.notes ?? '',

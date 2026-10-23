@@ -162,3 +162,13 @@ def test_date_of_birth_and_abha_number_sync_and_are_checked(client, sunita):
     assert (entity["date_of_birth"], entity["abha_id"]) == ("2026-08-20", "12345678901234")
     bad = patient(abha_id="12-3456")
     assert push(client, sunita, op("patient", bad["id"], bad))[0]["error_code"] == "invalid"
+
+
+def test_visit_observations_must_have_the_expected_shape(client, sunita):
+    p = patient()
+    push(client, sunita, op("patient", p["id"], p))
+    ok = visit(p["id"], observations_json='{"symptoms": ["fever"], "vaccines": ["bcg"], "lmp": "2026-06-01", "bp": "120/80"}')
+    bad = [visit(p["id"], observations_json=o) for o in ("not json", "[]", '{"vaccines": 5}', '{"lmp": "soon"}', '{"admin": true}')]
+    results = push(client, sunita, op("patient_visit", ok["id"], ok), *[op("patient_visit", v["id"], v) for v in bad])
+    assert results[0]["status"] == "accepted"
+    assert [(r["status"], r["error_code"]) for r in results[1:]] == [("rejected", "invalid")] * 5

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveChains, type VisitRow } from './visits'
+import { readObservations, resolveChains, type VisitRow } from './visits'
 
 const v = (id: string, created_at: string, extra: Partial<VisitRow> = {}): VisitRow => ({
   id,
@@ -67,5 +67,13 @@ describe('resolveChains', () => {
     expect(chains).toHaveLength(1)
     expect(chains[0].current.id).toBe('b2')
     expect(chains[0].history.map((h) => h.id)).toEqual(['b1', 'a'])
+  })
+})
+
+describe('readObservations', () => {
+  it('keeps good fields and drops bad JSON or wrong types instead of throwing', () => {
+    expect(readObservations('{"symptoms":["fever"],"vaccines":["bcg",5],"lmp":"2026-06-01","bp":"120/80"}')).toMatchObject({ symptoms: ['fever'], vaccines: ['bcg'], anc: [], lmp: '2026-06-01', bp: '120/80' })
+    for (const bad of ['not json', 'null', '[]', '{"vaccines":5,"anc":"x","lmp":"soon","bp":7}'])
+      expect(readObservations(bad)).toEqual({ symptoms: [], vaccines: [], anc: [], bp: undefined, weight: undefined, temp: undefined, lmp: undefined })
   })
 })
