@@ -1,11 +1,11 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { ArrowUp, ChatCircleText, FileText, Microphone, Plus, SpeakerHigh, Stop, Trash } from '@phosphor-icons/react'
+import { ArrowUp, ChatCircleText, FileText, Microphone, Plus, SpeakerHigh, Stop, Trash, Waveform } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { pickModel } from '../../assistant/litert'
 import { reportSource } from '../../assistant/reportSource'
-import { respond } from '../../assistant/respond'
-import { addMessage, createChat, deleteChat, getChat, listChats, listMessages, type Message, type Source } from '../../data/chats'
+import { ask } from '../../assistant/ask'
+import { deleteChat, getChat, listChats, listMessages, type Message, type Source } from '../../data/chats'
 import { getReport } from '../../data/reports'
 import { emergencyRules } from '../../emergencyRules'
 import { useLang, useT } from '../../i18n'
@@ -83,17 +83,17 @@ export function Chat() {
     setText('')
     setBusy(true)
     try {
-      let id = chatId
-      if (!id) {
-        id = await createChat(db, user.id, q, report?.id)
-        setChatId(id)
-        setParams({ id }, { replace: true })
-      }
-      await addMessage(db, user.id, id, { role: 'user', content: q })
-      setMessages(await listMessages(db, user.id, id))
-      const extra = report ? [reportSource(report, lang)] : undefined
-      const reply = await respond({ db, rules: emergencyRules, question: q, lang, extra, model: pickModel(), onPartial: setStreaming })
-      await addMessage(db, user.id, id, { role: 'assistant', ...reply, content: reply.kind === 'unknown' ? t('chatUnknown') : reply.content })
+      const { chatId: id } = await ask({
+        db, owner: user.id, chatId, question: q, lang, rules: emergencyRules, model: pickModel(), reportId: report?.id,
+        extra: report ? [reportSource(report, lang)] : undefined, unknownText: t('chatUnknown'), onPartial: setStreaming,
+        onSaved: async (id) => {
+          if (!chatId) {
+            setChatId(id)
+            setParams({ id }, { replace: true })
+          }
+          setMessages(await listMessages(db, user.id, id))
+        },
+      })
       setMessages(await listMessages(db, user.id, id))
       reloadChats()
     } finally {
@@ -142,6 +142,10 @@ export function Chat() {
     <div className="flex flex-1 flex-col">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-[26px] font-bold">{t('chatTitle')}</h1>
+        <Link to="/saathi" className="ml-auto flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-semibold text-neem hover:bg-neem-soft">
+          <Waveform size={18} weight="bold" aria-hidden />
+          {t('handsFree')}
+        </Link>
         {chatId && (
           <Link to="/chat" className="flex min-h-11 items-center gap-1.5 rounded-[var(--radius-control)] px-3 font-semibold text-neem hover:bg-neem-soft">
             <Plus size={18} weight="bold" aria-hidden />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UserPlus, Users, UsersThree } from '@phosphor-icons/react'
+import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UserPlus, Waveform, Users, UsersThree } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { upcomingFollowUps } from '../../data/family'
 import { followUpsDue } from '../../data/records'
@@ -58,6 +58,10 @@ export function Today() {
         </span>
         <span className="pl-6 text-muted">{t('homeAskExample')}</span>
         <span className="pl-6 text-sm font-medium text-neem">{t('homeAskHint')}</span>
+      </Link>
+      <Link to="/saathi" className="-mt-3 flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-card)] bg-neem px-4 font-semibold text-on-neem hover:opacity-90">
+        <Waveform size={22} weight="bold" aria-hidden />
+        {t('handsFree')}: {t('saathiTitle')}
       </Link>
 
       {/* Follow-ups (Personal family + ASHA patient visits) */}

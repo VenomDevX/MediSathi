@@ -380,6 +380,16 @@ export const strings = {
   "stopDonor": { hi: "रक्तदाता न रहें", en: "Stop being a donor" },
   "stopDonorConfirm": { hi: "हाँ, मेरा नंबर हटाएँ", en: "Yes, remove my number" },
   "donorRemoved": { hi: "यह फ़ोन अब रक्तदाता के रूप में जुड़ा नहीं है।", en: "This phone is no longer registered as a donor." },
+
+  // Hands-free Saathi mode
+  "handsFree": { hi: "बिना हाथ लगाए", en: "Hands-free" },
+  "saathiTitle": { hi: "साथी से बात करें", en: "Talk to Saathi" },
+  "saathiHint": { hi: "बटन दबाकर बोलिए। साथी जवाब बोलकर सुनाएगा और फिर से सुनेगा।", en: "Tap the button and speak. Saathi answers aloud, then listens again." },
+  "saathiStart": { hi: "बोलना शुरू करें", en: "Start talking" },
+  "saathiStop": { hi: "रोकें", en: "Stop" },
+  "saathiSpeaking": { hi: "बोल रहा है…", en: "Speaking…" },
+  "saathiYouSaid": { hi: "आपने पूछा", en: "You asked" },
+  "saathiIdle": { hi: "बात करने के लिए बटन दबाएं", en: "Tap the button to talk" },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings

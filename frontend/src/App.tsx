@@ -17,6 +17,7 @@ import { GuidanceDetail, GuidanceList } from './ui/screens/Guidance'
 import { Emergency } from './ui/screens/Emergency'
 import { Donors } from './ui/screens/Donors'
 import { Sync } from './ui/screens/Sync'
+import { Saathi } from './ui/screens/Saathi'
 import type { StringKey } from './strings'
 
 function Splash({ text }: { text: StringKey }) {
@@ -35,6 +36,7 @@ export default function App() {
               <Route element={<AppShell />}>
                 <Route index element={<Today />} />
                 <Route path="chat" element={<Chat />} />
+                <Route path="saathi" element={<Saathi />} />
                 <Route path="family" element={<FamilyList />} />
                 <Route path="family/new" element={<FamilyEdit />} />
                 <Route path="family/:id" element={<FamilyDetail />} />
