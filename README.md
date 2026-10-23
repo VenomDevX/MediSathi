@@ -99,9 +99,10 @@ cd frontend
 npm run build
 npx cap sync android
 cd android
-./gradlew assembleDebug   # -> app/build/outputs/apk/debug/app-debug.apk
+./gradlew assembleDebug   # -> app/build/outputs/apk/debug/app-<cpu>-debug.apk
 ```
 - Native plugins in `frontend/android/app/src/main/java/in/medisaathi/app/`: `GemmaPlugin.kt` (LiteRT-LM) and `SpeechPlugin.kt` (voice input), both registered in `MainActivity.java`.
 - File export uses the official `@capacitor/filesystem` and `@capacitor/share` plugins (share sheet on Android, download on the website).
-- A ready-built debug APK is in `apk/MediSaathi.apk`.
+- A ready-built APK for phones (arm64, Android 7+) is in `apk/MediSaathi.apk`. The build makes one APK per CPU: `app-arm64-v8a-debug.apk` for phones, `app-x86_64-debug.apk` for the emulator.
+- Installing on a phone: download the file with **View raw** / the download button on GitHub (not the page itself), wait for the download to finish, then open it and allow "Install unknown apps" for your browser or file manager. If it stays on "Installing…", Play Protect is usually scanning it: tap **Install anyway**, or connect the phone by USB and run `adb install apk/MediSaathi.apk`. Uninstall any MediSaathi built on another computer first, since the signatures differ.
 - Follow-up reminders only display non-sensitive counts on the lock screen.
