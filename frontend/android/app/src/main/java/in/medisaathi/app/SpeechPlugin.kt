@@ -101,7 +101,8 @@ class SpeechPlugin : Plugin() {
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 .putExtra(RecognizerIntent.EXTRA_LANGUAGE, call.getString("lang"))
                 .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-                .putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+                // The fallback may use the network when there is one; insisting on offline makes it fail without a language pack.
+                .putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, onDevice)
                 .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1),
         )
     }
