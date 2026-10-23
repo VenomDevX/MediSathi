@@ -33,7 +33,7 @@ export function Chat() {
   const urlId = params.get('id')
   const [chatId, setChatId] = useState<string | null>(urlId)
   const [messages, setMessages] = useState<Message[]>([])
-  const [text, setText] = useState('')
+  const [text, setText] = useState(() => params.get('q') ?? '') // ?q= pre-fills a question, e.g. from a medicine scan
   const [busy, setBusy] = useState(false)
   const [streaming, setStreaming] = useState('')
   const [listening, setListening] = useState<null | (() => void)>(null)

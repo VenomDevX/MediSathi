@@ -18,6 +18,7 @@ import { Emergency } from './ui/screens/Emergency'
 import { Donors } from './ui/screens/Donors'
 import { Sync } from './ui/screens/Sync'
 import { Saathi } from './ui/screens/Saathi'
+import { MedicineScan } from './ui/screens/Medicine'
 import type { StringKey } from './strings'
 
 function Splash({ text }: { text: StringKey }) {
@@ -49,6 +50,7 @@ export default function App() {
                 <Route path="patients/:id/visit" element={<VisitForm />} />
                 <Route path="patients/:id/visit/:visitId/correct" element={<VisitForm />} />
                 <Route path="scan" element={<ScanHome />} />
+                <Route path="scan/medicine" element={<MedicineScan />} />
                 <Route path="scan/:id" element={<ReportResults />} />
                 <Route path="scan/:id/review" element={<ReportReview />} />
                 <Route path="guidance" element={<GuidanceList />} />

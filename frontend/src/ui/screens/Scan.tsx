@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Camera, CaretRight, FileArrowUp, FileText, Info } from '@phosphor-icons/react'
+import { Camera, CaretRight, FileArrowUp, FileText, Info, Pill } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { listReports, saveReport } from '../../data/reports'
 import { parseReport } from '../../domain/labs'
@@ -8,7 +8,7 @@ import { useFormatDate, useT } from '../../i18n'
 import { labCatalogue } from '../../labCatalogue'
 import { ACCEPT, isSafeType, saveFile, sha256 } from '../../platform/files'
 import type { StringKey } from '../../strings'
-import { Banner, Button, Chip, EmptyState, PageHeader } from '../components'
+import { Banner, Button, Chip, EmptyState, LinkButton, PageHeader } from '../components'
 import { useAsync } from '../useAsync'
 
 type Busy = { key: StringKey; vars: Record<string, number> }
@@ -89,6 +89,11 @@ export function ScanHome() {
           <input ref={picker} type="file" accept={ACCEPT} onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
           {error && <Banner tone="danger">{t(error)}</Banner>}
         </section>
+
+        <LinkButton to="/scan/medicine" variant="secondary">
+          <Pill size={22} aria-hidden />
+          {t('scanMedicine')}
+        </LinkButton>
 
         <section aria-labelledby="saved">
           <h2 id="saved" className="mb-3 text-xl font-semibold">{t('savedReports')}</h2>

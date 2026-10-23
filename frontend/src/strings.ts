@@ -390,6 +390,21 @@ export const strings = {
   "saathiSpeaking": { hi: "बोल रहा है…", en: "Speaking…" },
   "saathiYouSaid": { hi: "आपने पूछा", en: "You asked" },
   "saathiIdle": { hi: "बात करने के लिए बटन दबाएं", en: "Tap the button to talk" },
+  // Medicine strip scan
+  "scanMedicine": { hi: "दवा की पत्ती स्कैन करें", en: "Scan a medicine strip" },
+  "medicineTitle": { hi: "दवा पहचानें", en: "Check a medicine" },
+  "medicineHint": { hi: "दवा की पत्ती या डिब्बे की साफ़ फ़ोटो लें जिसमें नाम और एक्सपायरी दिखे। सब कुछ इसी फ़ोन पर पढ़ा जाता है।", en: "Take a clear photo of the strip or box showing the name and expiry date. It is read on this phone only." },
+  "medicineReading": { hi: "पढ़ रहा है… {pct}%", en: "Reading… {pct}%" },
+  "medicineUnknown": { hi: "यह दवा पहचान नहीं पाए। नाम साफ़ दिखाकर दोबारा फ़ोटो लें, या फार्मासिस्ट से पूछें।", en: "Could not recognise this medicine. Retake the photo with the name clearly visible, or ask a pharmacist." },
+  "medicineUse": { hi: "किस काम आती है", en: "What it is for" },
+  "medicineWarning": { hi: "ध्यान रखें", en: "Be careful" },
+  "medicineExpired": { hi: "एक्सपायर्ड ({date})। यह दवा न लें।", en: "Expired ({date}). Do not take this medicine." },
+  "medicineExpiresSoon": { hi: "जल्द एक्सपायर होगी: {date}", en: "Expires soon: {date}" },
+  "medicineExpiresOn": { hi: "एक्सपायरी: {date}", en: "Expires: {date}" },
+  "medicineNoExpiry": { hi: "एक्सपायरी की तारीख नहीं पढ़ी जा सकी। पत्ती पर खुद देख लें।", en: "Could not read the expiry date. Check it on the strip yourself." },
+  "medicineAsk": { hi: "इस दवा के बारे में पूछें", en: "Ask about this medicine" },
+  "medicineAskText": { hi: "{name} किस लिए है और कैसे लेनी चाहिए?", en: "What is {name} for and how should it be taken?" },
+  "medicineDisclaimer": { hi: "डेमो जानकारी, डॉक्टर द्वारा जांची नहीं गई। दवा हमेशा डॉक्टर या फार्मासिस्ट की सलाह से लें।", en: "Demo information, not reviewed by a doctor. Always take medicines as a doctor or pharmacist advises." },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings
