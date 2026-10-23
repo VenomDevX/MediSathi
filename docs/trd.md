@@ -1,9 +1,9 @@
 # MediSaathi
 ## Technical Requirements Document (TRD)
 
-**Document version:** 1.5  
+**Document version:** 1.6  
 **Status:** As built for Hack-o-Relay 2026 (October 2026). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
-**Related document:** MediSaathi PRD v1.5
+**Related document:** MediSaathi PRD v1.6
 
 ---
 
@@ -868,6 +868,15 @@ The implementation is acceptable when:
 **Final technical decision:** The hackathon build proves the architecture end to end. Before any pilot, measure the model on real low-cost phones, have the guidance and report text clinically reviewed, and only then lock supported device tiers and release scope.
 
 ## 19. Change log
+
+**v1.6**
+- Field tools, all offline and pure logic in `src/domain/` with unit tests: `medicine.ts` (name match with edit distance 1, expiry parse), `outbreak.ts` (3+ patients and 2x the previous 7 days per village and symptom), `schedule.ts` (UIP and ANC windows, EDD = LMP + 280 days), `centres.ts` (nearest and nearest 24-hour by `distanceKm`), `fhir.ts` (FHIR R4 collection bundle, ABHA identifier `https://healthid.ndhm.gov.in`, NRCeS profiles), `abha.ts`.
+- Symptoms, vaccine doses, ANC checkups and LMP are stored in visit `observations_json`, so the existing append-only visit sync carries them; no new sync entity.
+- `patients.date_of_birth` and `patients.abha_id` added on the server (idempotent `ALTER TABLE ... ADD COLUMN` at start) and in sync; `profiles.date_of_birth`, `lmp_date`, `abha_id` added on the device by migration.
+- Shared `assistant/ask.ts` used by Chat and the hands-free Saathi screen.
+- SMS through `sms:` links (one number per link, audited as `donor_sms`); no gateway.
+- New plugins `@capacitor/filesystem` and `@capacitor/share` for exporting files on Android.
+- New content: `medicines.json`, `immunization_schedule.json`, `health_centres.json`, `visits.json`; content version bumped.
 
 **v1.5**
 - Voice input: native Android `SpeechPlugin.kt` and on-device Web Speech (`processLocally`), with clear failure messages (§2, §3.1).

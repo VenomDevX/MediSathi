@@ -21,6 +21,13 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 - **ASHA Assist**: patients, append-only visits and follow-ups, saved on the phone first and synced later.
 - **BloodLink**: nearest potential donors of the same group, coarse locations only; a donor's number is shared only after they accept a request.
 - **Guidance and emergency**: offline first-aid library and one-tap 108 / 102 / 112.
+- **Hands-free Saathi**: one big button. Speak, hear the answer, speak again, with no reading or typing. In an emergency it says what to do, Call 108 and the nearest 24-hour hospital, then stops.
+- **Medicine strip scan**: photo of a strip or box, read on the device; shows what the medicine is for, a warning, and whether it has expired. Brand names (Dolo, Crocin, Calpol) map to the generic.
+- **Outbreak early warning**: ASHA visits record symptoms; when one village has 3 or more patients with the same symptom in 7 days and at least double the week before, workers see an alert and an offline village map.
+- **Vaccines and pregnancy checkups**: the national schedule (UIP) from a child's date of birth, and ANC checkups and Td doses from the last period date, with the expected delivery date. Due items show on Today; doses are recorded offline and sync as visits.
+- **Nearest health centre**: offline distance to the nearest PHC and the nearest 24-hour hospital, shown with answers, emergencies and Saathi.
+- **SMS to donors**: coordinators text matching donors through the phone's own SMS app, one message per donor so no donor sees another's number (audited). Blood requests can be shared by SMS or WhatsApp.
+- **ABHA / FHIR export**: a person's record (ABHA number, lab values, vaccines, visits) as an ABDM-style FHIR R4 bundle, shared or downloaded from the device. Linking to ABDM itself (HIP, consent manager) needs ABDM sandbox registration and is not built.
 
 ## Try the demo
 Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: patients, visits, sync) and **Ramesh Kumar** (citizen: reports, family, Ask). Switch under More. Turn on airplane mode to see that nothing needs the network.
@@ -31,7 +38,7 @@ Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: 
 | `frontend/` | Unified Vite + React Router application: website, PWA and Android app (Capacitor, `frontend/android/`) |
 | `backend/` | FastAPI server for blood requests and worker sync API |
 | `contracts/` | OpenAPI spec exported from the backend |
-| `content/` | Bundled content: guidance library, emergency rules, lab tests, demo donors, places |
+| `content/` | Bundled content: guidance library, emergency rules, lab tests, medicines, vaccine schedule, health centres, demo donors, patients and visits, places |
 | `docs/` | PRD, TRD, design system, screenshots |
 
 ## Run the Frontend
@@ -39,8 +46,8 @@ Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: 
 cd frontend
 npm install
 npm run dev          # http://localhost:5173 (copies OCR and LiteRT runtimes into public/ automatically)
-npm test             # unit tests (vitest: 29 files, 179 tests)
-npx playwright test  # 23 end-to-end flows on phone and laptop sizes (46 tests)
+npm test             # unit tests (vitest: 35 files, 207 tests)
+npx playwright test  # 33 end-to-end flows on phone and laptop sizes (66 tests)
 npm run build        # production PWA build in dist/, with offline service worker
 npm run preview      # preview production build locally
 ```
@@ -68,7 +75,7 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt   # macOS/Linux: .venv/bin/pip
 cp .env.example .env        # set MEDISAATHI_SECRET; DEMO_PASSWORD is required to seed the demo accounts
 .venv/Scripts/python -m uvicorn app.main:app --port 8000 --env-file .env
-.venv/Scripts/python -m pytest   # 82 tests
+.venv/Scripts/python -m pytest   # 83 tests
 ```
 - API documentation: http://localhost:8000/docs. The frontend calls `VITE_API_URL` (default `http://localhost:8000`).
 - No user accounts required for blood requests. Each request and donor registration uses random local cryptographic tokens.
@@ -94,4 +101,6 @@ cd android
 ./gradlew assembleDebug   # -> app/build/outputs/apk/debug/app-debug.apk
 ```
 - Native plugins in `frontend/android/app/src/main/java/in/medisaathi/app/`: `GemmaPlugin.kt` (LiteRT-LM) and `SpeechPlugin.kt` (voice input), both registered in `MainActivity.java`.
+- File export uses the official `@capacitor/filesystem` and `@capacitor/share` plugins (share sheet on Android, download on the website).
+- A ready-built debug APK is in `apk/MediSaathi.apk`.
 - Follow-up reminders only display non-sensitive counts on the lock screen.

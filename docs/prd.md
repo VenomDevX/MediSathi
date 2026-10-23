@@ -1,7 +1,7 @@
 # MediSaathi
 ## Product Requirements Document (PRD)
 
-**Document version:** 1.5  
+**Document version:** 1.6  
 **Status:** Hackathon build delivered (October 2026); requirements not yet met are listed in §10 (see §14 change log)  
 **Product category:** Offline-first AI healthcare support platform  
 **Primary platforms:** Android app and offline-capable website (used on laptops and desktops)  
@@ -322,6 +322,22 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 - Choosing a taken username shows "That username is taken" and creates nothing.
 - A sign-up request that asks for a worker role or a village scope still creates a citizen with no scope.
 
+### 5.11 Field tools (finals)
+
+**HF-01 Hands-free Saathi:** A person can hold a spoken conversation without reading or typing: the app listens, speaks the answer and listens again. It stops on a tap, after two silent turns, or after an emergency answer, which is spoken with Call 108 and the nearest 24-hour centre. The conversation is saved in Ask history.
+
+**MD-01 Medicine strip scan:** A photo of a medicine strip or box is read on the device and matched to a bundled list by brand or generic name, tolerating small OCR errors. The app shows what the medicine is for, a warning and the expiry status (expired, expires within 90 days, or fine). Nothing is saved.
+
+**OB-01 Outbreak early warning:** Visits can record symptoms (fever, diarrhoea, vomiting, cough, rash, jaundice). A worker sees an alert when a village has at least 3 patients with the same symptom in 7 days and at least double the previous 7 days, with an offline map of villages. The alert is a signal to report to the block health officer, not a diagnosis.
+
+**VX-01 Vaccines and pregnancy checkups:** From a date of birth the app lists the national immunisation schedule (UIP); from a last period date, ANC checkups, Td doses and the expected delivery date. Each item is done, overdue, due (within 14 days) or upcoming. Doses given are recorded offline as visits and sync with them. Due items show on Today.
+
+**NC-01 Nearest health centre:** The nearest health centre and the nearest 24-hour hospital, with distance, are shown with answers, emergency guidance and Saathi, offline, from GPS or a chosen village.
+
+**SM-01 SMS to donors:** A coordinator can text matching donors through the phone's own SMS app, one message per donor so no donor sees another's number. Each SMS opened is audited. A requester can share a blood request by SMS or WhatsApp.
+
+**AB-01 ABHA and FHIR export:** Patients and family members can have an ABHA number (14 digits). Their record (ABHA, verified lab values, vaccines, visits) can be exported as a FHIR R4 bundle following the ABDM (NRCeS) profiles, shared from the phone or downloaded. Linking with ABDM (HIP, consent manager) needs sandbox registration and is out of scope.
+
 ## 6. Cross-platform requirements
 
 MediSaathi ships as two products built from one web codebase: a mobile app and a website. Domain rules, data access, synchronization, donor search, and guidance search are implemented once. Only platform-specific parts (OCR engine, AI runtime, notifications, location, text-to-speech, secure key storage) differ. There is no separate installable desktop application; laptops and desktops use the website.
@@ -443,10 +459,11 @@ The hackathon build delivers a working vertical slice on the website, as a PWA a
 5. BloodLink with seeded donors, approximate distance, freshness labels, manual location, and blood requests with donor consent (§5.9).
 6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
 7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
+8. Field tools (§5.11): hands-free Saathi, medicine strip scan, outbreak early warning, vaccine and pregnancy tracker, nearest health centre, SMS to donors, ABHA / FHIR export.
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 179 unit, 82 backend, 23 end-to-end flows on phone and laptop sizes (46 tests).
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 207 unit, 83 backend, 33 end-to-end flows on phone and laptop sizes (66 tests).
 
-Not delivered yet: mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
+Not delivered yet: ABDM linking (HIP, consent manager), mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
 ## 11. Dependencies and risks
 
@@ -489,6 +506,10 @@ A feature is complete only when its implementation, tests, failure handling, doc
 **Product decision:** MediSaathi is a decision-support and health-information tool, not an autonomous clinical system. Human healthcare professionals retain responsibility for diagnosis, treatment, and transfusion decisions.
 
 ## 14. Change log
+
+**v1.6**
+- Added field tools (§5.11): hands-free Saathi (HF-01), medicine strip scan (MD-01), outbreak early warning (OB-01), vaccine and pregnancy tracker (VX-01), nearest health centre (NC-01), SMS to donors (SM-01), ABHA / FHIR export (AB-01).
+- Delivered scope and test counts updated (§10).
 
 **v1.5**
 - Voice input works on the device where supported and explains when it cannot (AQ-01).
