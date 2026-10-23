@@ -1,21 +1,22 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Crosshair, Drop, HandHeart, MapPin, PaperPlaneTilt, Phone, Warning } from '@phosphor-icons/react'
+import { ChatText, Crosshair, Drop, HandHeart, MapPin, PaperPlaneTilt, Phone, Warning } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
-import { directoryUpdatedAt, listDonors, revealContact } from '../../data/donors'
-import { BLOOD_GROUPS, findDonors, type Point } from '../../domain/donors'
+import { directoryUpdatedAt, listDonors, revealContact, smsNumbers } from '../../data/donors'
+import { BLOOD_GROUPS, findDonors, SMS_MAX, smsLink, type Point } from '../../domain/donors'
 import { useFormatDate, useT } from '../../i18n'
 import { localities } from '../../localities'
 import { locate } from '../../platform/locate'
 import { Banner, Button, Card, Chip, EmptyState, LinkButton, PageHeader, inputClass } from '../components'
 import { useAsync } from '../useAsync'
+import { buttonClass, cx } from '../styles'
 
 const FRESH_DAYS = 180 // ponytail: fixed freshness window; make it server config once the blood-bank partner agrees a policy (TRD §7.3)
 
 export function Donors() {
   const t = useT()
   const fmt = useFormatDate()
-  const { db } = useApp()
+  const { db, user } = useApp()
   // Blood group and place live in the URL so a search can be reopened or shared on the device.
   const [params, setParams] = useSearchParams()
   const group = params.get('group') ?? ''
@@ -95,6 +96,9 @@ export function Donors() {
           ) : (
             <>
               <h2 id="results" className="mb-3 text-xl font-semibold">{t('resultsCount', { n: results?.length ?? 0 })}</h2>
+              {user.role === 'coordinator' && results && (
+                <SmsDonors key={group + place} ids={results.map((d) => d.id)} group={group} place={locality?.name ?? results[0]?.locality_label ?? ''} />
+              )}
               <ul className="flex flex-col gap-3">
                 {results?.map((d) => (
                   <li key={d.id}>
@@ -118,6 +122,36 @@ export function Donors() {
         </div>
       </div>
     </>
+  )
+}
+
+/** Coordinators text every matching donor at once through the phone's SMS app: works where there is signal but no data. */
+function SmsDonors({ ids, group, place }: { ids: string[]; group: string; place: string }) {
+  const t = useT()
+  const { db, user } = useApp()
+  const [numbers, setNumbers] = useState<string[] | null>(null)
+  const body = t('smsDonorText', { group, place })
+
+  return (
+    <div className="mb-4 flex flex-col gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4">
+      {numbers === null ? (
+        <Button variant="secondary" onClick={() => void smsNumbers(db, user, ids).then(setNumbers)} className="self-start">
+          <ChatText size={20} aria-hidden />
+          {t('smsDonors')}
+        </Button>
+      ) : numbers.length === 0 ? (
+        <p className="text-danger">{t('smsNoNumbers')}</p>
+      ) : (
+        <>
+          <a href={smsLink(numbers, body)} className={cx(buttonClass(), 'self-start')}>
+            <ChatText size={20} aria-hidden />
+            {t('smsOpen', { n: Math.min(numbers.length, SMS_MAX) })}
+          </a>
+          <p className="rounded-[var(--radius-control)] bg-canvas px-3 py-2 text-sm">{body}</p>
+        </>
+      )}
+      <p className="text-sm text-muted">{t('smsDonorsHint')}</p>
+    </div>
   )
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { ArrowClockwise, CaretRight, Check, Drop, HandHeart, Info, MapPin, Phone, X } from '@phosphor-icons/react'
+import { ArrowClockwise, CaretRight, ChatText, Check, ShareNetwork, Drop, HandHeart, Info, MapPin, Phone, X } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { localities, type Locality } from '../../localities'
 import {
@@ -20,7 +20,7 @@ import {
   type RequestStatus,
 } from '../../data/blood'
 import { bloodGroups } from '../../data/family'
-import { findDonors, type Donor } from '../../domain/donors'
+import { findDonors, smsLink, type Donor } from '../../domain/donors'
 import { useFormatDate, useT } from '../../i18n'
 import type { StringKey } from '../../strings'
 import { Banner, Button, Card, Chip, Field, LinkButton, PageHeader, inputClass } from '../components'
@@ -174,6 +174,25 @@ export function BloodRequest() {
   )
 }
 
+/** Spread a request to people without the app: SMS works on any phone with signal, WhatsApp needs data. */
+function ShareRequest({ request: r }: { request: MyRequest }) {
+  const t = useT()
+  const text = t('shareRequestText', { group: r.blood_group, place: r.locality_label, note: r.note ? `${r.note}. ` : '' })
+  const link = cx(buttonClass('secondary'), 'min-h-11 px-3 text-[15px]')
+  return (
+    <div className="flex flex-wrap gap-2">
+      <a href={smsLink([], text)} className={link}>
+        <ChatText size={18} aria-hidden />
+        {t('shareRequest')}
+      </a>
+      <a href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer" className={link}>
+        <ShareNetwork size={18} aria-hidden />
+        {t('shareWhatsApp')}
+      </a>
+    </div>
+  )
+}
+
 function RequestCard({ request: r, onForget }: { request: MyRequest; onForget: () => void }) {
   const t = useT()
   const fmt = useFormatDate()
@@ -249,6 +268,8 @@ function RequestCard({ request: r, onForget }: { request: MyRequest; onForget: (
           )}
         </div>
       )}
+
+      {open && <ShareRequest request={r} />}
 
       <div className="flex flex-wrap gap-2">
         {open && status && (

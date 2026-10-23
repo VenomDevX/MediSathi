@@ -457,6 +457,15 @@ export const strings = {
   "centreDistrict": { hi: "जिला अस्पताल", en: "District hospital" },
   "centreMedicalCollege": { hi: "मेडिकल कॉलेज अस्पताल", en: "Medical college hospital" },
   "spokenNearest": { hi: "सबसे पास का अस्पताल {name}, {n} किलोमीटर।", en: "The nearest health centre is {name}, {n} kilometres away." },
+  // SMS to donors
+  "smsDonors": { hi: "इन रक्तदाताओं को SMS भेजें", en: "Text these donors by SMS" },
+  "smsDonorsHint": { hi: "आपके फ़ोन का SMS ऐप खुलेगा। इंटरनेट नहीं, सिर्फ़ नेटवर्क चाहिए। बेसिक फ़ोन वाले रक्तदाताओं तक भी पहुंचता है।", en: "Opens your phone's SMS app. Needs mobile signal, not internet, and reaches donors with basic phones too." },
+  "smsOpen": { hi: "SMS ऐप खोलें ({n} नंबर)", en: "Open SMS app ({n} numbers)" },
+  "smsNoNumbers": { hi: "इन रक्तदाताओं के नंबर इस फ़ोन पर नहीं हैं। पहले सिंक करें।", en: "No numbers for these donors on this phone. Sync first." },
+  "smsDonorText": { hi: "मेडीसाथी: {place} के पास {group} खून की तुरंत ज़रूरत है। अगर आप दे सकते हैं तो इस नंबर पर YES लिखकर जवाब दें।", en: "MediSaathi: urgent need for {group} blood near {place}. If you can donate, reply YES to this number." },
+  "shareRequest": { hi: "SMS से भेजें", en: "Share by SMS" },
+  "shareWhatsApp": { hi: "व्हाट्सऐप पर भेजें", en: "Share on WhatsApp" },
+  "shareRequestText": { hi: "ज़रूरी: {place} के पास {group} खून चाहिए। {note}अगर आप दे सकते हैं तो इस संदेश को भेजने वाले से संपर्क करें।", en: "Urgent: {group} blood needed near {place}. {note}If you can donate, please contact the person who sent this message." },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings

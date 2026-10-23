@@ -15,6 +15,34 @@ export async function directoryUpdatedAt(db: Database): Promise<string | null> {
 }
 
 /**
+ * Numbers of these donors for one SMS, coordinators only. Each use is audited like a contact reveal (PRD BL-05).
+ * Donors without a phone number on this device are skipped.
+ */
+export async function smsNumbers(db: Database, user: { id: string; role: string }, donorIds: string[]): Promise<string[]> {
+  if (user.role !== 'coordinator') throw new Error('Only a coordinator can text donors')
+  const rows = await db.query<{ id: string; contact_encrypted: string | null }>(
+    `SELECT id, contact_encrypted FROM donors WHERE id IN (${donorIds.map(() => '?').join(',') || 'NULL'})
+       AND deleted_at IS NULL AND consent_status = 'granted' AND registration_status = 'active' AND contact_encrypted IS NOT NULL`,
+    donorIds,
+  )
+  const dialable = rows.filter((r) => /^\+?[\d\s-]{6,}$/.test(r.contact_encrypted!))
+  const at = new Date().toISOString()
+  await db.batch(
+    dialable.flatMap((d) => {
+      const event = { id: crypto.randomUUID(), actor_id: user.id, action: 'donor_sms', entity_type: 'donor', entity_id: d.id, timestamp: at, result: 'ok' }
+      return [
+        {
+          sql: 'INSERT INTO audit_events (id, actor_id, action, entity_type, entity_id, timestamp, result) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          bind: [event.id, event.actor_id, event.action, event.entity_type, event.entity_id, event.timestamp, event.result],
+        },
+        syncOp('audit_event', event.id, 'create', event),
+      ]
+    }),
+  )
+  return dialable.map((r) => r.contact_encrypted!)
+}
+
+/**
  * Coordinator-only contact reveal (PRD BL-05). Every attempt, allowed or not, is written to the
  * audit log and queued for sync, so reveals made offline are still reported.
  */

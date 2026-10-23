@@ -54,3 +54,11 @@ export function findDonors(
         (a.distance_km ?? Infinity) - (b.distance_km ?? Infinity) || (b.last_verified_at ?? '').localeCompare(a.last_verified_at ?? ''),
     )
 }
+
+export const SMS_MAX = 20 // ponytail: one SMS app hand-off; Android messaging apps cap group texts around here
+
+/** A link that opens the phone's own SMS app with recipients and text filled in. Plain SMS: no internet, no gateway. */
+export function smsLink(numbers: string[], body: string): string {
+  const to = numbers.map((n) => n.replace(/[^\d+]/g, '')).filter(Boolean).slice(0, SMS_MAX)
+  return `sms:${to.join(',')}?body=${encodeURIComponent(body)}`
+}

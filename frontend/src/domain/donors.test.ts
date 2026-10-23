@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { distanceKm, findDonors, type Donor } from './donors'
+import { distanceKm, findDonors, SMS_MAX, smsLink, type Donor } from './donors'
 
 const now = new Date('2026-10-20T00:00:00Z')
 const d = (id: string, extra: Partial<Donor> = {}): Donor => ({
@@ -67,5 +67,16 @@ describe('findDonors', () => {
 
   it('rejects an invalid blood group', () => {
     expect(() => findDonors([d('a')], { ...opts, group: 'X+' })).toThrow()
+  })
+})
+
+describe('smsLink', () => {
+  it('opens the SMS app with clean numbers and the message', () => {
+    expect(smsLink(['+91 00000 00001', '00000-00002'], 'B+ needed, reply YES')).toBe('sms:+910000000001,0000000002?body=B%2B%20needed%2C%20reply%20YES')
+  })
+
+  it('caps the recipients and works with none', () => {
+    expect(smsLink(Array.from({ length: 30 }, (_, i) => String(9000 + i)), 'x').split(',')).toHaveLength(SMS_MAX)
+    expect(smsLink([], 'hi')).toBe('sms:?body=hi')
   })
 })
