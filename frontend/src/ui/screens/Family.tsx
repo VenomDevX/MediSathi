@@ -13,6 +13,7 @@ import { cx } from '../styles'
 import { PregnancyCard, VaccineCard } from '../ScheduleCards'
 import { formatAbha, parseAbha } from '../../domain/abha'
 import { ExportRecord } from '../ExportRecord'
+import { VerifyAbha } from '../VerifyAbha'
 import { profileRecord } from '../../data/export'
 import { useAsync } from '../useAsync'
 
@@ -282,6 +283,9 @@ export function FamilyDetail() {
           </dl>
         </Card>
 
+        {person.abha_id && (
+          <VerifyAbha personId={person.id} abha={person.abha_id} held={{ name: person.name, sex: person.sex || null, birthDate: person.date_of_birth, birthYear: person.birth_year, ageYears: null }} />
+        )}
         <ExportRecord load={() => profileRecord(db, user, id)} hasAbha={!!person.abha_id} />
         <VaccineCard dob={person.date_of_birth} given={given} onGive={record('vaccines')} />
         <PregnancyCard lmp={person.lmp_date} done={given} onGive={record('anc')} />

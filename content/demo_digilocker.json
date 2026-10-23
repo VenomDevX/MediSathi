@@ -1,0 +1,8 @@
+{
+  "_note": "Synthetic stand-in for DigiLocker's identity answer (name, gender, date of birth from the ABHA/Aadhaar record). Not real people; ABHA numbers start with 00 so they cannot be real. Used only by the demo verification flow.",
+  "records": [
+    { "abha": "00111122220001", "name": "Kamla Yadav", "sex": "F", "dob": "1999-04-02" },
+    { "abha": "00111122220002", "name": "Ramesh Pal", "sex": "M", "dob": "1965-01-15" },
+    { "abha": "00111122220003", "name": "Guddi Bano", "sex": "F", "dob": "1980-08-20" }
+  ]
+}

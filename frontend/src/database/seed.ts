@@ -44,6 +44,7 @@ export type SeedContent = {
     created_by: string
     /** Demo babies: born this many days before the content is loaded. */
     dob_days_ago?: number
+    abha_id?: string
   }[]
   /**
    * Demo ASHA visits, dated `days_ago` before the day the content is loaded: a fever cluster for the outbreak warning,
@@ -107,10 +108,10 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
   }
   for (const p of c.patients ?? []) {
     s.push({
-      sql: `INSERT OR IGNORE INTO patients (id, display_name, age_years, sex, village, local_identifier, date_of_birth, scope_id, created_by, sync_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
+      sql: `INSERT OR IGNORE INTO patients (id, display_name, age_years, sex, village, local_identifier, date_of_birth, abha_id, scope_id, created_by, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
       bind: [p.id, p.display_name, p.age_years ?? null, p.sex ?? null, p.village ?? null, p.local_identifier ?? null,
-        p.dob_days_ago != null ? daysAgo(p.dob_days_ago).slice(0, 10) : null, p.scope_id, p.created_by],
+        p.dob_days_ago != null ? daysAgo(p.dob_days_ago).slice(0, 10) : null, p.abha_id ?? null, p.scope_id, p.created_by],
     })
   }
   for (const v of c.visits ?? []) {

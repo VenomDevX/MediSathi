@@ -473,6 +473,17 @@ export const strings = {
   "exportHint": { hi: "एक मानक फ़ाइल (FHIR) जो अस्पताल को दे सकते हैं या आभा (ABHA) हेल्थ लॉकर में जोड़ सकते हैं। आप शेयर करें तब तक यह इसी फ़ोन पर रहती है।", en: "A standard file (FHIR) you can give to a hospital or add to an ABHA health locker. It stays on this phone until you share it." },
   "exportFailed": { hi: "फ़ाइल नहीं बन सकी। दोबारा कोशिश करें।", en: "Could not make the file. Try again." },
   "exportNoAbha": { hi: "आभा नंबर नहीं जुड़ा है। अस्पताल में पहचान के लिए इसे जोड़ना अच्छा है।", en: "No ABHA number added. Adding it helps a hospital match the record." },
+  // DigiLocker identity check (demo)
+  "verifyDigilocker": { hi: "डिजीलॉकर से आभा जांचें (डेमो)", en: "Verify ABHA with DigiLocker (demo)" },
+  "verifyDemoTitle": { hi: "डिजीलॉकर: नाम, लिंग और जन्म तिथि साझा करें?", en: "DigiLocker: share name, gender and date of birth?" },
+  "verifyDemoNote": { hi: "सिर्फ़ डेमो: यह डिजीलॉकर से जुड़ा नहीं है और कुछ भी नहीं भेजा जाता। असली ऐप में व्यक्ति डिजीलॉकर में साइन इन करके अपने आभा रिकॉर्ड से ये जानकारी साझा करने की अनुमति देगा।", en: "Demo only: not connected to DigiLocker and nothing is sent. In the real app the person signs in to DigiLocker and agrees to share these details from their ABHA record." },
+  "verifyShare": { hi: "साझा करें (डेमो)", en: "Share (demo)" },
+  "verifiedDemo": { hi: "आभा डिजीलॉकर से जांचा गया (डेमो), {date}", en: "ABHA verified with DigiLocker (demo), {date}" },
+  "verifyNoRecord": { hi: "डेमो डेटा में इस आभा नंबर का कोई डिजीलॉकर रिकॉर्ड नहीं है।", en: "No DigiLocker record for this ABHA number in the demo data." },
+  "verifyMismatch": { hi: "डिजीलॉकर से मेल नहीं खाता: {fields}। व्यक्ति से जानकारी दोबारा पूछें।", en: "Does not match DigiLocker: {fields}. Check the details with the person." },
+  "mismatchName": { hi: "नाम", en: "name" },
+  "mismatchSex": { hi: "लिंग", en: "gender" },
+  "mismatchBirth": { hi: "उम्र या जन्म तिथि", en: "age or date of birth" },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings

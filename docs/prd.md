@@ -338,6 +338,8 @@ MediSaathi addresses these problems by moving essential data storage, OCR, appro
 
 **AB-01 ABHA and FHIR export:** Patients and family members can have an ABHA number (14 digits). Their record (ABHA, verified lab values, vaccines, visits) can be exported as a FHIR R4 bundle following the ABDM (NRCeS) profiles, shared from the phone or downloaded. Linking with ABDM (HIP, consent manager) needs sandbox registration and is out of scope.
 
+**AB-02 ABHA check with DigiLocker:** A worker or family member can check a person's ABHA number against the identity DigiLocker returns (name, gender, date of birth). The app names each field that does not match, tolerating loose spellings and an age instead of a birth date. The hackathon build runs this as a clearly labelled demo with synthetic answers and sends nothing; the real flow needs DigiLocker partner registration and internet once, after which the result is kept for offline use.
+
 ## 6. Cross-platform requirements
 
 MediSaathi ships as two products built from one web codebase: a mobile app and a website. Domain rules, data access, synchronization, donor search, and guidance search are implemented once. Only platform-specific parts (OCR engine, AI runtime, notifications, location, text-to-speech, secure key storage) differ. There is no separate installable desktop application; laptops and desktops use the website.
@@ -459,11 +461,11 @@ The hackathon build delivers a working vertical slice on the website, as a PWA a
 5. BloodLink with seeded donors, approximate distance, freshness labels, manual location, and blood requests with donor consent (§5.9).
 6. Backend with sync push/pull, operation-ID idempotency, scoped access, token authentication, login limits, and SQLAdmin.
 7. Accounts (§5.10): citizen sign-up and Google sign-in (Google's button on the website, the system account picker on Android), each followed by the offline PIN.
-8. Field tools (§5.11): hands-free Saathi, medicine strip scan, outbreak early warning, vaccine and pregnancy tracker, nearest health centre, SMS to donors, ABHA / FHIR export.
+8. Field tools (§5.11): hands-free Saathi, medicine strip scan, outbreak early warning, vaccine and pregnancy tracker, nearest health centre, SMS to donors, ABHA / FHIR export, ABHA check with DigiLocker (demo).
 
-Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 207 unit, 83 backend, 33 end-to-end flows on phone and laptop sizes (66 tests).
+Measured on a Pixel 7 emulator in airplane mode: every feature above works offline; a full Gemma answer took 68 s on the emulator CPU. Tests: 210 unit, 83 backend, 34 end-to-end flows on phone and laptop sizes (68 tests).
 
-Not delivered yet: ABDM linking (HIP, consent manager), mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
+Not delivered yet: ABDM linking (HIP, consent manager), real DigiLocker verification, mesh, embedding retrieval, advanced conflict UI, full local-database encryption, biometric unlock, model checksum verification, clinical review of content.
 
 ## 11. Dependencies and risks
 
@@ -508,7 +510,7 @@ A feature is complete only when its implementation, tests, failure handling, doc
 ## 14. Change log
 
 **v1.6**
-- Added field tools (§5.11): hands-free Saathi (HF-01), medicine strip scan (MD-01), outbreak early warning (OB-01), vaccine and pregnancy tracker (VX-01), nearest health centre (NC-01), SMS to donors (SM-01), ABHA / FHIR export (AB-01).
+- Added field tools (§5.11): hands-free Saathi (HF-01), medicine strip scan (MD-01), outbreak early warning (OB-01), vaccine and pregnancy tracker (VX-01), nearest health centre (NC-01), SMS to donors (SM-01), ABHA / FHIR export (AB-01), ABHA check with DigiLocker as a demo (AB-02).
 - Delivered scope and test counts updated (§10).
 
 **v1.5**

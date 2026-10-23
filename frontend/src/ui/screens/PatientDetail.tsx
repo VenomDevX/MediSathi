@@ -12,6 +12,7 @@ import { useAsync } from '../useAsync'
 import { cx } from '../styles'
 import { PregnancyCard, VaccineCard } from '../ScheduleCards'
 import { ExportRecord } from '../ExportRecord'
+import { VerifyAbha } from '../VerifyAbha'
 import { patientRecord } from '../../data/export'
 import { formatAbha } from '../../domain/abha'
 import { SYMPTOM_LABEL, SYMPTOMS, type Symptom } from '../../domain/outbreak'
@@ -46,7 +47,10 @@ export function PatientDetail() {
         {p.sync_status !== 'synced' && <SyncChip status={p.sync_status} label={t} />}
       </p>
       {p.abha_id && <p className="-mt-4 mb-6 text-sm text-muted">ABHA {formatAbha(p.abha_id)}</p>}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col gap-4">
+        {p.abha_id && (
+          <VerifyAbha personId={p.id} abha={p.abha_id} held={{ name: p.display_name, sex: p.sex, birthDate: p.date_of_birth, birthYear: null, ageYears: p.age_years }} />
+        )}
         <ExportRecord load={() => patientRecord(db, user, p.id)} hasAbha={!!p.abha_id} />
       </div>
 

@@ -877,6 +877,7 @@ The implementation is acceptable when:
 - SMS through `sms:` links (one number per link, audited as `donor_sms`); no gateway.
 - New plugins `@capacitor/filesystem` and `@capacitor/share` for exporting files on Android.
 - New content: `medicines.json`, `immunization_schedule.json`, `health_centres.json`, `visits.json`; content version bumped.
+- ABHA check with DigiLocker (demo): `domain/identity.ts` compares held name, gender and birth date or age with the identity answer; `content/demo_digilocker.json` (synthetic, ABHA numbers starting 00) stands in for DigiLocker; the result is kept device-only in `app_meta` and is void if the ABHA number changes. Real use needs DigiLocker partner (requester) registration and its OAuth consent flow.
 
 **v1.5**
 - Voice input: native Android `SpeechPlugin.kt` and on-device Web Speech (`processLocally`), with clear failure messages (§2, §3.1).

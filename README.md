@@ -28,6 +28,7 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 - **Nearest health centre**: offline distance to the nearest PHC and the nearest 24-hour hospital, shown with answers, emergencies and Saathi.
 - **SMS to donors**: coordinators text matching donors through the phone's own SMS app, one message per donor so no donor sees another's number (audited). Blood requests can be shared by SMS or WhatsApp.
 - **ABHA / FHIR export**: a person's record (ABHA number, lab values, vaccines, visits) as an ABDM-style FHIR R4 bundle, shared or downloaded from the device. Linking to ABDM itself (HIP, consent manager) needs ABDM sandbox registration and is not built.
+- **ABHA check with DigiLocker (demo)**: compares the name, gender and age we hold with DigiLocker's identity answer for the ABHA number, and names any field that does not match. In this build the answer comes from synthetic demo data (`content/demo_digilocker.json`) and nothing is sent; the screen says so. Real DigiLocker access needs a registered partner organisation.
 
 ## Try the demo
 Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: patients, visits, sync) and **Ramesh Kumar** (citizen: reports, family, Ask). Switch under More. Turn on airplane mode to see that nothing needs the network.
@@ -46,8 +47,8 @@ Two offline demo accounts, PIN **1234** for both: **Sunita Devi** (ASHA worker: 
 cd frontend
 npm install
 npm run dev          # http://localhost:5173 (copies OCR and LiteRT runtimes into public/ automatically)
-npm test             # unit tests (vitest: 35 files, 207 tests)
-npx playwright test  # 33 end-to-end flows on phone and laptop sizes (66 tests)
+npm test             # unit tests (vitest: 36 files, 210 tests)
+npx playwright test  # 34 end-to-end flows on phone and laptop sizes (68 tests)
 npm run build        # production PWA build in dist/, with offline service worker
 npm run preview      # preview production build locally
 ```
