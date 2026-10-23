@@ -13,8 +13,10 @@ test('a coordinator texts matching donors through the phone SMS app', async ({ p
 
   await page.goto('/#/donors?group=O%2B&place=sitapur')
   await page.getByRole('button', { name: 'Text these donors by SMS' }).click()
-  const open = page.getByRole('link', { name: /Open SMS app \(\d+ numbers\)/ })
-  await expect(open).toHaveAttribute('href', /^sms:\+91000000000\d(,\+9100000000\d\d)*\?body=MediSaathi%3A%20urgent%20need%20for%20O%2B%20blood%20near%20Sitapur/)
+  // One message per donor: a group text would show every donor's number to the others
+  const first = page.getByRole('link', { name: 'Send SMS to donor 1' })
+  await expect(first).toHaveAttribute('href', /^sms:\+9100000000\d\d\?body=MediSaathi%3A%20urgent%20need%20for%20O%2B%20blood%20near%20Sitapur/)
+  for (const link of await page.getByRole('link', { name: /Send SMS to donor/ }).all()) await expect(link).not.toHaveAttribute('href', /,/)
 })
 
 test('a blood request can be shared by SMS and WhatsApp', async ({ page }) => {

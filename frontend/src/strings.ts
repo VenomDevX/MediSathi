@@ -460,7 +460,9 @@ export const strings = {
   // SMS to donors
   "smsDonors": { hi: "इन रक्तदाताओं को SMS भेजें", en: "Text these donors by SMS" },
   "smsDonorsHint": { hi: "आपके फ़ोन का SMS ऐप खुलेगा। इंटरनेट नहीं, सिर्फ़ नेटवर्क चाहिए। बेसिक फ़ोन वाले रक्तदाताओं तक भी पहुंचता है।", en: "Opens your phone's SMS app. Needs mobile signal, not internet, and reaches donors with basic phones too." },
-  "smsOpen": { hi: "SMS ऐप खोलें ({n} नंबर)", en: "Open SMS app ({n} numbers)" },
+  "smsOpen": { hi: "रक्तदाता {n} को SMS भेजें", en: "Send SMS to donor {n}" },
+  "smsSend": { hi: "SMS भेजें", en: "Send SMS" },
+  "smsOneByOne": { hi: "हर रक्तदाता को अलग संदेश जाता है, ताकि कोई दूसरे का नंबर न देखे।", en: "Each donor gets a separate message, so no one sees another donor's number." },
   "smsNoNumbers": { hi: "इन रक्तदाताओं के नंबर इस फ़ोन पर नहीं हैं। पहले सिंक करें।", en: "No numbers for these donors on this phone. Sync first." },
   "smsDonorText": { hi: "मेडीसाथी: {place} के पास {group} खून की तुरंत ज़रूरत है। अगर आप दे सकते हैं तो इस नंबर पर YES लिखकर जवाब दें।", en: "MediSaathi: urgent need for {group} blood near {place}. If you can donate, reply YES to this number." },
   "shareRequest": { hi: "SMS से भेजें", en: "Share by SMS" },

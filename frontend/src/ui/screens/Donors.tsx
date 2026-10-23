@@ -125,7 +125,10 @@ export function Donors() {
   )
 }
 
-/** Coordinators text every matching donor at once through the phone's SMS app: works where there is signal but no data. */
+/**
+ * Coordinators text matching donors through the phone's SMS app: works where there is signal but no data.
+ * One message per donor, never a group text, so no donor sees another donor's number.
+ */
 function SmsDonors({ ids, group, place }: { ids: string[]; group: string; place: string }) {
   const t = useT()
   const { db, user } = useApp()
@@ -143,11 +146,19 @@ function SmsDonors({ ids, group, place }: { ids: string[]; group: string; place:
         <p className="text-danger">{t('smsNoNumbers')}</p>
       ) : (
         <>
-          <a href={smsLink(numbers, body)} className={cx(buttonClass(), 'self-start')}>
-            <ChatText size={20} aria-hidden />
-            {t('smsOpen', { n: Math.min(numbers.length, SMS_MAX) })}
-          </a>
           <p className="rounded-[var(--radius-control)] bg-canvas px-3 py-2 text-sm">{body}</p>
+          <ul className="flex flex-col divide-y divide-line">
+            {numbers.slice(0, SMS_MAX).map((n, i) => (
+              <li key={n} className="flex min-h-12 items-center justify-between gap-3 py-1">
+                <span translate="no" className="tabular-nums">{n}</span>
+                <a href={smsLink([n], body)} aria-label={t('smsOpen', { n: i + 1 })} className={cx(buttonClass('secondary'), 'min-h-11 px-3 text-[15px]')}>
+                  <ChatText size={18} aria-hidden />
+                  {t('smsSend')}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-muted">{t('smsOneByOne')}</p>
         </>
       )}
       <p className="text-sm text-muted">{t('smsDonorsHint')}</p>

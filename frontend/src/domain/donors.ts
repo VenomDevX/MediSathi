@@ -55,9 +55,12 @@ export function findDonors(
     )
 }
 
-export const SMS_MAX = 20 // ponytail: one SMS app hand-off; Android messaging apps cap group texts around here
+export const SMS_MAX = 20 // most donors a coordinator texts from one search; more than this needs a gateway
 
-/** A link that opens the phone's own SMS app with recipients and text filled in. Plain SMS: no internet, no gateway. */
+/**
+ * A link that opens the phone's own SMS app with the recipient and text filled in. Plain SMS: no internet, no gateway.
+ * Give it one number: several numbers can become a group message that shows everyone's number.
+ */
 export function smsLink(numbers: string[], body: string): string {
   const to = numbers.map((n) => n.replace(/[^\d+]/g, '')).filter(Boolean).slice(0, SMS_MAX)
   return `sms:${to.join(',')}?body=${encodeURIComponent(body)}`
