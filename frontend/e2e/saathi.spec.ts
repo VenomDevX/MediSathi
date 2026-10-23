@@ -46,10 +46,12 @@ test('Saathi answers aloud, listens again, and stops at an emergency', async ({ 
   await page.getByRole('link', { name: /Hands-free/ }).click()
   await page.getByRole('button', { name: 'Start talking' }).click()
 
+  const spoken = () => page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
+  await expect.poll(async () => (await spoken()).length).toBe(2)
+  const [fever, snake] = await spoken()
+  expect(fever).toMatch(/Rest and drink plenty of water/)
+  expect(snake).toMatch(/Call 108\. The nearest health centre is Sitapur District Hospital/) // open 24 hours, from Rampur
   await expect(page.getByRole('link', { name: 'Call 108' })).toBeVisible()
-  const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
-  expect(spoken[0]).toMatch(/Rest and drink plenty of water/)
-  expect(spoken[1]).toMatch(/Call 108/)
   await expect(page.getByRole('button', { name: 'Start talking' })).toBeVisible() // stopped after the emergency
 
   // The conversation is saved in Ask history

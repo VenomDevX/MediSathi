@@ -2,6 +2,7 @@ import { Phone, Warning } from '@phosphor-icons/react'
 import { ruleText, type EmergencyRule } from '../domain/emergency'
 import { useLang, useT } from '../i18n'
 import { LinkButton } from './components'
+import { NearestCentre } from './NearestCentre'
 import { cx } from './styles'
 
 /** Shown before anything else whenever a message or search matches a red-flag rule. */
@@ -22,6 +23,7 @@ export function EmergencyCard({ rule, className }: { rule: EmergencyRule; classN
         </a>
         <LinkButton to={`/emergency?rule=${rule.id}`} variant="secondary">{t('openEmergency')}</LinkButton>
       </div>
+      <NearestCentre call108={false} />
     </section>
   )
 }

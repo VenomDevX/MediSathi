@@ -13,6 +13,7 @@ import { canListen, listen, type ListenError } from '../../platform/listen'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import type { StringKey } from '../../strings'
 import { EmergencyCard } from '../EmergencyCard'
+import { NearestCentre } from '../NearestCentre'
 import { AssistantMark } from '../components'
 import { cx } from '../styles'
 import { useAsync } from '../useAsync'
@@ -198,7 +199,7 @@ export function Chat() {
           </div>
         )}
 
-        {messages.map((m) =>
+        {messages.map((m, i) =>
           m.role === 'user' ? (
             <p key={m.id} className="max-w-[85%] self-end rounded-[var(--radius-card)] rounded-br-md lg:rounded-br-none bg-neem-soft px-4 py-2.5 whitespace-pre-line">
               {m.content}
@@ -217,6 +218,7 @@ export function Chat() {
                 {m.kind === 'composed' && <p className="text-sm text-muted">{t('chatComposedNote')}</p>}
                 {m.kind === 'answer' && <p className="text-sm text-muted">{t('chatModelNote')}</p>}
                 {m.kind === 'online' && <p className="text-sm text-muted">{t('chatOnlineNote')}</p>}
+                {i === messages.length - 1 && (m.kind === 'answer' || m.kind === 'composed' || m.kind === 'online') && <NearestCentre />}
                 {can.speak && (
                   <button type="button" onClick={() => toggleSpeak(m)} aria-pressed={speakingId === m.id} className="flex min-h-11 w-fit items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
                     {speakingId === m.id ? <Stop size={18} aria-hidden /> : <SpeakerHigh size={18} aria-hidden />}

@@ -5,6 +5,7 @@ import { ruleText } from '../../domain/emergency'
 import { useLang, useT } from '../../i18n'
 import type { StringKey } from '../../strings'
 import { PageHeader } from '../components'
+import { NearestCentre } from '../NearestCentre'
 
 const numbers: { n: number; label: StringKey }[] = [
   { n: 108, label: 'ambulance' },
@@ -51,6 +52,8 @@ export function Emergency() {
             </li>
           ))}
         </ul>
+
+        <NearestCentre call108={false} />
 
         <section aria-labelledby="signs">
           <h2 id="signs" className="mb-3 text-xl font-semibold">{t('dangerSigns')}</h2>

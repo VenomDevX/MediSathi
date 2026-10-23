@@ -6,6 +6,7 @@ import { directoryUpdatedAt, listDonors, revealContact } from '../../data/donors
 import { BLOOD_GROUPS, findDonors, type Point } from '../../domain/donors'
 import { useFormatDate, useT } from '../../i18n'
 import { localities } from '../../localities'
+import { locate } from '../../platform/locate'
 import { Banner, Button, Card, Chip, EmptyState, LinkButton, PageHeader, inputClass } from '../components'
 import { useAsync } from '../useAsync'
 
@@ -30,16 +31,14 @@ export function Donors() {
 
   // TRD §7.2: ask for location only when the user taps; never block search if it is denied.
   function useMyLocation() {
-    if (!navigator.geolocation) return setLocating('failed')
     setLocating('busy')
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+    locate().then(
+      (point) => {
+        setGps(point)
         set('place', 'gps')
         setLocating('idle')
       },
       () => setLocating('failed'),
-      { timeout: 15000, maximumAge: 10 * 60 * 1000 },
     )
   }
 

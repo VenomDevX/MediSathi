@@ -11,6 +11,10 @@ import { canListen, listen, type ListenError } from '../../platform/listen'
 import { speak, stopSpeaking } from '../../platform/speech'
 import type { StringKey } from '../../strings'
 import { AssistantMark, PageHeader } from '../components'
+import { NearestCentre } from '../NearestCentre'
+import { usePlace } from '../usePlace'
+import { nearestCentres } from '../../domain/centres'
+import { healthCentres } from '../../healthCentres'
 import { cx } from '../styles'
 
 type Phase = 'idle' | 'listening' | 'thinking' | 'speaking'
@@ -29,6 +33,7 @@ export function Saathi() {
   const [heard, setHeard] = useState('')
   const [reply, setReply] = useState<Reply | null>(null)
   const [error, setError] = useState<ListenError | null>(null)
+  const { point } = usePlace()
   const active = useRef(false)
   const stopListening = useRef<(() => void) | null>(null)
   const chatId = useRef<string | null>(null)
@@ -37,7 +42,12 @@ export function Saathi() {
   const spoken = (r: Reply) => {
     if (r.kind === 'unknown') return t('chatUnknown')
     const rule = r.kind === 'emergency' ? emergencyRules.find((x) => x.id === r.sources[0]?.id) : undefined
-    return rule ? `${ruleText(rule.title, lang)}. ${ruleText(rule.instruction, lang)}. ${t('call', { n: 108 })}.` : r.content
+    if (!rule) return r.content
+    // In an emergency, also say where to go: people who cannot read cannot use the card.
+    const near = point ? nearestCentres(point, healthCentres).find((c) => c.open24h) : undefined // open now, whatever the hour
+    return [`${ruleText(rule.title, lang)}. ${ruleText(rule.instruction, lang)}. ${t('call', { n: 108 })}.`, near && t('spokenNearest', { name: near.name, n: near.km })]
+      .filter(Boolean)
+      .join(' ')
   }
 
   function stop() {
@@ -138,6 +148,7 @@ export function Saathi() {
               </a>
             )}
             <p className="text-lg whitespace-pre-line">{spoken(reply)}</p>
+            {reply.kind !== 'unknown' && <NearestCentre call108={!emergency} />}
           </div>
         )}
       </div>

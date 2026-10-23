@@ -1,0 +1,11 @@
+[
+  { "id": "hc-rampur-phc", "name": "Rampur PHC", "type": "phc", "lat": 27.41, "lng": 80.79, "open24h": false },
+  { "id": "hc-sitapur-kalan-aam", "name": "Sitapur Kalan Ayushman Arogya Mandir", "type": "subcentre", "lat": 27.52, "lng": 80.76, "open24h": false },
+  { "id": "hc-sitapur-dh", "name": "Sitapur District Hospital", "type": "district", "lat": 27.57, "lng": 80.68, "open24h": true },
+  { "id": "hc-mahmudabad-chc", "name": "Mahmudabad CHC", "type": "chc", "lat": 27.30, "lng": 81.12, "open24h": true },
+  { "id": "hc-biswan-chc", "name": "Biswan CHC", "type": "chc", "lat": 27.50, "lng": 81.00, "open24h": true },
+  { "id": "hc-laharpur-chc", "name": "Laharpur CHC", "type": "chc", "lat": 27.71, "lng": 80.90, "open24h": true },
+  { "id": "hc-misrikh-phc", "name": "Misrikh PHC", "type": "phc", "lat": 27.43, "lng": 80.54, "open24h": false },
+  { "id": "hc-hardoi-dh", "name": "Hardoi District Hospital", "type": "district", "lat": 27.40, "lng": 80.13, "open24h": true },
+  { "id": "hc-lucknow-mc", "name": "Lucknow Medical College Hospital", "type": "medical-college", "lat": 26.87, "lng": 80.92, "open24h": true }
+]

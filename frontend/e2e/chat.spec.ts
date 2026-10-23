@@ -21,6 +21,9 @@ test('assistant answers offline from the library, flags emergencies, admits what
   await page.getByRole('button', { name: 'Send' }).click()
   const alert = page.getByRole('alert').filter({ hasText: 'This may be an emergency' })
   await expect(alert.getByRole('link', { name: 'Call 108' })).toHaveAttribute('href', 'tel:108')
+  // The health worker's village is the starting place: nearest PHC, and the nearest centre open all night
+  await expect(alert.getByText(/Nearest:\s*Rampur PHC/)).toBeVisible()
+  await expect(alert.getByText(/Nearest open 24 hours:\s*Sitapur District Hospital/)).toBeVisible()
 
   // Outside the library: no guess
   await box.fill('best phone under 10000')

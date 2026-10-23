@@ -443,6 +443,20 @@ export const strings = {
   "dueNote": { hi: "{name} के लिए बाकी: {items}", en: "Due: {items} for {name}" },
   "scheduleSource": { hi: "राष्ट्रीय टीकाकरण कार्यक्रम (UIP) के अनुसार। डेमो जानकारी, डॉक्टर द्वारा जांची नहीं गई।", en: "Based on the national immunisation schedule (UIP). Demo information, not reviewed by a doctor." },
   "vaccinesDue": { hi: "टीके और जांच बाकी", en: "Vaccines and checkups due" },
+  // Nearest health centre
+  "nearestTitle": { hi: "सबसे पास का अस्पताल", en: "Nearest health centre" },
+  "nearestCentre": { hi: "सबसे पास:", en: "Nearest:" },
+  "nearest24h": { hi: "24 घंटे खुला सबसे पास:", en: "Nearest open 24 hours:" },
+  "open24h": { hi: "24 घंटे", en: "open 24 hours" },
+  "directions": { hi: "रास्ता", en: "Directions" },
+  "changePlace": { hi: "जगह बदलें", en: "Change place" },
+  "yourVillage": { hi: "आपका गांव या शहर", en: "Your village or town" },
+  "centreSubcentre": { hi: "उप-केंद्र", en: "Sub-centre" },
+  "centrePhc": { hi: "प्राथमिक स्वास्थ्य केंद्र", en: "Primary health centre" },
+  "centreChc": { hi: "सामुदायिक स्वास्थ्य केंद्र", en: "Community health centre" },
+  "centreDistrict": { hi: "जिला अस्पताल", en: "District hospital" },
+  "centreMedicalCollege": { hi: "मेडिकल कॉलेज अस्पताल", en: "Medical college hospital" },
+  "spokenNearest": { hi: "सबसे पास का अस्पताल {name}, {n} किलोमीटर।", en: "The nearest health centre is {name}, {n} kilometres away." },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings
