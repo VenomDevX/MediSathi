@@ -5,6 +5,7 @@ import patients from '../../content/patients.json'
 import guidance from '../../content/guidance.json'
 import labCatalogue from '../../content/lab_catalogue.json'
 import donors from '../../content/donors.json'
+import visits from '../../content/visits.json'
 import type { SeedContent } from './database/seed'
 
 export const content = {
@@ -14,4 +15,5 @@ export const content = {
   guidance,
   labCatalogue,
   donors,
+  visits,
 } as SeedContent

@@ -9,8 +9,10 @@ import { useFormatDate, useT } from '../../i18n'
 import { Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
 import { askReminderPermission } from '../../platform/notify'
 import { useAsync } from '../useAsync'
+import { cx } from '../styles'
+import { SYMPTOM_LABEL, SYMPTOMS, type Symptom } from '../../domain/outbreak'
 
-type Obs = { bp?: string; weight?: string; temp?: string }
+type Obs = { bp?: string; weight?: string; temp?: string; symptoms?: string[] }
 
 export function PatientDetail() {
   const t = useT()
@@ -71,6 +73,7 @@ function VisitCard({ chain, patientId }: { chain: VisitChain; patientId: string 
         {v.notes && <p className="whitespace-pre-line">{v.notes}</p>}
         {obsText.length > 0 && <p className="text-[15px] text-muted">{obsText.join(', ')}</p>}
         <div className="flex flex-wrap gap-2">
+          {obs.symptoms?.filter((s): s is Symptom => s in SYMPTOM_LABEL).map((s) => <Chip key={s} tone="caution">{t(SYMPTOM_LABEL[s])}</Chip>)}
           {v.follow_up_at && <Chip tone="info">{t('followUpOn', { date: fmt(v.follow_up_at) })}</Chip>}
           {v.sync_status !== 'synced' && <SyncChip status={v.sync_status} label={t} />}
         </div>
@@ -118,6 +121,8 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
     follow_up_at: prev?.follow_up_at ?? '',
     reason: '',
   })
+  const [symptoms, setSymptoms] = useState<string[]>(prevObs.symptoms ?? [])
+  const toggleSymptom = (s: string) => setSymptoms((cur) => (cur.includes(s) ? cur.filter((x) => x !== s) : [...cur, s]))
   const [reasonError, setReasonError] = useState(false)
   const reasonRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
@@ -130,7 +135,8 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
       return reasonRef.current?.focus()
     }
     setBusy(true)
-    const observations = Object.fromEntries(Object.entries({ bp: form.bp, weight: form.weight, temp: form.temp }).filter(([, v]) => v.trim()))
+    const observations: Record<string, string | string[]> = Object.fromEntries(Object.entries({ bp: form.bp, weight: form.weight, temp: form.temp }).filter(([, v]) => v.trim()))
+    if (symptoms.length) observations.symptoms = symptoms
     const visit_time = form.date === todayLocal() ? new Date().toISOString() : new Date(`${form.date}T12:00:00`).toISOString()
     try {
       if (prev) await amendVisit(db, user, prev.id, { visit_time, notes: form.notes, observations, follow_up_at: form.follow_up_at, reason: form.reason })
@@ -163,6 +169,22 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
             <input name="temperature" autoComplete="off" inputMode="decimal" value={form.temp} onChange={set('temp')} className={inputClass} />
           </Field>
         </div>
+        <fieldset>
+          <legend className="mb-2 font-semibold">{t('symptomsSeen')}</legend>
+          <div className="flex flex-wrap gap-2">
+            {SYMPTOMS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={symptoms.includes(s)}
+                onClick={() => toggleSymptom(s)}
+                className={cx('min-h-11 rounded-full border px-4', symptoms.includes(s) ? 'border-neem bg-neem text-on-neem' : 'border-line bg-surface hover:border-neem')}
+              >
+                {t(SYMPTOM_LABEL[s])}
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <Field label={t('followUpDate')}>
           <input type="date" name="follow-up" min={todayLocal()} value={form.follow_up_at} onChange={set('follow_up_at')} className={inputClass} />
         </Field>

@@ -405,6 +405,22 @@ export const strings = {
   "medicineAsk": { hi: "इस दवा के बारे में पूछें", en: "Ask about this medicine" },
   "medicineAskText": { hi: "{name} किस लिए है और कैसे लेनी चाहिए?", en: "What is {name} for and how should it be taken?" },
   "medicineDisclaimer": { hi: "डेमो जानकारी, डॉक्टर द्वारा जांची नहीं गई। दवा हमेशा डॉक्टर या फार्मासिस्ट की सलाह से लें।", en: "Demo information, not reviewed by a doctor. Always take medicines as a doctor or pharmacist advises." },
+  // Outbreak early warning
+  "symptomsSeen": { hi: "दिखे लक्षण", en: "Symptoms seen" },
+  "symFever": { hi: "बुखार", en: "Fever" },
+  "symDiarrhoea": { hi: "दस्त", en: "Diarrhoea" },
+  "symVomiting": { hi: "उल्टी", en: "Vomiting" },
+  "symCough": { hi: "खांसी", en: "Cough" },
+  "symRash": { hi: "दाने", en: "Rash" },
+  "symJaundice": { hi: "पीलिया", en: "Jaundice" },
+  "outbreakTitle": { hi: "बीमारी फैलने की चेतावनी", en: "Outbreak warning" },
+  "outbreakIntro": { hi: "पिछले 7 दिन की विज़िट से, हर गांव में एक जैसे लक्षण वाले मरीज़। 3 या ज़्यादा मरीज़ और पिछले हफ़्ते से दोगुना होने पर चेतावनी।", en: "Patients with the same symptom in each village, from visits in the last 7 days. A warning needs 3 or more patients and double the week before." },
+  "outbreakAlert": { hi: "संभावित प्रकोप: {village} में इस हफ़्ते {symptom} के {n} मरीज़", en: "Possible outbreak: {n} {symptom} cases in {village} this week" },
+  "outbreakRow": { hi: "इस हफ़्ते {n}, पिछले हफ़्ते {prev}", en: "{n} this week, {prev} the week before" },
+  "outbreakNone": { hi: "पिछले 7 दिन में लक्षण वाली कोई विज़िट नहीं।", en: "No visits with symptoms in the last 7 days." },
+  "outbreakAction": { hi: "ब्लॉक स्वास्थ्य अधिकारी (BMO) को खबर दें और IDSP फ़ॉर्म में दर्ज करें।", en: "Tell the block medical officer and report it on the IDSP form." },
+  "outbreakMap": { hi: "गांवों का नक्शा", en: "Map of villages" },
+  "outbreakNote": { hi: "यह शुरुआती संकेत है, जांच से पक्का नहीं। सिर्फ़ इस फ़ोन पर मौजूद विज़िट से गिना गया।", en: "An early signal, not a confirmed diagnosis. Counted only from the visits on this phone." },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings

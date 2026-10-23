@@ -1,4 +1,5 @@
 import type { Database } from '../database/types'
+import type { SymptomVisit } from '../domain/outbreak'
 import { resolveChains, type VisitChain, type VisitRow } from '../domain/visits'
 import { syncOp } from './syncOps'
 
@@ -80,7 +81,8 @@ export async function getPatient(db: Database, w: Worker, id: string): Promise<P
 export type VisitInput = {
   visit_time: string
   notes: string
-  observations?: Record<string, string>
+  /** bp, weight, temp as text; symptoms, vaccines and anc as id lists; lmp as YYYY-MM-DD. */
+  observations?: Record<string, string | string[]>
   follow_up_at?: string | null
 }
 
@@ -180,4 +182,17 @@ export async function followUpsDue(db: Database, w: Worker, date: string): Promi
       visit_id: c.current.id,
     }))
     .sort((a, b) => a.follow_up_at.localeCompare(b.follow_up_at))
+}
+
+/** Current (not voided, not superseded) visits in scope since `since` (ISO), with their village and symptoms. */
+export async function recentSymptoms(db: Database, w: Worker, since: string): Promise<SymptomVisit[]> {
+  const s = inScope(w)
+  const rows = await db.query<VisitRow & { village: string | null }>(
+    `SELECT v.*, p.village FROM patient_visits v JOIN patients p ON p.id = v.patient_id WHERE p.deleted_at IS NULL AND p.${s.sql}`,
+    s.bind,
+  )
+  const village = new Map(rows.map((r) => [r.patient_id, r.village]))
+  return resolveChains(rows)
+    .filter((c) => !c.voided && c.current.visit_time >= since)
+    .map(({ current: v }) => ({ patient_id: v.patient_id, village: village.get(v.patient_id) ?? null, visit_time: v.visit_time, symptoms: JSON.parse(v.observations_json).symptoms ?? [] }))
 }

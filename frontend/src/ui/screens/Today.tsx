@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UserPlus, Waveform, Users, UsersThree } from '@phosphor-icons/react'
+import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UserPlus, Warning, Waveform, Pulse, Users, UsersThree } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { upcomingFollowUps } from '../../data/family'
 import { followUpsDue } from '../../data/records'
@@ -9,6 +9,8 @@ import { useFormatDate, useT } from '../../i18n'
 import { refreshReminders } from '../../platform/notify'
 import type { StringKey } from '../../strings'
 import { AssistantMark, Chip } from '../components'
+import { useClusters } from '../useClusters'
+import { SYMPTOM_LABEL } from '../../domain/outbreak'
 import { useAsync } from '../useAsync'
 
 const tiles: { to: string; label: StringKey; icon: typeof FileText }[] = [
@@ -41,11 +43,21 @@ export function Today() {
   const firstName = user?.display_name?.split(' ')[0]
   const greeting = user?.display_name ? t('greeting', { name: firstName ?? '' }) : t(greetingKey(hour))
 
+  const { data: clusters } = useClusters()
+  const alert = isWorker ? clusters?.find((c) => c.alert) : undefined
+
   const hasFollowUps = (familyDue && familyDue.length > 0) || (patientDue && patientDue.length > 0)
 
   return (
     <div className="flex flex-col gap-6">
       <h1 className="pt-2 text-[32px] leading-tight font-bold">{greeting}</h1>
+
+      {alert && (
+        <Link to="/outbreak" className="flex items-start gap-3 rounded-[var(--radius-card)] bg-danger-bg px-4 py-3 font-semibold text-danger hover:opacity-90">
+          <Warning size={20} className="mt-0.5 shrink-0" aria-hidden />
+          {t('outbreakAlert', { n: alert.cases, symptom: t(SYMPTOM_LABEL[alert.symptom]).toLowerCase(), village: alert.village })}
+        </Link>
+      )}
 
       {/* Hero card: Ask assistant */}
       <Link to="/chat" className="flex flex-col gap-3 rounded-[var(--radius-card)] border-2 border-neem bg-surface p-5 hover:bg-neem-soft transition-colors">
@@ -124,6 +136,10 @@ export function Today() {
             <Link to="/patients" className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 hover:border-neem">
               <Users size={22} className="shrink-0 text-neem" />
               <span className="font-medium">{t('navPatients')}</span>
+            </Link>
+            <Link to="/outbreak" className="flex min-h-14 items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-2 hover:border-neem">
+              <Pulse size={22} className="shrink-0 text-neem" />
+              <span className="font-medium">{t('outbreakTitle')}</span>
             </Link>
           </div>
         </section>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Capacitor } from '@capacitor/core'
-import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, LockKey, Translate, Trash, UserCircle, Warning } from '@phosphor-icons/react'
+import { Link } from 'react-router-dom'
+import { ArrowSquareOut, CheckCircle, Cpu, DownloadSimple, FolderOpen, Info, LockKey, Pill, Pulse, Translate, Trash, UserCircle, Warning, Waveform } from '@phosphor-icons/react'
 import { canRunModels, getModelChoice, setModelChoice, unloadModel, type ModelChoice } from '../../assistant/litert'
 import { installedModels, MODEL_IDS, MODELS, removeModel, saveModel, type ModelId } from '../../assistant/modelFiles'
 import { useBoot } from '../../app-context'
@@ -20,6 +21,7 @@ export function Settings() {
       <PageHeader title={t('moreTitle')} />
       <div className="flex flex-col gap-4">
         <AccountCard />
+        <ToolsCard />
         <Card className="flex flex-col gap-3 p-5">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
             <Translate size={22} className="text-neem" aria-hidden />
@@ -52,6 +54,31 @@ export function Settings() {
         </Card>
       </div>
     </>
+  )
+}
+
+function ToolsCard() {
+  const t = useT()
+  const { user } = useBoot()
+  const isWorker = !!user?.role && ['asha_worker', 'coordinator', 'supervisor', 'admin'].includes(user.role)
+  const tools: { to: string; label: StringKey; icon: typeof Waveform }[] = [
+    { to: '/saathi', label: 'saathiTitle', icon: Waveform },
+    { to: '/scan/medicine', label: 'scanMedicine', icon: Pill },
+    ...(isWorker ? [{ to: '/outbreak', label: 'outbreakTitle' as StringKey, icon: Pulse }] : []),
+  ]
+  return (
+    <Card className="overflow-hidden">
+      <ul className="divide-y divide-line">
+        {tools.map(({ to, label, icon: Icon }) => (
+          <li key={to}>
+            <Link to={to} className="flex min-h-14 items-center gap-3 px-5 font-semibold hover:bg-canvas">
+              <Icon size={22} className="text-neem" aria-hidden />
+              {t(label)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Card>
   )
 }
 

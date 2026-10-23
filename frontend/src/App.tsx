@@ -19,6 +19,7 @@ import { Donors } from './ui/screens/Donors'
 import { Sync } from './ui/screens/Sync'
 import { Saathi } from './ui/screens/Saathi'
 import { MedicineScan } from './ui/screens/Medicine'
+import { Outbreak } from './ui/screens/Outbreak'
 import type { StringKey } from './strings'
 
 function Splash({ text }: { text: StringKey }) {
@@ -57,6 +58,7 @@ export default function App() {
                 <Route path="guidance/:id" element={<GuidanceDetail />} />
                 <Route path="donors" element={<Donors />} />
                 <Route path="sync" element={<Sync />} />
+                <Route path="outbreak" element={<Outbreak />} />
                 <Route path="emergency" element={<Emergency />} />
                 <Route path="settings" element={<Settings />} />
               </Route>

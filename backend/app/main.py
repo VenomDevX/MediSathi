@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timedelta, timezone
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from . import assist, auth, blood, sync
 from .auth import current_user, hasher, session
-from .db import Base, Change, Donor, DonorToken, Patient, PatientVersion, User, make_engine, make_sessionmaker, utcnow
+from .db import Base, Change, Donor, DonorToken, Patient, PatientVersion, User, Visit, make_engine, make_sessionmaker, utcnow
 
 CONTENT = Path(__file__).resolve().parents[2] / "content"
 
@@ -35,6 +36,13 @@ def seed(db: Session):
         db.flush()
         db.add(PatientVersion(patient_id=row.id, version=1, snapshot={f: getattr(row, f) for f in sync.MUTABLE_PATIENT_FIELDS}))
         db.add(Change(entity_type="patient", entity_id=row.id, scope_id=row.scope_id))
+    db.flush()
+    scopes = {p["id"]: p["scope_id"] for p in _load("patients.json")}
+    for v in _load("visits.json"):  # demo fever cluster for the outbreak warning, dated relative to first start
+        at = (datetime.now(timezone.utc) - timedelta(days=v["days_ago"])).isoformat().replace("+00:00", "Z")
+        db.add(Visit(id=v["id"], patient_id=v["patient_id"], worker_id=v["worker_id"], visit_time=at, notes=v["notes"],
+                     observations_json=json.dumps({"symptoms": v["symptoms"]}), created_at=at))
+        db.add(Change(entity_type="patient_visit", entity_id=v["id"], scope_id=scopes[v["patient_id"]]))
     contacts = _load("server/donor_contacts.json")
     for d in _load("donors.json"):
         db.add(Donor(id=d["id"], blood_group=d["blood_group"], latitude=d["approx_latitude"], longitude=d["approx_longitude"],

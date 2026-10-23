@@ -43,6 +43,8 @@ export type SeedContent = {
     scope_id: string
     created_by: string
   }[]
+  /** Demo ASHA visits, dated `days_ago` before the day the content is loaded (a fever cluster for the outbreak warning). */
+  visits?: { id: string; patient_id: string; worker_id: string; days_ago: number; notes: string; symptoms: string[] }[]
 }
 
 /**
@@ -101,6 +103,14 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
       sql: `INSERT OR IGNORE INTO patients (id, display_name, age_years, sex, village, local_identifier, scope_id, created_by, sync_status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
       bind: [p.id, p.display_name, p.age_years ?? null, p.sex ?? null, p.village ?? null, p.local_identifier ?? null, p.scope_id, p.created_by],
+    })
+  }
+  for (const v of c.visits ?? []) {
+    const at = new Date(Date.now() - v.days_ago * 864e5).toISOString()
+    s.push({
+      sql: `INSERT OR IGNORE INTO patient_visits (id, patient_id, worker_id, visit_time, notes, observations_json, created_at, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'synced')`,
+      bind: [v.id, v.patient_id, v.worker_id, at, v.notes, JSON.stringify({ symptoms: v.symptoms }), at],
     })
   }
   s.push({ sql: "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('content_version', ?)", bind: [c.version] })
