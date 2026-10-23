@@ -3,7 +3,7 @@
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -18,6 +18,10 @@ class Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+DATE = r"^\d{4}-\d{2}-\d{2}$"
+ABHA = r"^\d{14}$"  # ABHA number, digits only
+
+
 class PatientIn(Strict):
     id: str
     display_name: str
@@ -26,6 +30,8 @@ class PatientIn(Strict):
     village: str | None = None
     phone: str | None = None
     local_identifier: str | None = None
+    date_of_birth: str | None = Field(None, pattern=DATE)
+    abha_id: str | None = Field(None, pattern=ABHA)
     scope_id: str
     created_by: str
     created_at: str
@@ -39,6 +45,8 @@ class PatientPatch(Strict):
     village: str | None = None
     phone: str | None = None
     local_identifier: str | None = None
+    date_of_birth: str | None = Field(None, pattern=DATE)
+    abha_id: str | None = Field(None, pattern=ABHA)
 
 
 class VisitIn(Strict):
@@ -98,7 +106,7 @@ class Rejected(Exception):
         self.code = code
 
 
-MUTABLE_PATIENT_FIELDS = ("display_name", "age_years", "sex", "village", "phone", "local_identifier")
+MUTABLE_PATIENT_FIELDS = ("display_name", "age_years", "sex", "village", "phone", "local_identifier", "date_of_birth", "abha_id")
 
 
 def _snapshot(p: Patient) -> dict:
@@ -150,7 +158,7 @@ def _apply(db: Session, user: User, op: Operation) -> dict:
             if not base:
                 raise Rejected("invalid_base_version")
             current = _snapshot(p)
-            server_changed = {f for f in MUTABLE_PATIENT_FIELDS if current[f] != base.snapshot[f]}
+            server_changed = {f for f in MUTABLE_PATIENT_FIELDS if current[f] != base.snapshot.get(f)}  # older snapshots lack newer fields
             clashes = {f: v for f, v in patch.items() if f in server_changed and v != current[f]}
             for f, v in patch.items():
                 if f not in clashes:

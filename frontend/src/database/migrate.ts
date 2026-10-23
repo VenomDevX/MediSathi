@@ -22,6 +22,12 @@ export async function migrate(db: Database) {
     ])
   }
 
+  // Vaccines, pregnancy checkups and ABHA export need these on family members.
+  const profileCols = (await db.query<{ name: string }>("SELECT name FROM pragma_table_info('profiles')")).map((c) => c.name)
+  for (const col of ['date_of_birth', 'lmp_date', 'abha_id']) {
+    if (!profileCols.includes(col)) await db.exec(`ALTER TABLE profiles ADD COLUMN ${col} TEXT`)
+  }
+
   await db.exec('DROP TABLE IF EXISTS users_migrated') // left behind by a failed attempt in an earlier build
   const [users] = await db.query<{ sql: string }>("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'users'")
   if (!users || users.sql.includes("'citizen'")) return

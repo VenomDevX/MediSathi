@@ -2,7 +2,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useState, type FormEvent } from 'react'
 import { CalendarCheck, CaretRight, FileText, Note, PencilSimple, Pill, Plus, Stethoscope, Thermometer, Trash, UserCircle, UsersThree } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
-import { addEntry, bloodGroups, getProfile, listEntries, listProfiles, saveProfile, voidEntry, type EntryKind, type Profile } from '../../data/family'
+import { addEntry, bloodGroups, getProfile, givenIds, listEntries, listProfiles, saveProfile, voidEntry, type EntryKind, type Profile } from '../../data/family'
 import { listReports } from '../../data/reports'
 import { todayLocal } from '../../domain/dates'
 import { useFormatDate, useT } from '../../i18n'
@@ -10,6 +10,8 @@ import { askReminderPermission, refreshReminders } from '../../platform/notify'
 import type { StringKey } from '../../strings'
 import { Button, Card, EmptyState, Field, LinkButton, PageHeader, inputClass } from '../components'
 import { cx } from '../styles'
+import { PregnancyCard, VaccineCard } from '../ScheduleCards'
+import { formatAbha, parseAbha } from '../../domain/abha'
 import { useAsync } from '../useAsync'
 
 const relations: Record<string, StringKey> = {
@@ -82,7 +84,7 @@ export function FamilyList() {
   )
 }
 
-const blank: Omit<Profile, 'id'> = { name: '', relation: 'self', birth_year: null, sex: '', blood_group: '', conditions: '', allergies: '' }
+const blank: Omit<Profile, 'id'> = { name: '', relation: 'self', birth_year: null, sex: '', blood_group: '', conditions: '', allergies: '', date_of_birth: null, lmp_date: null, abha_id: null }
 
 export function FamilyEdit() {
   const { id } = useParams()
@@ -97,6 +99,8 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
   const navigate = useNavigate()
   const { db, user } = useApp()
   const [p, setP] = useState(initial)
+  const [abha, setAbha] = useState(initial.abha_id ? formatAbha(initial.abha_id) : '')
+  const [abhaError, setAbhaError] = useState(false)
   const [error, setError] = useState(false)
   const [busy, setBusy] = useState(false)
   const set = <K extends keyof typeof p>(k: K, v: (typeof p)[K]) => setP({ ...p, [k]: v })
@@ -106,8 +110,10 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
   async function submit(e: FormEvent) {
     e.preventDefault()
     if (!p.name.trim()) return setError(true), (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>('[name=name]')?.focus()
+    const abha_id = parseAbha(abha)
+    if (abha_id === null) return setAbhaError(true), (e.currentTarget as HTMLFormElement).querySelector<HTMLInputElement>('[name=abha]')?.focus()
     setBusy(true)
-    const saved = await saveProfile(db, user.id, { ...p, id: id ?? undefined })
+    const saved = await saveProfile(db, user.id, { ...p, abha_id: abha_id || null, lmp_date: p.sex === 'F' ? p.lmp_date : null, id: id ?? undefined })
     navigate(`/family/${saved}`, { replace: true })
   }
 
@@ -141,6 +147,16 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
             />
           </Field>
         </div>
+        <Field label={t('dateOfBirth')} hint={t('dateOfBirthHint')}>
+          <input
+            type="date"
+            name="date_of_birth"
+            max={todayLocal()}
+            value={p.date_of_birth ?? ''}
+            onChange={(e) => setP({ ...p, date_of_birth: e.target.value || null, birth_year: e.target.value ? Number(e.target.value.slice(0, 4)) : p.birth_year })}
+            className={cx(inputClass, 'w-fit')}
+          />
+        </Field>
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1.5 font-medium">{t('sex')}</legend>
           <div className="grid grid-cols-3 gap-2">
@@ -153,6 +169,11 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
           </div>
           <span className="text-sm text-muted">{t('sexHint')}</span>
         </fieldset>
+        {p.sex === 'F' && (
+          <Field label={t('lmpDate')} hint={t('lmpHint')}>
+            <input type="date" name="lmp_date" max={todayLocal()} value={p.lmp_date ?? ''} onChange={(e) => set('lmp_date', e.target.value || null)} className={cx(inputClass, 'w-fit')} />
+          </Field>
+        )}
         <Field label={t('bloodGroup')}>
           <select name="blood_group" value={p.blood_group} onChange={(e) => set('blood_group', e.target.value)} className={inputClass}>
             <option value="">{t('unknown')}</option>
@@ -166,6 +187,9 @@ function PersonForm({ id, initial }: { id: string | null; initial: Omit<Profile,
         </Field>
         <Field label={t('allergies')}>
           <input name="allergies" autoComplete="off" value={p.allergies} onChange={(e) => set('allergies', e.target.value)} className={inputClass} />
+        </Field>
+        <Field label={t('abhaNumber')} hint={t('abhaHint')} error={abhaError ? t('abhaInvalid') : undefined}>
+          <input name="abha" inputMode="numeric" autoComplete="off" placeholder="XX-XXXX-XXXX-XXXX" value={abha} onChange={(e) => (setAbhaError(false), setAbha(e.target.value))} className={inputClass} aria-invalid={abhaError} />
         </Field>
         <div className="flex gap-3">
           <Button type="submit" disabled={busy}>{t('save')}</Button>
@@ -182,7 +206,12 @@ export function FamilyDetail() {
   const { db, user } = useApp()
   const { id = '' } = useParams()
   const { data, loading, reload } = useAsync(
-    async () => ({ person: await getProfile(db, user.id, id), entries: await listEntries(db, user.id, id), reports: await listReports(db, user, { profileId: id }) }),
+    async () => ({
+      person: await getProfile(db, user.id, id),
+      entries: await listEntries(db, user.id, id),
+      reports: await listReports(db, user, { profileId: id }),
+      given: await givenIds(db, user.id, id),
+    }),
     [db, user, id],
   )
   const [kind, setKind] = useState<EntryKind>('medicine')
@@ -192,8 +221,13 @@ export function FamilyDetail() {
 
   if (loading) return null
   if (!data?.person) return <EmptyState icon={<UserCircle size={32} />} title={t('personNotFound')} action={<LinkButton to="/family" variant="secondary">{t('back')}</LinkButton>} />
-  const { person, entries, reports } = data
+  const { person, entries, reports, given } = data
   const age = ageOf(person.birth_year)
+
+  const record = (field: 'vaccines' | 'anc') => async (itemId: string, label: string) => {
+    await addEntry(db, user.id, id, { kind: 'visit', text: t('givenNote', { items: label }), data: { [field]: [itemId] } })
+    reload()
+  }
 
   async function add(e: FormEvent) {
     e.preventDefault()
@@ -244,6 +278,9 @@ export function FamilyDetail() {
             ))}
           </dl>
         </Card>
+
+        <VaccineCard dob={person.date_of_birth} given={given} onGive={record('vaccines')} />
+        <PregnancyCard lmp={person.lmp_date} done={given} onGive={record('anc')} />
 
         <form onSubmit={add} className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <fieldset>

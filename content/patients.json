@@ -8,5 +8,6 @@
   {"id": "p-0007", "display_name": "Meena Kumari", "age_years": 4, "sex": "F", "village": "Rampur", "local_identifier": "RMP-042", "scope_id": "village-rampur", "created_by": "u-sunita"},
   {"id": "p-0008", "display_name": "Raju Pal", "age_years": 45, "sex": "M", "village": "Rampur", "local_identifier": "RMP-047", "scope_id": "village-rampur", "created_by": "u-sunita"},
   {"id": "p-0009", "display_name": "Salma Khatoon", "age_years": 29, "sex": "F", "village": "Sitapur Kalan", "local_identifier": "SPK-012", "scope_id": "village-sitapur-kalan", "created_by": "u-sunita"},
-  {"id": "p-0010", "display_name": "Pooja Verma", "age_years": 6, "sex": "F", "village": "Sitapur Kalan", "local_identifier": "SPK-015", "scope_id": "village-sitapur-kalan", "created_by": "u-sunita"}
+  {"id": "p-0010", "display_name": "Pooja Verma", "age_years": 6, "sex": "F", "village": "Sitapur Kalan", "local_identifier": "SPK-015", "scope_id": "village-sitapur-kalan", "created_by": "u-sunita"},
+  {"id": "p-0011", "display_name": "Baby of Kamla", "age_years": 0, "sex": "F", "village": "Rampur", "local_identifier": "RMP-050", "scope_id": "village-rampur", "created_by": "u-sunita", "dob_days_ago": 63}
 ]

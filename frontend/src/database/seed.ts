@@ -42,9 +42,14 @@ export type SeedContent = {
     local_identifier?: string
     scope_id: string
     created_by: string
+    /** Demo babies: born this many days before the content is loaded. */
+    dob_days_ago?: number
   }[]
-  /** Demo ASHA visits, dated `days_ago` before the day the content is loaded (a fever cluster for the outbreak warning). */
-  visits?: { id: string; patient_id: string; worker_id: string; days_ago: number; notes: string; symptoms: string[] }[]
+  /**
+   * Demo ASHA visits, dated `days_ago` before the day the content is loaded: a fever cluster for the outbreak warning,
+   * a pregnancy (`lmp_days_ago`) and a baby's birth doses for the vaccine tracker.
+   */
+  visits?: { id: string; patient_id: string; worker_id: string; days_ago: number; notes: string; observations: Record<string, unknown> & { lmp_days_ago?: number } }[]
 }
 
 /**
@@ -52,6 +57,8 @@ export type SeedContent = {
  * whenever the content version changes; users and patients are only inserted if missing,
  * so a worker's own records are never overwritten.
  */
+const daysAgo = (n: number) => new Date(Date.now() - n * 864e5).toISOString()
+
 export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> {
   // Every start, not only on a new content version: a database from before the citizen role silently skipped that
   // account (OR IGNORE also skips CHECK failures), and migrate() has fixed the table since. Existing rows are untouched.
@@ -100,17 +107,20 @@ export async function seedIfNeeded(db: Database, c: SeedContent): Promise<void> 
   }
   for (const p of c.patients ?? []) {
     s.push({
-      sql: `INSERT OR IGNORE INTO patients (id, display_name, age_years, sex, village, local_identifier, scope_id, created_by, sync_status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
-      bind: [p.id, p.display_name, p.age_years ?? null, p.sex ?? null, p.village ?? null, p.local_identifier ?? null, p.scope_id, p.created_by],
+      sql: `INSERT OR IGNORE INTO patients (id, display_name, age_years, sex, village, local_identifier, date_of_birth, scope_id, created_by, sync_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced')`,
+      bind: [p.id, p.display_name, p.age_years ?? null, p.sex ?? null, p.village ?? null, p.local_identifier ?? null,
+        p.dob_days_ago != null ? daysAgo(p.dob_days_ago).slice(0, 10) : null, p.scope_id, p.created_by],
     })
   }
   for (const v of c.visits ?? []) {
-    const at = new Date(Date.now() - v.days_ago * 864e5).toISOString()
+    const at = daysAgo(v.days_ago)
+    const { lmp_days_ago, ...observations } = v.observations
+    if (lmp_days_ago != null) observations.lmp = daysAgo(lmp_days_ago).slice(0, 10)
     s.push({
       sql: `INSERT OR IGNORE INTO patient_visits (id, patient_id, worker_id, visit_time, notes, observations_json, created_at, sync_status)
             VALUES (?, ?, ?, ?, ?, ?, ?, 'synced')`,
-      bind: [v.id, v.patient_id, v.worker_id, at, v.notes, JSON.stringify({ symptoms: v.symptoms }), at],
+      bind: [v.id, v.patient_id, v.worker_id, at, v.notes, JSON.stringify(observations), at],
     })
   }
   s.push({ sql: "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('content_version', ?)", bind: [c.version] })

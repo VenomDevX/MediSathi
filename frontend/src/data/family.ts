@@ -11,25 +11,34 @@ export type Profile = {
   blood_group: string
   conditions: string
   allergies: string
+  date_of_birth: string | null
+  /** Last menstrual period, while pregnant. */
+  lmp_date: string | null
+  abha_id: string | null
 }
 
 export type EntryKind = 'note' | 'medicine' | 'reading' | 'visit'
 export type Entry = { id: string; profile_id: string; kind: EntryKind; text: string; entry_time: string; follow_up_at: string | null }
 export type FollowUp = Entry & { profile_name: string }
 
-const profileCols = 'id, name, relation, birth_year, sex, blood_group, conditions, allergies'
+const profileCols = 'id, name, relation, birth_year, sex, blood_group, conditions, allergies, date_of_birth, lmp_date, abha_id'
 
 /** Creates a person, or updates one of `owner`'s when `id` is given (someone else's id changes nothing). Returns the id. */
-export async function saveProfile(db: Database, owner: string, p: Omit<Profile, 'id'> & { id?: string }): Promise<string> {
+type Later = 'date_of_birth' | 'lmp_date' | 'abha_id' // added after the first release; optional when saving
+
+export async function saveProfile(db: Database, owner: string, p: Omit<Profile, 'id' | Later> & Partial<Pick<Profile, Later>> & { id?: string }): Promise<string> {
   const id = p.id ?? crypto.randomUUID()
   await db.batch([
     {
-      sql: `INSERT INTO profiles (id, owner_id, name, relation, birth_year, sex, blood_group, conditions, allergies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      sql: `INSERT INTO profiles (id, owner_id, name, relation, birth_year, sex, blood_group, conditions, allergies, date_of_birth, lmp_date, abha_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET name = excluded.name, relation = excluded.relation, birth_year = excluded.birth_year, sex = excluded.sex,
               blood_group = excluded.blood_group, conditions = excluded.conditions, allergies = excluded.allergies,
+              date_of_birth = excluded.date_of_birth, lmp_date = excluded.lmp_date, abha_id = excluded.abha_id,
               updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
             WHERE profiles.owner_id = excluded.owner_id`,
-      bind: [id, owner, p.name.trim(), p.relation, p.birth_year, p.sex, p.blood_group, p.conditions.trim(), p.allergies.trim()],
+      bind: [id, owner, p.name.trim(), p.relation, p.birth_year, p.sex, p.blood_group, p.conditions.trim(), p.allergies.trim(),
+        p.date_of_birth || null, p.lmp_date || null, p.abha_id || null],
     },
   ])
   return id
@@ -49,13 +58,13 @@ export async function addEntry(
   db: Database,
   owner: string,
   profileId: string,
-  e: { kind: EntryKind; text: string; entry_time?: string; follow_up_at?: string | null },
+  e: { kind: EntryKind; text: string; entry_time?: string; follow_up_at?: string | null; data?: { vaccines?: string[]; anc?: string[] } },
 ): Promise<string> {
   const id = crypto.randomUUID()
   await db.batch([
     {
-      sql: `INSERT INTO health_entries (id, profile_id, kind, text, entry_time, follow_up_at) SELECT ?, ?, ?, ?, ?, ? WHERE ? IN (${owned})`,
-      bind: [id, profileId, e.kind, e.text.trim(), e.entry_time ?? new Date().toISOString(), e.follow_up_at || null, profileId, owner],
+      sql: `INSERT INTO health_entries (id, profile_id, kind, text, entry_time, follow_up_at, data_json) SELECT ?, ?, ?, ?, ?, ?, ? WHERE ? IN (${owned})`,
+      bind: [id, profileId, e.kind, e.text.trim(), e.entry_time ?? new Date().toISOString(), e.follow_up_at || null, JSON.stringify(e.data ?? {}), profileId, owner],
     },
   ])
   return id
@@ -68,6 +77,15 @@ export const listEntries = (db: Database, owner: string, profileId: string) =>
     `SELECT ${entryCols} FROM health_entries e WHERE e.profile_id = ? AND e.profile_id IN (${owned}) AND e.voided_at IS NULL ORDER BY e.entry_time DESC, e.rowid DESC`,
     [profileId, owner],
   )
+
+/** Vaccine doses and pregnancy checkups recorded for a person (ids from content/immunization_schedule.json). */
+export async function givenIds(db: Database, owner: string, profileId: string): Promise<Set<string>> {
+  const rows = await db.query<{ data_json: string }>(
+    `SELECT data_json FROM health_entries WHERE profile_id = ? AND profile_id IN (${owned}) AND voided_at IS NULL`,
+    [profileId, owner],
+  )
+  return new Set(rows.flatMap((r) => { const d = JSON.parse(r.data_json); return [...(d.vaccines ?? []), ...(d.anc ?? [])] }))
+}
 
 /** Entries are kept, not deleted: a removed one is marked and hidden. */
 export async function voidEntry(db: Database, owner: string, id: string) {

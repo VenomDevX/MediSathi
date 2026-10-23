@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, UserPlus, Warning, Waveform, Pulse, Users, UsersThree } from '@phosphor-icons/react'
+import { CalendarCheck, CaretRight, Drop, FileText, FirstAidKit, Microphone, Pulse, Syringe, UserPlus, Warning, Waveform, Users, UsersThree } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { upcomingFollowUps } from '../../data/family'
 import { followUpsDue } from '../../data/records'
 import { todayLocal } from '../../domain/dates'
-import { useFormatDate, useT } from '../../i18n'
+import { useFormatDate, useLang, useT } from '../../i18n'
+import { dueSchedules } from '../../data/due'
+import { ruleText } from '../../domain/emergency'
 import { refreshReminders } from '../../platform/notify'
 import type { StringKey } from '../../strings'
 import { AssistantMark, Chip } from '../components'
@@ -27,6 +29,7 @@ function greetingKey(hour: number): StringKey {
 export function Today() {
   const t = useT()
   const fmt = useFormatDate()
+  const { lang } = useLang()
   const { db, user } = useApp()
   const [hour] = useState(() => new Date().getHours())
   const today = todayLocal()
@@ -43,6 +46,7 @@ export function Today() {
   const firstName = user?.display_name?.split(' ')[0]
   const greeting = user?.display_name ? t('greeting', { name: firstName ?? '' }) : t(greetingKey(hour))
 
+  const { data: due } = useAsync(() => dueSchedules(db, user, isWorker, today), [db, user, isWorker, today])
   const { data: clusters } = useClusters()
   const alert = isWorker ? clusters?.find((c) => c.alert) : undefined
 
@@ -101,6 +105,27 @@ export function Today() {
                     <p className="truncate font-semibold">{d.text}</p>
                     <p className="text-sm text-muted">{d.profile_name}, {d.follow_up_at === today ? t('today') : fmt(d.follow_up_at!)}</p>
                   </div>
+                  <CaretRight size={18} className="text-muted" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!!due?.length && (
+        <section aria-labelledby="due" className="flex flex-col gap-3">
+          <h2 id="due" className="text-xl font-semibold">{t('vaccinesDue')}</h2>
+          <ul className="divide-y divide-line overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface">
+            {due.slice(0, 6).map((d) => (
+              <li key={d.to}>
+                <Link to={d.to} className="flex min-h-16 items-center gap-3 px-4 py-2 hover:bg-canvas">
+                  <Syringe size={24} className="shrink-0 text-neem" aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{d.name}</p>
+                    <p className="truncate text-sm text-muted">{d.items.map((i) => ruleText(i.label, lang)).join(', ')}</p>
+                  </div>
+                  {d.items.some((i) => i.status === 'overdue') && <Chip tone="danger">{t('overdue')}</Chip>}
                   <CaretRight size={18} className="text-muted" aria-hidden />
                 </Link>
               </li>

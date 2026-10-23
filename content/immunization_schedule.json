@@ -1,0 +1,40 @@
+{
+  "source": "National Immunization Schedule (UIP), MoHFW; ANC contacts per MoHFW guidelines. Demo content, not clinically reviewed.",
+  "child": [
+    { "id": "bcg", "due_days": 0, "label": { "en": "BCG", "hi": "बीसीजी" } },
+    { "id": "opv0", "due_days": 0, "label": { "en": "OPV-0 (polio drops)", "hi": "ओपीवी-0 (पोलियो ड्रॉप)" } },
+    { "id": "hepb0", "due_days": 0, "label": { "en": "Hepatitis B birth dose", "hi": "हेपेटाइटिस बी (जन्म पर)" } },
+    { "id": "opv1", "due_days": 42, "label": { "en": "OPV-1", "hi": "ओपीवी-1" } },
+    { "id": "penta1", "due_days": 42, "label": { "en": "Pentavalent-1", "hi": "पेंटावेलेंट-1" } },
+    { "id": "rvv1", "due_days": 42, "label": { "en": "Rotavirus-1", "hi": "रोटावायरस-1" } },
+    { "id": "fipv1", "due_days": 42, "label": { "en": "fIPV-1", "hi": "एफआईपीवी-1" } },
+    { "id": "pcv1", "due_days": 42, "label": { "en": "PCV-1", "hi": "पीसीवी-1" } },
+    { "id": "opv2", "due_days": 70, "label": { "en": "OPV-2", "hi": "ओपीवी-2" } },
+    { "id": "penta2", "due_days": 70, "label": { "en": "Pentavalent-2", "hi": "पेंटावेलेंट-2" } },
+    { "id": "rvv2", "due_days": 70, "label": { "en": "Rotavirus-2", "hi": "रोटावायरस-2" } },
+    { "id": "opv3", "due_days": 98, "label": { "en": "OPV-3", "hi": "ओपीवी-3" } },
+    { "id": "penta3", "due_days": 98, "label": { "en": "Pentavalent-3", "hi": "पेंटावेलेंट-3" } },
+    { "id": "rvv3", "due_days": 98, "label": { "en": "Rotavirus-3", "hi": "रोटावायरस-3" } },
+    { "id": "fipv2", "due_days": 98, "label": { "en": "fIPV-2", "hi": "एफआईपीवी-2" } },
+    { "id": "pcv2", "due_days": 98, "label": { "en": "PCV-2", "hi": "पीसीवी-2" } },
+    { "id": "mr1", "due_days": 270, "label": { "en": "Measles-Rubella-1", "hi": "खसरा-रूबेला-1" } },
+    { "id": "je1", "due_days": 270, "label": { "en": "JE-1 (in JE districts)", "hi": "जेई-1 (जेई वाले जिलों में)" } },
+    { "id": "pcvb", "due_days": 270, "label": { "en": "PCV booster", "hi": "पीसीवी बूस्टर" } },
+    { "id": "vita1", "due_days": 270, "label": { "en": "Vitamin A (1st dose)", "hi": "विटामिन ए (पहली खुराक)" } },
+    { "id": "mr2", "due_days": 487, "label": { "en": "Measles-Rubella-2", "hi": "खसरा-रूबेला-2" } },
+    { "id": "je2", "due_days": 487, "label": { "en": "JE-2 (in JE districts)", "hi": "जेई-2 (जेई वाले जिलों में)" } },
+    { "id": "dptb1", "due_days": 487, "label": { "en": "DPT booster-1", "hi": "डीपीटी बूस्टर-1" } },
+    { "id": "opvb", "due_days": 487, "label": { "en": "OPV booster", "hi": "ओपीवी बूस्टर" } },
+    { "id": "dptb2", "due_days": 1826, "label": { "en": "DPT booster-2", "hi": "डीपीटी बूस्टर-2" } },
+    { "id": "td10", "due_days": 3652, "label": { "en": "Td (10 years)", "hi": "टीडी (10 साल)" } },
+    { "id": "td16", "due_days": 5844, "label": { "en": "Td (16 years)", "hi": "टीडी (16 साल)" } }
+  ],
+  "pregnancy": [
+    { "id": "anc1", "from_days": 0, "due_days": 84, "label": { "en": "1st checkup (by 12 weeks): register, BP, weight, Hb, urine, blood group", "hi": "पहली जांच (12 हफ़्ते तक): पंजीकरण, बीपी, वज़न, एचबी, पेशाब, ब्लड ग्रुप" } },
+    { "id": "td1", "from_days": 0, "due_days": 112, "label": { "en": "Td-1 injection (at first checkup)", "hi": "टीडी-1 इंजेक्शन (पहली जांच पर)" } },
+    { "id": "td2", "from_days": 112, "due_days": 140, "label": { "en": "Td-2 or booster (4 weeks after Td-1)", "hi": "टीडी-2 या बूस्टर (टीडी-1 के 4 हफ़्ते बाद)" } },
+    { "id": "anc2", "from_days": 98, "due_days": 182, "label": { "en": "2nd checkup (14 to 26 weeks), start iron and calcium", "hi": "दूसरी जांच (14 से 26 हफ़्ते), आयरन और कैल्शियम शुरू" } },
+    { "id": "anc3", "from_days": 196, "due_days": 238, "label": { "en": "3rd checkup (28 to 34 weeks)", "hi": "तीसरी जांच (28 से 34 हफ़्ते)" } },
+    { "id": "anc4", "from_days": 252, "due_days": 280, "label": { "en": "4th checkup (36 weeks to delivery), plan the place of birth", "hi": "चौथी जांच (36 हफ़्ते से डिलीवरी तक), प्रसव की जगह तय करें" } }
+  ]
+}

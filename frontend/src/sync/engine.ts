@@ -111,6 +111,7 @@ async function pull(db: Database, api: SyncApi, s: SyncSummary) {
           upsert('patients', {
             id, display_name: e.display_name as string, age_years: (e.age_years as number) ?? null, sex: (e.sex as string) ?? null,
             village: (e.village as string) ?? null, phone: (e.phone as string) ?? null, local_identifier: (e.local_identifier as string) ?? null,
+            date_of_birth: (e.date_of_birth as string) ?? null, abha_id: (e.abha_id as string) ?? null,
             scope_id: e.scope_id as string, created_by: e.created_by as string, created_at: e.created_at as string, updated_at: e.updated_at as string,
             record_version: e.record_version as number, sync_status: e.needs_review ? 'conflict' : 'synced', deleted_at: (e.deleted_at as string) ?? null,
           }),

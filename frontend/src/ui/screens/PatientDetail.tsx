@@ -10,19 +10,28 @@ import { Button, Card, Chip, EmptyState, Field, LinkButton, PageHeader, SyncChip
 import { askReminderPermission } from '../../platform/notify'
 import { useAsync } from '../useAsync'
 import { cx } from '../styles'
+import { PregnancyCard, VaccineCard } from '../ScheduleCards'
 import { SYMPTOM_LABEL, SYMPTOMS, type Symptom } from '../../domain/outbreak'
 
-type Obs = { bp?: string; weight?: string; temp?: string; symptoms?: string[] }
+type Obs = { bp?: string; weight?: string; temp?: string; symptoms?: string[]; vaccines?: string[]; anc?: string[]; lmp?: string }
 
 export function PatientDetail() {
   const t = useT()
   const { id = '' } = useParams()
   const { db, user } = useApp()
-  const { data, loading } = useAsync(async () => ({ patient: await getPatient(db, user, id), visits: await listVisits(db, user, id) }), [db, user, id])
+  const { data, loading, reload } = useAsync(async () => ({ patient: await getPatient(db, user, id), visits: await listVisits(db, user, id) }), [db, user, id])
 
   if (loading) return null
   if (!data?.patient) return <EmptyState icon={<UserCircle size={32} />} title={t('patientNotFound')} action={<LinkButton to="/patients" variant="secondary">{t('back')}</LinkButton>} />
   const p = data.patient
+  // Doses and checkups are recorded as visits, so they sync like any other visit.
+  const current = data.visits.filter((c) => !c.voided).map((c) => ({ ...c.current, obs: JSON.parse(c.current.observations_json) as Obs }))
+  const given = new Set(current.flatMap((v) => [...(v.obs.vaccines ?? []), ...(v.obs.anc ?? [])]))
+  const lmp = current.find((v) => v.obs.lmp)?.obs.lmp ?? null // chains are newest first
+  const record = (field: 'vaccines' | 'anc') => async (itemId: string, label: string) => {
+    await addVisit(db, user, p.id, { visit_time: new Date().toISOString(), notes: t('givenNote', { items: label }), observations: { [field]: [itemId] } })
+    reload()
+  }
 
   return (
     <>
@@ -33,6 +42,11 @@ export function PatientDetail() {
           .join(', ')}
         {p.sync_status !== 'synced' && <SyncChip status={p.sync_status} label={t} />}
       </p>
+
+      <div className="mb-6 flex flex-col gap-4 empty:hidden">
+        <VaccineCard dob={p.date_of_birth} given={given} onGive={record('vaccines')} />
+        <PregnancyCard lmp={lmp} done={given} onGive={record('anc')} />
+      </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">{t('visits')}</h2>
@@ -119,6 +133,7 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
     weight: prevObs.weight ?? '',
     temp: prevObs.temp ?? '',
     follow_up_at: prev?.follow_up_at ?? '',
+    lmp: prevObs.lmp ?? '',
     reason: '',
   })
   const [symptoms, setSymptoms] = useState<string[]>(prevObs.symptoms ?? [])
@@ -137,6 +152,8 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
     setBusy(true)
     const observations: Record<string, string | string[]> = Object.fromEntries(Object.entries({ bp: form.bp, weight: form.weight, temp: form.temp }).filter(([, v]) => v.trim()))
     if (symptoms.length) observations.symptoms = symptoms
+    if (form.lmp) observations.lmp = form.lmp
+    for (const k of ['vaccines', 'anc'] as const) if (prevObs[k]) observations[k] = prevObs[k] // a correction keeps recorded doses
     const visit_time = form.date === todayLocal() ? new Date().toISOString() : new Date(`${form.date}T12:00:00`).toISOString()
     try {
       if (prev) await amendVisit(db, user, prev.id, { visit_time, notes: form.notes, observations, follow_up_at: form.follow_up_at, reason: form.reason })
@@ -185,6 +202,9 @@ function VisitFormBody({ prev, patientId, onDone }: { prev?: VisitRow; patientId
             ))}
           </div>
         </fieldset>
+        <Field label={t('lmpDate')} hint={t('lmpHint')}>
+          <input type="date" name="lmp" max={todayLocal()} value={form.lmp} onChange={set('lmp')} className={inputClass} />
+        </Field>
         <Field label={t('followUpDate')}>
           <input type="date" name="follow-up" min={todayLocal()} value={form.follow_up_at} onChange={set('follow_up_at')} className={inputClass} />
         </Field>

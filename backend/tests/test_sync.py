@@ -152,3 +152,13 @@ def test_another_users_operation_id_does_not_return_their_result(client, sunita,
     [theirs] = push(client, rakesh, {**o, "payload": {}})
     assert theirs["status"] == "rejected" and theirs["error_code"] == "operation_id_taken"
     assert theirs["entity_id"] == "x" and theirs["record_version"] is None
+
+
+def test_date_of_birth_and_abha_number_sync_and_are_checked(client, sunita):
+    p = patient(date_of_birth="2026-08-20", abha_id="12345678901234")
+    assert push(client, sunita, op("patient", p["id"], p))[0]["status"] == "accepted"
+    pulled = client.get("/api/v1/sync/pull", params={"cursor": 0}, headers=sunita).json()
+    entity = next(c["entity"] for c in pulled["changes"] if c["entity"]["id"] == p["id"])
+    assert (entity["date_of_birth"], entity["abha_id"]) == ("2026-08-20", "12345678901234")
+    bad = patient(abha_id="12-3456")
+    assert push(client, sunita, op("patient", bad["id"], bad))[0]["error_code"] == "invalid"

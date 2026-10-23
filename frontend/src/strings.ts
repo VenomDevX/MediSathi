@@ -421,6 +421,28 @@ export const strings = {
   "outbreakAction": { hi: "ब्लॉक स्वास्थ्य अधिकारी (BMO) को खबर दें और IDSP फ़ॉर्म में दर्ज करें।", en: "Tell the block medical officer and report it on the IDSP form." },
   "outbreakMap": { hi: "गांवों का नक्शा", en: "Map of villages" },
   "outbreakNote": { hi: "यह शुरुआती संकेत है, जांच से पक्का नहीं। सिर्फ़ इस फ़ोन पर मौजूद विज़िट से गिना गया।", en: "An early signal, not a confirmed diagnosis. Counted only from the visits on this phone." },
+  // Vaccination and pregnancy tracker, ABHA
+  "dateOfBirth": { hi: "जन्म तिथि", en: "Date of birth" },
+  "dateOfBirthHint": { hi: "बच्चों के टीके की तारीखें इसी से निकलती हैं।", en: "Children's vaccine dates are worked out from this." },
+  "abhaNumber": { hi: "आभा (ABHA) नंबर (अगर हो)", en: "ABHA number (if any)" },
+  "abhaHint": { hi: "14 अंकों का आयुष्मान भारत हेल्थ अकाउंट नंबर।", en: "The 14-digit Ayushman Bharat Health Account number." },
+  "abhaInvalid": { hi: "आभा नंबर में 14 अंक होने चाहिए।", en: "An ABHA number has 14 digits." },
+  "lmpDate": { hi: "आखिरी माहवारी की तारीख (गर्भवती हो तो)", en: "Last period date (if pregnant)" },
+  "lmpHint": { hi: "गर्भावस्था की जांच की तारीखें और डिलीवरी की संभावित तारीख इसी से निकलती है।", en: "Checkup dates and the expected delivery date are worked out from this." },
+  "vaccinesTitle": { hi: "टीके", en: "Vaccines" },
+  "vaccinesAllDone": { hi: "अभी कोई टीका बाकी नहीं।", en: "No vaccines due right now." },
+  "vaccinesDoneCount": { hi: "{n} टीके लग चुके", en: "{n} given" },
+  "pregnancyTitle": { hi: "गर्भावस्था की जांच", en: "Pregnancy checkups" },
+  "pregnancyWeek": { hi: "{n}वां हफ़्ता, डिलीवरी की संभावित तारीख {date}", en: "Week {n}, expected delivery {date}" },
+  "statusOverdue": { hi: "देर हो गई, {date} तक था", en: "Overdue since {date}" },
+  "statusDue": { hi: "अभी करें, {date} तक", en: "Due by {date}" },
+  "statusUpcoming": { hi: "{date} को", en: "On {date}" },
+  "markGiven": { hi: "आज लगा", en: "Given today" },
+  "markDone": { hi: "आज हुई", en: "Done today" },
+  "givenNote": { hi: "दिया गया: {items}", en: "Given: {items}" },
+  "dueNote": { hi: "{name} के लिए बाकी: {items}", en: "Due: {items} for {name}" },
+  "scheduleSource": { hi: "राष्ट्रीय टीकाकरण कार्यक्रम (UIP) के अनुसार। डेमो जानकारी, डॉक्टर द्वारा जांची नहीं गई।", en: "Based on the national immunisation schedule (UIP). Demo information, not reviewed by a doctor." },
+  "vaccinesDue": { hi: "टीके और जांच बाकी", en: "Vaccines and checkups due" },
 } satisfies Record<string, { hi: string; en: string } & Partial<Record<string, string>>>
 
 export type StringKey = keyof typeof strings

@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { CaretRight, MagnifyingGlass, UserPlus, Users } from '@phosphor-icons/react'
 import { useApp } from '../../app-context'
 import { createPatient, listPatients } from '../../data/records'
+import { parseAbha } from '../../domain/abha'
+import { todayLocal } from '../../domain/dates'
+import { daysBetween } from '../../domain/schedule'
 import { useT } from '../../i18n'
 import { Button, Banner, EmptyState, Field, LinkButton, PageHeader, SyncChip, inputClass } from '../components'
 import { useAsync } from '../useAsync'
@@ -86,7 +89,9 @@ export function PatientNew() {
   const t = useT()
   const nav = useNavigate()
   const { db, user } = useApp()
-  const [form, setForm] = useState({ display_name: '', age_years: '', sex: '', village: '', phone: '', local_identifier: '', scope_id: user.assigned_scope[0] })
+  const [form, setForm] = useState({ display_name: '', age_years: '', sex: '', village: '', phone: '', local_identifier: '', date_of_birth: '', abha: '', scope_id: user.assigned_scope[0] })
+  const [abhaError, setAbhaError] = useState(false)
+  const abhaRef = useRef<HTMLInputElement>(null)
   const [nameError, setNameError] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
@@ -113,9 +118,17 @@ export function PatientNew() {
       setNameError(true)
       return nameRef.current?.focus()
     }
+    const abha_id = parseAbha(form.abha)
+    if (abha_id === null) {
+      setAbhaError(true)
+      return abhaRef.current?.focus()
+    }
     setBusy(true)
     try {
-      const p = await createPatient(db, user, { ...form, age_years: form.age_years ? Number(form.age_years) : null, sex: form.sex || null })
+      // Age follows from the date of birth when only that is given.
+      const age = form.age_years ? Number(form.age_years) : form.date_of_birth ? Math.floor(daysBetween(form.date_of_birth, todayLocal()) / 365.25) : null
+      const { abha: _abha, ...rest } = form
+      const p = await createPatient(db, user, { ...rest, age_years: age, sex: form.sex || null, abha_id: abha_id || null })
       nav(`/patients/${p.id}`, { replace: true })
     } finally {
       setBusy(false)
@@ -137,6 +150,9 @@ export function PatientNew() {
             <input name="village" autoComplete="off" value={form.village} onChange={set('village')} className={inputClass} />
           </Field>
         </div>
+        <Field label={t('dateOfBirth')} hint={t('dateOfBirthHint')}>
+          <input type="date" name="date-of-birth" max={todayLocal()} value={form.date_of_birth} onChange={set('date_of_birth')} className={inputClass} />
+        </Field>
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1.5 font-medium">{t('sex')}</legend>
           <div className="grid grid-cols-3 gap-2">
@@ -159,6 +175,9 @@ export function PatientNew() {
         )}
         <Field label={t('phoneOptional')}>
           <input type="tel" name="phone" inputMode="tel" autoComplete="off" value={form.phone} onChange={set('phone')} className={inputClass} />
+        </Field>
+        <Field label={t('abhaNumber')} hint={t('abhaHint')} error={abhaError ? t('abhaInvalid') : undefined}>
+          <input ref={abhaRef} name="abha" inputMode="numeric" autoComplete="off" placeholder="XX-XXXX-XXXX-XXXX" value={form.abha} onChange={(e) => (setAbhaError(false), set('abha')(e))} className={inputClass} aria-invalid={abhaError} />
         </Field>
         <Field label={t('localId')}>
           <input name="local-id" autoComplete="off" spellCheck={false} value={form.local_identifier} onChange={set('local_identifier')} className={inputClass} />

@@ -13,6 +13,8 @@ export type Patient = {
   village: string | null
   phone: string | null
   local_identifier: string | null
+  date_of_birth: string | null
+  abha_id: string | null
   scope_id: string
   created_at: string
   sync_status: string
@@ -26,6 +28,8 @@ export type NewPatient = {
   village?: string | null
   phone?: string | null
   local_identifier?: string | null
+  date_of_birth?: string | null
+  abha_id?: string | null
 }
 
 const now = () => new Date().toISOString()
@@ -43,22 +47,24 @@ export async function createPatient(db: Database, w: Worker, input: NewPatient):
     village: input.village?.trim() || null,
     phone: input.phone?.trim() || null,
     local_identifier: input.local_identifier?.trim() || null,
+    date_of_birth: input.date_of_birth || null,
+    abha_id: input.abha_id || null,
     scope_id: input.scope_id,
     created_by: w.id,
     created_at: now(),
   }
   await db.batch([
     {
-      sql: `INSERT INTO patients (id, display_name, age_years, sex, village, phone, local_identifier, scope_id, created_by, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      bind: [row.id, row.display_name, row.age_years, row.sex, row.village, row.phone, row.local_identifier, row.scope_id, row.created_by, row.created_at, row.created_at],
+      sql: `INSERT INTO patients (id, display_name, age_years, sex, village, phone, local_identifier, date_of_birth, abha_id, scope_id, created_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      bind: [row.id, row.display_name, row.age_years, row.sex, row.village, row.phone, row.local_identifier, row.date_of_birth, row.abha_id, row.scope_id, row.created_by, row.created_at, row.created_at],
     },
     syncOp('patient', row.id, 'create', row),
   ])
   return { ...row, sync_status: 'pending' }
 }
 
-const patientCols = 'id, display_name, age_years, sex, village, phone, local_identifier, scope_id, created_at, sync_status'
+const patientCols = 'id, display_name, age_years, sex, village, phone, local_identifier, date_of_birth, abha_id, scope_id, created_at, sync_status'
 
 export async function listPatients(db: Database, w: Worker, search: string): Promise<Patient[]> {
   const s = inScope(w)

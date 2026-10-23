@@ -177,6 +177,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   blood_group TEXT,
   conditions TEXT NOT NULL DEFAULT '',
   allergies TEXT NOT NULL DEFAULT '',
+  date_of_birth TEXT,
+  lmp_date TEXT,
+  abha_id TEXT,
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   deleted_at TEXT

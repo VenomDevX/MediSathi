@@ -1,10 +1,12 @@
 [
-  {"id": "v-demo-01", "patient_id": "p-0004", "worker_id": "u-sunita", "days_ago": 0, "notes": "Fever since yesterday, body ache.", "symptoms": ["fever"]},
-  {"id": "v-demo-02", "patient_id": "p-0005", "worker_id": "u-sunita", "days_ago": 1, "notes": "High fever with chills.", "symptoms": ["fever"]},
-  {"id": "v-demo-03", "patient_id": "p-0006", "worker_id": "u-sunita", "days_ago": 2, "notes": "Fever and headache for 2 days.", "symptoms": ["fever"]},
-  {"id": "v-demo-04", "patient_id": "p-0007", "worker_id": "u-sunita", "days_ago": 3, "notes": "Fever, not eating well.", "symptoms": ["fever", "vomiting"]},
-  {"id": "v-demo-05", "patient_id": "p-0008", "worker_id": "u-sunita", "days_ago": 4, "notes": "Fever on and off.", "symptoms": ["fever"]},
-  {"id": "v-demo-06", "patient_id": "p-0002", "worker_id": "u-sunita", "days_ago": 11, "notes": "Mild fever, recovered.", "symptoms": ["fever"]},
-  {"id": "v-demo-07", "patient_id": "p-0009", "worker_id": "u-sunita", "days_ago": 2, "notes": "Loose motions since morning. ORS given.", "symptoms": ["diarrhoea"]},
-  {"id": "v-demo-08", "patient_id": "p-0010", "worker_id": "u-sunita", "days_ago": 3, "notes": "Loose motions. ORS and zinc started.", "symptoms": ["diarrhoea"]}
+  {"id": "v-demo-01", "patient_id": "p-0004", "worker_id": "u-sunita", "days_ago": 0, "notes": "Fever since yesterday, body ache.", "observations": {"symptoms": ["fever"]}},
+  {"id": "v-demo-02", "patient_id": "p-0005", "worker_id": "u-sunita", "days_ago": 1, "notes": "High fever with chills.", "observations": {"symptoms": ["fever"]}},
+  {"id": "v-demo-03", "patient_id": "p-0006", "worker_id": "u-sunita", "days_ago": 2, "notes": "Fever and headache for 2 days.", "observations": {"symptoms": ["fever"]}},
+  {"id": "v-demo-04", "patient_id": "p-0007", "worker_id": "u-sunita", "days_ago": 3, "notes": "Fever, not eating well.", "observations": {"symptoms": ["fever", "vomiting"]}},
+  {"id": "v-demo-05", "patient_id": "p-0008", "worker_id": "u-sunita", "days_ago": 4, "notes": "Fever on and off.", "observations": {"symptoms": ["fever"]}},
+  {"id": "v-demo-06", "patient_id": "p-0002", "worker_id": "u-sunita", "days_ago": 11, "notes": "Mild fever, recovered.", "observations": {"symptoms": ["fever"]}},
+  {"id": "v-demo-07", "patient_id": "p-0009", "worker_id": "u-sunita", "days_ago": 2, "notes": "Loose motions since morning. ORS given.", "observations": {"symptoms": ["diarrhoea"]}},
+  {"id": "v-demo-08", "patient_id": "p-0010", "worker_id": "u-sunita", "days_ago": 3, "notes": "Loose motions. ORS and zinc started.", "observations": {"symptoms": ["diarrhoea"]}},
+  {"id": "v-demo-09", "patient_id": "p-0003", "worker_id": "u-sunita", "days_ago": 20, "notes": "Pregnancy registered. BP 110/70, Hb 10.2. Iron started.", "observations": {"lmp_days_ago": 120, "anc": ["anc1", "td1"]}},
+  {"id": "v-demo-10", "patient_id": "p-0011", "worker_id": "u-sunita", "days_ago": 62, "notes": "Birth doses given at the health centre.", "observations": {"vaccines": ["bcg", "opv0", "hepb0"]}}
 ]

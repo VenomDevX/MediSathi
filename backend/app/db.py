@@ -42,6 +42,8 @@ class Patient(Base):
     village: Mapped[str | None] = mapped_column(String, nullable=True)
     phone: Mapped[str | None] = mapped_column(String, nullable=True)
     local_identifier: Mapped[str | None] = mapped_column(String, nullable=True)
+    date_of_birth: Mapped[str | None] = mapped_column(String, nullable=True)
+    abha_id: Mapped[str | None] = mapped_column(String, nullable=True)
     scope_id: Mapped[str] = mapped_column(String, index=True)
     created_by: Mapped[str] = mapped_column(String)
     created_at: Mapped[str] = mapped_column(String)
