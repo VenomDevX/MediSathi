@@ -4,7 +4,7 @@ import { identifyMedicine, parseExpiry, strength, type Expiry, type Medicine as 
 import { ruleText } from '../../domain/emergency'
 import { useFormatDate, useLang, useT } from '../../i18n'
 import { medicines } from '../../medicines'
-import { isSafeType } from '../../platform/files'
+import { ACCEPT, isSafeType } from '../../platform/files'
 import { canSpeak, speak, stopSpeaking } from '../../platform/speech'
 import { Banner, Button, Card, LinkButton, PageHeader } from '../components'
 
@@ -73,7 +73,8 @@ export function MedicineScan() {
           </div>
         )}
         <input ref={camera} type="file" accept="image/png,image/jpeg,image/webp" capture="environment" onChange={onFile} className="hidden" aria-hidden tabIndex={-1} />
-        <input ref={picker} type="file" accept="image/png,image/jpeg,image/webp" onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
+        {/* Same list as reports (with PDF): an images-only list opens Android's photo picker, whose files OCR cannot read. */}
+        <input ref={picker} type="file" accept={ACCEPT} onChange={onFile} className="hidden" aria-label={t('chooseFile')} tabIndex={-1} />
         {failed && <Banner tone="danger">{t('ocrFailed')}</Banner>}
 
         {result && !med && <Banner tone="caution" icon={<Warning size={20} />}>{t('medicineUnknown')}</Banner>}
