@@ -16,7 +16,8 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 
 ## Tech Eximius 2.0 submission
 - **Demo video:** [youtube.com/shorts/RxIR7okYcKo](https://youtube.com/shorts/RxIR7okYcKo?feature=share)
-- **Pitch deck:** [docs/MediSaathi-Tech-Eximius-2.0.pdf](docs/MediSaathi-Tech-Eximius-2.0.pdf) covers the problem statement, proposed solution, workflow, features, tech stack, impact and vision, plus a slide that maps the project to each judging criterion.
+- **Working prototype (Android APK):** [apk/MediSaathi.apk](https://github.com/VenomDevX/MediSathi/raw/main/apk/MediSaathi.apk). Demo accounts: Sunita (ASHA worker) or Ramesh (citizen), PIN 1234.
+- **Pitch deck (6 slides):** [docs/MediSaathi-Tech-Eximius-2.0.pdf](docs/MediSaathi-Tech-Eximius-2.0.pdf) covers the problem statement, proposed solution, USP, workflow, key features, tech stack and impact.
 - **Team Plot Armor:** Parth Sharma (team leader), Monishka Yadav, Shrey Kataria, Shresth Kataria.
 - **Tech stack:** React + TypeScript + Vite, Capacitor 8 (Android), Gemma 4 E2B on the device via Google LiteRT-LM, SQLite on the device, FastAPI + PostgreSQL for sync, tested with Vitest, pytest and Playwright.
 
