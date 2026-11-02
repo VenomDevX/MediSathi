@@ -15,6 +15,7 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 *Real screenshots from the Android app on a Pixel 7 emulator in airplane mode.*
 
 ## Tech Eximius 2.0 submission
+- **Demo video:** [youtube.com/shorts/RxIR7okYcKo](https://youtube.com/shorts/RxIR7okYcKo?feature=share)
 - **Pitch deck:** [docs/MediSaathi-Tech-Eximius-2.0.pdf](docs/MediSaathi-Tech-Eximius-2.0.pdf) covers the problem statement, proposed solution, workflow, features, tech stack, impact and vision, plus a slide that maps the project to each judging criterion.
 - **Team Plot Armor:** Parth Sharma (team leader), Monishka Yadav, Shrey Kataria, Shresth Kataria.
 - **Tech stack:** React + TypeScript + Vite, Capacitor 8 (Android), Gemma 4 E2B on the device via Google LiteRT-LM, SQLite on the device, FastAPI + PostgreSQL for sync, tested with Vitest, pytest and Playwright.
