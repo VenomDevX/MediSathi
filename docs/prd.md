@@ -452,7 +452,7 @@ These are project acceptance targets, not claims of achieved performance.
 - Real-time donor availability claims.
 - ABDM / ABHA integration.
 
-### Hackathon demo scope (Hack-o-Relay 2026): delivered
+### Hackathon demo scope (Tech Eximius 2.0, Tech Circle; first built for Hack-o-Relay 2026): delivered
 The hackathon build delivers a working vertical slice on the website, as a PWA and as an Android app from the same code:
 1. Local database, patients, append-only visits, follow-up reminders, and offline PIN unlock. Two demo accounts (ASHA worker and citizen).
 2. MediScan: OCR on the device → review screen with flagged values → range check → reviewed explanation + read-aloud.

@@ -1,5 +1,7 @@
 # MediSaathi
 
+**Tech Eximius 2.0 (Tech Circle)** · Team Plot Armor (Parth Sharma, team leader; Monishka Yadav; Shrey Kataria; Shresth Kataria) · Themes: Healthcare & MedTech, AI & ML
+
 A personal health helper and community healthcare tool that works completely without internet. Ask health questions by typing or speaking, in Hindi, English, Hinglish or 11 more Indian languages, explain lab reports with on-device OCR, maintain family and patient health notes and follow-ups, access first-aid guidance, and find blood donors.
 
 Single unified codebase built with **Vite + React Router + TailwindCSS**, supporting **Website (PWA)** and **Android (Capacitor)**. Answers come from a built-in library of first-aid and home-care guidance; an optional on-device Gemma model (Google LiteRT-LM) rephrases them in plain words. Nothing about your health leaves the device. Only peer-to-peer blood requests optionally use a backend server.
@@ -11,6 +13,11 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 | ![Home](docs/screenshots/home.png) | ![Ask in Hindi](docs/screenshots/ask-hindi.png) | ![Emergency answer](docs/screenshots/emergency-answer.png) | ![Report explained](docs/screenshots/report-explained.png) | ![Patients](docs/screenshots/patients.png) | ![Donors](docs/screenshots/donors.png) |
 
 *Real screenshots from the Android app on a Pixel 7 emulator in airplane mode.*
+
+## Tech Eximius 2.0 submission
+- **Pitch deck:** [docs/MediSaathi-Tech-Eximius-2.0.pdf](docs/MediSaathi-Tech-Eximius-2.0.pdf) covers the problem statement, proposed solution, workflow, features, tech stack, impact and vision, plus a slide that maps the project to each judging criterion.
+- **Team Plot Armor:** Parth Sharma (team leader), Monishka Yadav, Shrey Kataria, Shresth Kataria.
+- **Tech stack:** React + TypeScript + Vite, Capacitor 8 (Android), Gemma 4 E2B on the device via Google LiteRT-LM, SQLite on the device, FastAPI + PostgreSQL for sync, tested with Vitest, pytest and Playwright.
 
 ## What it does
 - **Ask**: health questions by text or voice. Emergency rules run first (snake bite, not breathing: straight to Call 108, no model). Otherwise the answer comes from the guidance library, optionally reworded by Gemma 4 on the device, and always cites its source.

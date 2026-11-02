@@ -2,7 +2,7 @@
 ## Technical Requirements Document (TRD)
 
 **Document version:** 1.6  
-**Status:** As built for Hack-o-Relay 2026 (October 2026). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
+**Status:** As built for Hack-o-Relay 2026 (October 2026), submitted to Tech Eximius 2.0 by Tech Circle (Healthcare & MedTech, AI & ML). Sections still marked *Proposed* are not implemented yet; see §19 change log.  
 **Related document:** MediSaathi PRD v1.6
 
 ---
@@ -814,7 +814,7 @@ medisaathi/
 - Evaluate mesh sharing, additional languages, advanced retrieval, and ABDM/ABHA integration.
 - Add only after the MVP passes its release gates.
 
-### Hackathon build order (Hack-o-Relay 2026)
+### Hackathon build order (Hack-o-Relay 2026, carried into Tech Eximius 2.0)
 Build vertical slices so there is always a demo-able app. All eight steps are done:
 1. Vite + React + TypeScript + Tailwind skeleton with PWA plugin; SQLite WASM schema; seed data (patients, donors, guidance, lab catalogue) loaded from `content/`.
 2. Patients + append-only visits + follow-up list + PIN unlock (website first).
