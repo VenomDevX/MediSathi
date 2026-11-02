@@ -1,6 +1,6 @@
 # MediSaathi
 
-**Tech Eximius 2.0 (Tech Circle)** · Team Plot Armor (Parth Sharma, team leader; Monishka Yadav; Shrey Kataria; Shresth Kataria) · Themes: Healthcare & MedTech, AI & ML
+**Tech Eximius 2.0 (Tech Circle)** · Team Adamya (Parth Sharma, team leader; Monishka Yadav; Shrey Kataria; Shresth Kataria) · Themes: Healthcare & MedTech, AI & ML
 
 A personal health helper and community healthcare tool that works completely without internet. Ask health questions by typing or speaking, in Hindi, English, Hinglish or 11 more Indian languages, explain lab reports with on-device OCR, maintain family and patient health notes and follow-ups, access first-aid guidance, and find blood donors.
 
@@ -18,7 +18,7 @@ Single unified codebase built with **Vite + React Router + TailwindCSS**, suppor
 - **Demo video:** [youtube.com/shorts/RxIR7okYcKo](https://youtube.com/shorts/RxIR7okYcKo?feature=share)
 - **Working prototype (Android APK):** [apk/MediSaathi.apk](https://github.com/VenomDevX/MediSathi/raw/main/apk/MediSaathi.apk). Demo accounts: Sunita (ASHA worker) or Ramesh (citizen), PIN 1234.
 - **Pitch deck (6 slides):** [docs/MediSaathi-Tech-Eximius-2.0.pdf](docs/MediSaathi-Tech-Eximius-2.0.pdf) covers the problem statement, proposed solution, USP, workflow, key features, tech stack and impact.
-- **Team Plot Armor:** Parth Sharma (team leader), Monishka Yadav, Shrey Kataria, Shresth Kataria.
+- **Team Adamya:** Parth Sharma (team leader), Monishka Yadav, Shrey Kataria, Shresth Kataria.
 - **Tech stack:** React + TypeScript + Vite, Capacitor 8 (Android), Gemma 4 E2B on the device via Google LiteRT-LM, SQLite on the device, FastAPI + PostgreSQL for sync, tested with Vitest, pytest and Playwright.
 
 ## What it does
